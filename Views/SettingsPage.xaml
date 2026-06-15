@@ -1,12 +1,36 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
              x:Class="ExpenseTracker.Views.SettingsPage"
-             Title="SettingsPage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
+             Title="{x:Static strings:AppResources.SettingsTitle}"
+             BackgroundColor="{DynamicResource AppBackgroundColor}">
+    <VerticalStackLayout Padding="30" Spacing="25" VerticalOptions="Center">
+
+        <Label Text="{x:Static strings:AppResources.LanguageLabel}"
+               FontSize="24"
+               HorizontalOptions="Center" 
+               TextColor="{DynamicResource AppTextColor}"/>
+        <Picker x:Name="LanguagePicker"
+                Title="{x:Static strings:AppResources.LanguageLabel}"
+                SelectedIndexChanged="OnLanguageChanged"
+                HorizontalOptions="Center"
+                WidthRequest="250" 
+                TextColor="{DynamicResource AppTextColor}"
+                TitleColor="{DynamicResource AppTextColor}"/>
+
+        <Label Text="{x:Static strings:AppResources.ThemeLabel}"
+               FontSize="24"
+               HorizontalOptions="Center" 
+               Margin="0,30,0,0" 
+               TextColor="{DynamicResource AppTextColor}"/>
+        <Picker x:Name="ThemePicker"
+                Title="{x:Static strings:AppResources.ThemeLabel}"
+                SelectedIndexChanged="OnThemeChanged"
+                HorizontalOptions="Center"
+                WidthRequest="250" 
+                TextColor="{DynamicResource AppTextColor}"
+                TitleColor="{DynamicResource AppTextColor}"/>
+
     </VerticalStackLayout>
 </ContentPage>

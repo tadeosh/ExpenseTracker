@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    x:Class="ExpenseTracker.Resources.Themes.HighContrastTheme">
+    <Color x:Key="AppBackgroundColor">#000000</Color>
+    <Color x:Key="SectionBackgroundColor">#000000</Color>
+    <Color x:Key="AppTextColor">#FFFF00</Color>
+    <Color x:Key="PrimaryColor">#00FFFF</Color>
+    <Color x:Key="HeaderTextColor">#000000</Color>
+</ResourceDictionary>

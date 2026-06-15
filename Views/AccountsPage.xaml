@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
+             xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
+             x:Class="ExpenseTracker.Views.AccountsPage"
+             Title="{x:Static strings:AppResources.AccountsPageTitle}"
+             BackgroundColor="{DynamicResource AppBackgroundColor}">
+    <Grid RowDefinitions="Auto, *">
+
+        <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+            <Entry Placeholder="{x:Static strings:AppResources.AccountNameLabel}" Text="{Binding AccountName}" TextColor="{DynamicResource AppTextColor}" />
+            <Entry Placeholder="{x:Static strings:AppResources.CurrencyLabel}" Text="{Binding AccountCurrency}" TextColor="{DynamicResource AppTextColor}" />
+            <Entry Placeholder="{x:Static strings:AppResources.BalanceLabel}" Text="{Binding AccountBalance}" Keyboard="Numeric" TextColor="{DynamicResource AppTextColor}" />
+
+            <Button Text="{x:Static strings:AppResources.AddAccountBtn}" Command="{Binding AddAccountCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource AppBackgroundColor}" />
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Accounts}" Margin="20">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="0,0,0,10" Padding="15" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="18" TextColor="{DynamicResource AppTextColor}" />
+                            <Label Text="-" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
+                            <Label Text="{Binding InitialBalance}" FontSize="16" TextColor="{DynamicResource AppTextColor}" />
+                            <Label Text="{Binding Currency}" FontSize="16" TextColor="{DynamicResource AppTextColor}" />
+                        </HorizontalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

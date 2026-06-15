@@ -4,21 +4,44 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:ExpenseTracker.Views"
-    Shell.FlyoutBehavior="Flyout">
+    xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
+    Shell.FlyoutBehavior="Flyout"
+    BackgroundColor="{DynamicResource PrimaryColor}" 
+    FlyoutBackgroundColor="{DynamicResource AppBackgroundColor}"
+    TitleColor="{DynamicResource HeaderTextColor}" 
+    ForegroundColor="{DynamicResource HeaderTextColor}">
 
-    <FlyoutItem Title="Strona Główna">
+    <Shell.ItemTemplate>
+        <DataTemplate>
+            <Grid Padding="20,15">
+                <Label Text="{Binding Title}" 
+                       TextColor="{DynamicResource AppTextColor}" 
+                       FontSize="14" 
+                       FontAttributes="None"
+                       VerticalOptions="Center" />
+            </Grid>
+        </DataTemplate>
+    </Shell.ItemTemplate>
+
+    <FlyoutItem Title="{x:Static strings:AppResources.HomePageTitle}">
         <ShellContent 
-            ContentTemplate="{DataTemplate views:HomePage}" 
+            ContentTemplate="{DataTemplate views:HomePage}"             
             Route="HomePage" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Nowa Transakcja">
+    <FlyoutItem Title="{x:Static strings:AppResources.AccountsPageTitle}">
+        <ShellContent 
+        ContentTemplate="{DataTemplate views:AccountsPage}" 
+        Route="AccountsPage" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="{x:Static strings:AppResources.AddTransactionTitle}">
         <ShellContent 
             ContentTemplate="{DataTemplate views:AddTransactionPage}" 
             Route="AddTransactionPage" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Ustawienia">
+    <FlyoutItem Title="{x:Static strings:AppResources.SettingsTitle}">
         <ShellContent 
             ContentTemplate="{DataTemplate views:SettingsPage}" 
             Route="SettingsPage" />
