@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AccountLabel" xml:space="preserve">
+    <value>Account</value>
+  </data>
   <data name="AccountNameLabel" xml:space="preserve">
     <value>Account name</value>
   </data>
@@ -126,14 +129,47 @@
   <data name="AddAccountBtn" xml:space="preserve">
     <value>Add Account</value>
   </data>
+  <data name="AddCategoryBtn" xml:space="preserve">
+    <value>Add Category</value>
+  </data>
+  <data name="AddProjectBtn" xml:space="preserve">
+    <value>Add project</value>
+  </data>
   <data name="AddTransactionTitle" xml:space="preserve">
     <value>New Transaction</value>
+  </data>
+  <data name="AmountLabel" xml:space="preserve">
+    <value>Amount</value>
   </data>
   <data name="BalanceLabel" xml:space="preserve">
     <value>Initial Balance</value>
   </data>
+  <data name="CategoriesTitle" xml:space="preserve">
+    <value>Categories</value>
+  </data>
+  <data name="CategoryLabel" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="CategoryNameLabel" xml:space="preserve">
+    <value>Category name</value>
+  </data>
   <data name="CurrencyLabel" xml:space="preserve">
     <value>Currency</value>
+  </data>
+  <data name="DataSettingsLabel" xml:space="preserve">
+    <value>Data Management</value>
+  </data>
+  <data name="DateLabel" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="DefaultCurrencyLabel" xml:space="preserve">
+    <value>Default currency</value>
+  </data>
+  <data name="DescriptionLabel" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="DestinationAccountLabel" xml:space="preserve">
+    <value>To Account</value>
   </data>
   <data name="Enum_Expense" xml:space="preserve">
     <value>Expense</value>
@@ -144,11 +180,41 @@
   <data name="Enum_Transfer" xml:space="preserve">
     <value>Transfer</value>
   </data>
+  <data name="ExchangeRateLabel" xml:space="preserve">
+    <value>Exchange Rate</value>
+  </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>Home</value>
   </data>
   <data name="LanguageLabel" xml:space="preserve">
     <value>Choose Language:</value>
+  </data>
+  <data name="ManageCategoriesBtn" xml:space="preserve">
+    <value>Manage Categories</value>
+  </data>
+  <data name="ManageProjectsBtn" xml:space="preserve">
+    <value>Manage Projects</value>
+  </data>
+  <data name="NetWorthLabel" xml:space="preserve">
+    <value>Total Net Worth</value>
+  </data>
+  <data name="NoTransactionsLabel" xml:space="preserve">
+    <value>No transactions ...</value>
+  </data>
+  <data name="ProjectLabel" xml:space="preserve">
+    <value>Project (Optional)</value>
+  </data>
+  <data name="ProjectNameLabel" xml:space="preserve">
+    <value>Project Name</value>
+  </data>
+  <data name="ProjectsTitle" xml:space="preserve">
+    <value>Projects</value>
+  </data>
+  <data name="RecentTransactionsLabel" xml:space="preserve">
+    <value>Recent Transactions</value>
+  </data>
+  <data name="SaveTransactionBtn" xml:space="preserve">
+    <value>Save Transaction</value>
   </data>
   <data name="SettingsTitle" xml:space="preserve">
     <value>Settings</value>
@@ -164,5 +230,11 @@
   </data>
   <data name="ThemeLight" xml:space="preserve">
     <value>Light</value>
+  </data>
+  <data name="TotalBalanceLabel" xml:space="preserve">
+    <value>Your Accounts</value>
+  </data>
+  <data name="TypeLabel" xml:space="preserve">
+    <value>Transaction Type</value>
   </data>
 </root>

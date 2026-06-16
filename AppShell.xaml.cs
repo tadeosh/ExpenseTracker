@@ -5,6 +5,10 @@
         public AppShell()
         {
             InitializeComponent();
+
+            // Rejestracja ścieżek dla stron ukrytych w menu
+            Routing.RegisterRoute("CategoriesPage", typeof(Views.CategoriesPage));
+            Routing.RegisterRoute("ProjectsPage", typeof(Views.ProjectsPage));
         }
     }
 }

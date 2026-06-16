@@ -2,11 +2,11 @@ using ExpenseTracker.ViewModels;
 
 namespace ExpenseTracker.Views;
 
-public partial class AddTransactionPage : ContentPage
+public partial class ProjectsPage : ContentPage
 {
-    private readonly AddTransactionViewModel _viewModel;
+    private readonly ProjectsViewModel _viewModel;
 
-    public AddTransactionPage(AddTransactionViewModel viewModel)
+    public ProjectsPage(ProjectsViewModel viewModel)
     {
         InitializeComponent();
         _viewModel = viewModel;
@@ -16,6 +16,6 @@ public partial class AddTransactionPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await _viewModel.LoadDataAsync();
+        await _viewModel.LoadProjectsAsync();
     }
 }

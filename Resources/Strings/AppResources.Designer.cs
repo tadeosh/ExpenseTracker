@@ -61,6 +61,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Account.
+        /// </summary>
+        internal static string AccountLabel {
+            get {
+                return ResourceManager.GetString("AccountLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Account name.
         /// </summary>
         internal static string AccountNameLabel {
@@ -88,11 +97,38 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Add Category.
+        /// </summary>
+        internal static string AddCategoryBtn {
+            get {
+                return ResourceManager.GetString("AddCategoryBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Add project.
+        /// </summary>
+        internal static string AddProjectBtn {
+            get {
+                return ResourceManager.GetString("AddProjectBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu New Transaction.
         /// </summary>
         internal static string AddTransactionTitle {
             get {
                 return ResourceManager.GetString("AddTransactionTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Amount.
+        /// </summary>
+        internal static string AmountLabel {
+            get {
+                return ResourceManager.GetString("AmountLabel", resourceCulture);
             }
         }
         
@@ -106,11 +142,83 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Categories.
+        /// </summary>
+        internal static string CategoriesTitle {
+            get {
+                return ResourceManager.GetString("CategoriesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Category.
+        /// </summary>
+        internal static string CategoryLabel {
+            get {
+                return ResourceManager.GetString("CategoryLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Category name.
+        /// </summary>
+        internal static string CategoryNameLabel {
+            get {
+                return ResourceManager.GetString("CategoryNameLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Currency.
         /// </summary>
         internal static string CurrencyLabel {
             get {
                 return ResourceManager.GetString("CurrencyLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Data Management.
+        /// </summary>
+        internal static string DataSettingsLabel {
+            get {
+                return ResourceManager.GetString("DataSettingsLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Date.
+        /// </summary>
+        internal static string DateLabel {
+            get {
+                return ResourceManager.GetString("DateLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Default currency.
+        /// </summary>
+        internal static string DefaultCurrencyLabel {
+            get {
+                return ResourceManager.GetString("DefaultCurrencyLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Description.
+        /// </summary>
+        internal static string DescriptionLabel {
+            get {
+                return ResourceManager.GetString("DescriptionLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu To Account.
+        /// </summary>
+        internal static string DestinationAccountLabel {
+            get {
+                return ResourceManager.GetString("DestinationAccountLabel", resourceCulture);
             }
         }
         
@@ -142,6 +250,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Exchange Rate.
+        /// </summary>
+        internal static string ExchangeRateLabel {
+            get {
+                return ResourceManager.GetString("ExchangeRateLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Home.
         /// </summary>
         internal static string HomePageTitle {
@@ -156,6 +273,87 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string LanguageLabel {
             get {
                 return ResourceManager.GetString("LanguageLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Manage Categories.
+        /// </summary>
+        internal static string ManageCategoriesBtn {
+            get {
+                return ResourceManager.GetString("ManageCategoriesBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Manage Projects.
+        /// </summary>
+        internal static string ManageProjectsBtn {
+            get {
+                return ResourceManager.GetString("ManageProjectsBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Total Net Worth.
+        /// </summary>
+        internal static string NetWorthLabel {
+            get {
+                return ResourceManager.GetString("NetWorthLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu No transactions ....
+        /// </summary>
+        internal static string NoTransactionsLabel {
+            get {
+                return ResourceManager.GetString("NoTransactionsLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Project (Optional).
+        /// </summary>
+        internal static string ProjectLabel {
+            get {
+                return ResourceManager.GetString("ProjectLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Project Name.
+        /// </summary>
+        internal static string ProjectNameLabel {
+            get {
+                return ResourceManager.GetString("ProjectNameLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Projects.
+        /// </summary>
+        internal static string ProjectsTitle {
+            get {
+                return ResourceManager.GetString("ProjectsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Recent Transactions.
+        /// </summary>
+        internal static string RecentTransactionsLabel {
+            get {
+                return ResourceManager.GetString("RecentTransactionsLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Save Transaction.
+        /// </summary>
+        internal static string SaveTransactionBtn {
+            get {
+                return ResourceManager.GetString("SaveTransactionBtn", resourceCulture);
             }
         }
         
@@ -201,6 +399,24 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string ThemeLight {
             get {
                 return ResourceManager.GetString("ThemeLight", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Your Accounts.
+        /// </summary>
+        internal static string TotalBalanceLabel {
+            get {
+                return ResourceManager.GetString("TotalBalanceLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Transaction Type.
+        /// </summary>
+        internal static string TypeLabel {
+            get {
+                return ResourceManager.GetString("TypeLabel", resourceCulture);
             }
         }
     }

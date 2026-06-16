@@ -21,9 +21,31 @@ public partial class SettingsPage : ContentPage
         InitializeComponent();
         LoadLanguages();
         LoadThemes();
+        LoadCurrency();
 
         // Zakończyliśmy początkowe ładowanie, od teraz Picker może reagować na kliknięcia użytkownika
         _isInitializing = false;
+    }
+
+    // NOWOŚĆ: Metoda ładująca wybraną walutę z pamięci
+    private void LoadCurrency()
+    {
+        string savedCurrency = Preferences.Default.Get("DefaultCurrency", "PLN");
+        int currencyIndex = CurrencyPicker.Items.IndexOf(savedCurrency);
+
+        // Jeśli znalazł zapisaną walutę na liście, ustawia ją. Jeśli nie (np. pierwsze uruchomienie), ustawia pierwszą z listy (PLN)
+        CurrencyPicker.SelectedIndex = currencyIndex >= 0 ? currencyIndex : 0;
+    }
+
+    // NOWOŚĆ: Metoda reagująca na zmianę waluty w interfejsie
+    private void OnCurrencyChanged(object? sender, EventArgs e)
+    {
+        if (_isInitializing) return;
+
+        if (CurrencyPicker.SelectedIndex != -1)
+        {
+            Preferences.Default.Set("DefaultCurrency", CurrencyPicker.SelectedItem?.ToString());
+        }
     }
 
     private void LoadLanguages()
@@ -89,7 +111,7 @@ public partial class SettingsPage : ContentPage
         ThemePicker.Items.Add(AppResources.ThemeHighContrast);
 
         // Domyślnie ustawiamy Jasny (później nauczymy aplikację pamiętać ten wybór w bazie)
-        ThemePicker.SelectedIndex = 0;
+        ThemePicker.SelectedIndex = Preferences.Default.Get("AppTheme", 0);
     }
 
     private void OnThemeChanged(object? sender, EventArgs e)
@@ -105,4 +127,17 @@ public partial class SettingsPage : ContentPage
         // Wywołujemy naszą globalną metodę z App.xaml.cs
         App.ApplyTheme(selectedIndex);
     }
+
+    
+    private async void OnManageCategoriesClicked(object? sender, EventArgs e)
+    {
+        // Komenda Shell.Current.GoToAsync pozwala nam przeskoczyć do zarejestrowanej ścieżki
+        await Shell.Current.GoToAsync("CategoriesPage");
+    }
+
+    private async void OnManageProjectsClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync("ProjectsPage");
+    }
 }
+

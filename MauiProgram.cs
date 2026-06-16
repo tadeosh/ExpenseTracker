@@ -28,6 +28,17 @@ namespace ExpenseTracker
             builder.Services.AddTransient<AccountsViewModel>(); 
             builder.Services.AddTransient<AccountsPage>();
 
+            builder.Services.AddTransient<CategoriesViewModel>();
+            builder.Services.AddTransient<CategoriesPage>();
+            builder.Services.AddTransient<ProjectsViewModel>();
+            builder.Services.AddTransient<ProjectsPage>();
+
+            builder.Services.AddTransient<AddTransactionViewModel>();
+            builder.Services.AddTransient<AddTransactionPage>();
+
+            builder.Services.AddTransient<HomeViewModel>();
+            builder.Services.AddTransient<HomePage>();
+
             return builder.Build();
         }
     }

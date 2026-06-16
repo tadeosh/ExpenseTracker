@@ -19,6 +19,19 @@
                 TextColor="{DynamicResource AppTextColor}"
                 TitleColor="{DynamicResource AppTextColor}"/>
 
+        <Label Text="{x:Static strings:AppResources.DefaultCurrencyLabel}" FontSize="16" FontAttributes="Bold" Margin="0,20,0,5" TextColor="{DynamicResource AppTextColor}"/>
+        <Picker x:Name="CurrencyPicker" 
+                SelectedIndexChanged="OnCurrencyChanged"
+                TextColor="{DynamicResource AppTextColor}"
+                TitleColor="{DynamicResource AppTextColor}">
+            <Picker.Items>
+                <x:String>PLN</x:String>
+                <x:String>EUR</x:String>
+                <x:String>USD</x:String>
+                <x:String>GBP</x:String>
+            </Picker.Items>
+        </Picker>
+
         <Label Text="{x:Static strings:AppResources.ThemeLabel}"
                FontSize="24"
                HorizontalOptions="Center" 
@@ -32,5 +45,23 @@
                 TextColor="{DynamicResource AppTextColor}"
                 TitleColor="{DynamicResource AppTextColor}"/>
 
+        <Label Text="{x:Static strings:AppResources.DataSettingsLabel}"
+               FontSize="24"
+               HorizontalOptions="Center" 
+               Margin="0,30,0,0" 
+               TextColor="{DynamicResource AppTextColor}"/>
+
+        <Button Text="{x:Static strings:AppResources.ManageCategoriesBtn}"
+                Clicked="OnManageCategoriesClicked"
+                WidthRequest="250"
+                BackgroundColor="{DynamicResource PrimaryColor}" 
+                TextColor="{DynamicResource HeaderTextColor}"/>
+
+        <Button Text="{x:Static strings:AppResources.ManageProjectsBtn}"
+                Clicked="OnManageProjectsClicked"
+                WidthRequest="250"
+                BackgroundColor="{DynamicResource PrimaryColor}" 
+                TextColor="{DynamicResource HeaderTextColor}"/>
+        
     </VerticalStackLayout>
 </ContentPage>

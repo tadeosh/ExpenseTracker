@@ -89,5 +89,101 @@ namespace ExpenseTracker.Data
             await InitAsync();
             return await _database.DeleteAsync(transaction);
         }
+
+        // Pobiera X najnowszych transakcji do podglądu na stronie głównej
+        public async Task<List<Transaction>> GetRecentTransactionsAsync(int limit = 10)
+        {
+            await InitAsync();
+            return await _database.Table<Transaction>()
+                                  .OrderByDescending(t => t.Date)
+                                  .Take(limit)
+                                  .ToListAsync();
+        }
+
+        // Magia architektury: Dynamiczne wyliczanie aktualnego salda konta
+        public async Task<decimal> GetAccountBalanceAsync(int accountId)
+        {
+            await InitAsync();
+
+            var account = await _database.Table<Account>().Where(a => a.Id == accountId).FirstOrDefaultAsync();
+            if (account == null) return 0;
+
+            // Pobieramy wszystkie transakcje z bazy
+            var transactions = await _database.Table<Transaction>().ToListAsync();
+
+            // Zaczynamy od salda początkowego
+            decimal balance = account.InitialBalance;
+
+            // 1. Przychody (+)
+            balance += transactions.Where(t => t.AccountId == accountId && t.Type == TransactionType.Income).Sum(t => t.Amount);
+
+            // 2. Wydatki (-)
+            balance -= transactions.Where(t => t.AccountId == accountId && t.Type == TransactionType.Expense).Sum(t => t.Amount);
+
+            // 3. Transfery wychodzące z tego konta (-)
+            balance -= transactions.Where(t => t.AccountId == accountId && t.Type == TransactionType.Transfer).Sum(t => t.Amount);
+
+            // 4. Transfery przychodzące na to konto (+) wraz z przelicznikiem walut!
+            var incomingTransfers = transactions.Where(t => t.DestinationAccountId == accountId && t.Type == TransactionType.Transfer);
+            foreach (var transfer in incomingTransfers)
+            {
+                if (transfer.ExchangeRate.HasValue && transfer.ExchangeRate > 0)
+                {
+                    balance += transfer.Amount * transfer.ExchangeRate.Value;
+                }
+                else
+                {
+                    balance += transfer.Amount;
+                }
+            }
+
+            return balance;
+        }
+
+        // ==========================================
+        // OPERACJE DLA KATEGORII (CATEGORIES)
+        // ==========================================
+
+        public async Task<List<Category>> GetCategoriesAsync()
+        {
+            await InitAsync();
+            return await _database.Table<Category>().ToListAsync();
+        }
+
+        public async Task<int> SaveCategoryAsync(Category category)
+        {
+            await InitAsync();
+            if (category.Id != 0) return await _database.UpdateAsync(category);
+            else return await _database.InsertAsync(category);
+        }
+
+        public async Task<int> DeleteCategoryAsync(Category category)
+        {
+            await InitAsync();
+            return await _database.DeleteAsync(category);
+        }
+
+        // ==========================================
+        // OPERACJE DLA PROJEKTÓW (PROJECTS)
+        // ==========================================
+
+        public async Task<List<Project>> GetProjectsAsync()
+        {
+            await InitAsync();
+            return await _database.Table<Project>().ToListAsync();
+        }
+
+        public async Task<int> SaveProjectAsync(Project project)
+        {
+            await InitAsync();
+            if (project.Id != 0) return await _database.UpdateAsync(project);
+            else return await _database.InsertAsync(project);
+        }
+
+        public async Task<int> DeleteProjectAsync(Project project)
+        {
+            await InitAsync();
+            return await _database.DeleteAsync(project);
+        }
     }
 }

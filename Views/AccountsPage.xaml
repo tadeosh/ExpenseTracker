@@ -6,6 +6,7 @@
              x:Class="ExpenseTracker.Views.AccountsPage"
              Title="{x:Static strings:AppResources.AccountsPageTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}">
+    
     <Grid RowDefinitions="Auto, *">
 
         <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10" BackgroundColor="{DynamicResource SectionBackgroundColor}">

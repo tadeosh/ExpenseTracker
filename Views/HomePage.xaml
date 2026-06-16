@@ -1,12 +1,104 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
              x:Class="ExpenseTracker.Views.HomePage"
-             Title="HomePage">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             Title="{x:Static strings:AppResources.HomePageTitle}"
+             BackgroundColor="{DynamicResource AppBackgroundColor}">
+
+    <Grid>
+
+        <Grid RowDefinitions="Auto, Auto, Auto, *" Margin="20,20,20,0">
+
+            <Label Grid.Row="0" Text="{x:Static strings:AppResources.TotalBalanceLabel}" FontSize="20" FontAttributes="Bold" Margin="0,0,0,10" TextColor="{DynamicResource AppTextColor}"/>
+
+            <CollectionView Grid.Row="1" ItemsSource="{Binding AccountsBalances}" HeightRequest="110" HorizontalScrollBarVisibility="Always">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="15" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border WidthRequest="150" Padding="15" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                            <VerticalStackLayout Spacing="5" VerticalOptions="Center">
+                                <Label Text="{Binding Name}" FontSize="15" TextColor="{DynamicResource AppTextColor}" Opacity="0.8" LineBreakMode="TailTruncation"/>
+                                <HorizontalStackLayout Spacing="5">
+                                    <Label Text="{Binding Balance, StringFormat='{0:N2}'}" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource PrimaryColor}" />
+                                    <Label Text="{Binding Currency}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource PrimaryColor}" VerticalOptions="End" Margin="0,0,0,3"/>
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Border Grid.Row="2" Margin="0,20,0,0" Padding="20,15" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{DynamicResource PrimaryColor}">
+                <Grid ColumnDefinitions="*, Auto">
+                    <Label Grid.Column="0" Text="{x:Static strings:AppResources.NetWorthLabel}" TextColor="{DynamicResource HeaderTextColor}" VerticalOptions="Center" FontSize="16" FontAttributes="Bold"/>
+                    <Label Grid.Column="1" Text="{Binding TotalNetWorthDisplay}" TextColor="{DynamicResource HeaderTextColor}" FontAttributes="Bold" FontSize="20" VerticalOptions="Center"/>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="3" RowDefinitions="Auto, Auto, *" Margin="0,20,0,0">
+
+                <Label Grid.Row="0" Text="{x:Static strings:AppResources.RecentTransactionsLabel}" FontSize="20" FontAttributes="Bold" Margin="0,0,0,15" TextColor="{DynamicResource AppTextColor}"/>
+
+                <Label Grid.Row="1" Text="{x:Static strings:AppResources.NoTransactionsLabel}" IsVisible="{Binding HasNoTransactions}" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" Margin="0,20,0,0" />
+
+                <CollectionView Grid.Row="2" ItemsSource="{Binding GroupedTransactions}" IsGrouped="True" IsVisible="{Binding HasTransactions}">
+
+                    <CollectionView.GroupHeaderTemplate>
+                        <DataTemplate>
+                            <Border Margin="0,5,0,5" Padding="10,5" StrokeShape="RoundRectangle 6" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" Opacity="0.9">
+                                <Grid ColumnDefinitions="Auto, Auto, *, Auto, Auto" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="{Binding DateDisplay}" FontAttributes="Bold" FontSize="14" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center"/>
+                                    <Label Grid.Column="1" Text="{Binding DayOfWeekDisplay}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" VerticalOptions="Center" TextTransform="Uppercase"/>
+
+                                    <Label Grid.Column="3" Text="{Binding TotalIncomeDisplay}" FontSize="14" FontAttributes="Bold" TextColor="#4CAF50" VerticalOptions="Center" HorizontalOptions="End"/>
+                                    <Label Grid.Column="4" Text="{Binding TotalExpenseDisplay}" FontSize="14" FontAttributes="Bold" TextColor="#E53935" VerticalOptions="Center" HorizontalOptions="End"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.GroupHeaderTemplate>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="5,10" ColumnDefinitions="2.5*, 3.5*, 2*, Auto" ColumnSpacing="8">
+                                <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="2">
+                                    <Label Text="{Binding CategoryName}" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
+                                    <Label Text="{Binding SubcategoryName}" FontSize="11" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" LineBreakMode="TailTruncation" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                    <Label Text="{Binding Description}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
+                                    <Label Text="{Binding AccountDisplay}" FontSize="11" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" LineBreakMode="TailTruncation" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="2">
+                                    <Label Text="{Binding ProjectName}" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" Opacity="0.8" LineBreakMode="TailTruncation" />
+                                    <Label Text="{Binding SubprojectName}" FontSize="10" TextColor="{DynamicResource AppTextColor}" Opacity="0.5" LineBreakMode="TailTruncation" />
+                                </VerticalStackLayout>
+
+                                <Label Grid.Column="3" Text="{Binding AmountDisplay}" FontSize="15" FontAttributes="Bold" TextColor="{Binding AmountColor}" VerticalOptions="Center" HorizontalOptions="End" />
+                                <BoxView Grid.ColumnSpan="4" HeightRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.1" VerticalOptions="End" Margin="0,15,0,-10"/>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </Grid>
+
+        <Button Text="+"
+                FontSize="32"
+                FontAttributes="Bold"
+                WidthRequest="65"
+                HeightRequest="65"
+                CornerRadius="32" 
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Margin="0,0,20,30"
+                BackgroundColor="{DynamicResource PrimaryColor}"
+                TextColor="{DynamicResource HeaderTextColor}"
+                Command="{Binding NavigateToAddTransactionCommand}" />
+
+    </Grid>
 </ContentPage>
