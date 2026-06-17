@@ -5,6 +5,8 @@
              x:Class="ExpenseTracker.Views.SettingsPage"
              Title="{x:Static strings:AppResources.SettingsTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}">
+    <ScrollView>
+    
     <VerticalStackLayout Padding="30" Spacing="25" VerticalOptions="Center">
 
         <Label Text="{x:Static strings:AppResources.LanguageLabel}"
@@ -24,12 +26,7 @@
                 SelectedIndexChanged="OnCurrencyChanged"
                 TextColor="{DynamicResource AppTextColor}"
                 TitleColor="{DynamicResource AppTextColor}">
-            <Picker.Items>
-                <x:String>PLN</x:String>
-                <x:String>EUR</x:String>
-                <x:String>USD</x:String>
-                <x:String>GBP</x:String>
-            </Picker.Items>
+           
         </Picker>
 
         <Label Text="{x:Static strings:AppResources.ThemeLabel}"
@@ -62,6 +59,21 @@
                 WidthRequest="250"
                 BackgroundColor="{DynamicResource PrimaryColor}" 
                 TextColor="{DynamicResource HeaderTextColor}"/>
-        
-    </VerticalStackLayout>
+
+        <Button Text="{x:Static strings:AppResources.ManageExchangeRatesTitle}"
+                Clicked="OnManageExchangeRatesClicked"
+                WidthRequest="250"
+                Margin="0,0,0,20"
+                BackgroundColor="{DynamicResource PrimaryColor}" 
+                TextColor="{DynamicResource HeaderTextColor}"/>
+
+        <Button Text="{x:Static strings:AppResources.ManageFavoriteCurrenciesBtn}"
+            Clicked="OnManageFavoriteCurrenciesClicked"
+            WidthRequest="250"
+            Margin="0,0,0,20"
+            BackgroundColor="{DynamicResource PrimaryColor}" 
+            TextColor="{DynamicResource HeaderTextColor}"/>
+
+        </VerticalStackLayout>
+    </ScrollView>    
 </ContentPage>

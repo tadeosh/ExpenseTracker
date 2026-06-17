@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
+             xmlns:controls="clr-namespace:ExpenseTracker.Controls"
+             x:Class="ExpenseTracker.Views.ExchangeRatesPage"
+             Title="{x:Static strings:AppResources.ManageExchangeRatesTitle}"
+             BackgroundColor="{DynamicResource AppBackgroundColor}"
+             HideSoftInputOnTapped="True">
+
+    <Grid RowDefinitions="Auto, *" Margin="15">
+
+        <Border Grid.Row="0" Padding="15" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" Margin="0,0,0,15">
+            <VerticalStackLayout Spacing="10">
+                <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
+                    <controls:CurrencyPicker Title="{Binding SourceCurrencyText}" SelectedItem="{Binding }" TextColor="{DynamicResource AppTextColor}"></controls:CurrencyPicker>
+                    <Entry Grid.Column="0" Placeholder="{x:Static strings:AppResources.SourceCurrencyLabel}" Text="{Binding SourceCurrencyText}" TextColor="{DynamicResource AppTextColor}" ReturnType="Next" MaxLength="3" TextTransform="Uppercase"/>
+                    <Entry Grid.Column="1" Placeholder="{x:Static strings:AppResources.TargetCurrencyLabel}" Text="{Binding TargetCurrencyText}" TextColor="{DynamicResource AppTextColor}" ReturnType="Next" MaxLength="3" TextTransform="Uppercase"/>
+                </Grid>
+
+                <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
+                    <Entry Grid.Column="0" Placeholder="{x:Static strings:AppResources.RateLabel}" Text="{Binding RateText}" Keyboard="Numeric" TextColor="{DynamicResource AppTextColor}" ReturnType="Done"/>
+                    <DatePicker Grid.Column="1" Date="{Binding SelectedDate}" TextColor="{DynamicResource AppTextColor}"/>
+                </Grid>
+
+                <Button Text="{x:Static strings:AppResources.AddRateBtn}" Command="{Binding SaveRateCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource HeaderTextColor}" Margin="0,10,0,0"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Rates}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="0,0,0,10" Padding="15" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                        <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="10">
+
+                            <VerticalStackLayout Grid.Column="0" VerticalOptions="Center">
+                                <HorizontalStackLayout Spacing="5">
+                                    <Label Text="{Binding SourceCurrency}" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}"/>
+                                    <Label Text="➔" FontSize="16" TextColor="{DynamicResource AppTextColor}" Opacity="0.5"/>
+                                    <Label Text="{Binding TargetCurrency}" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}"/>
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding Date, StringFormat='{0:dd.MM.yyyy}'}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.6"/>
+                            </VerticalStackLayout>
+
+                            <Label Grid.Column="1" Text="{Binding Rate, StringFormat='{0:N4}'}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource PrimaryColor}" VerticalOptions="Center"/>
+
+                            <ImageButton Grid.Column="2" 
+                                         Source="dotnet_bot.png" 
+                                         WidthRequest="24" HeightRequest="24" 
+                                         VerticalOptions="Center"
+                                         Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.DeleteRateCommand}"
+                                         CommandParameter="{Binding .}">
+                            </ImageButton>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

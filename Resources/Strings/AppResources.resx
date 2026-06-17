@@ -135,6 +135,9 @@
   <data name="AddProjectBtn" xml:space="preserve">
     <value>Add project</value>
   </data>
+  <data name="AddRateBtn" xml:space="preserve">
+    <value>Add Exchange Rate</value>
+  </data>
   <data name="AddTransactionTitle" xml:space="preserve">
     <value>New Transaction</value>
   </data>
@@ -183,6 +186,9 @@
   <data name="ExchangeRateLabel" xml:space="preserve">
     <value>Exchange Rate</value>
   </data>
+  <data name="FavoriteCurrenciesTitle" xml:space="preserve">
+    <value>Favorite Currencies</value>
+  </data>
   <data name="HomePageTitle" xml:space="preserve">
     <value>Home</value>
   </data>
@@ -191,6 +197,12 @@
   </data>
   <data name="ManageCategoriesBtn" xml:space="preserve">
     <value>Manage Categories</value>
+  </data>
+  <data name="ManageExchangeRatesTitle" xml:space="preserve">
+    <value>Exchange Rates</value>
+  </data>
+  <data name="ManageFavoriteCurrenciesBtn" xml:space="preserve">
+    <value>Manage Favorite Currencies</value>
   </data>
   <data name="ManageProjectsBtn" xml:space="preserve">
     <value>Manage Projects</value>
@@ -210,6 +222,9 @@
   <data name="ProjectsTitle" xml:space="preserve">
     <value>Projects</value>
   </data>
+  <data name="RateLabel" xml:space="preserve">
+    <value>Rate (e.g. 4,35)</value>
+  </data>
   <data name="RecentTransactionsLabel" xml:space="preserve">
     <value>Recent Transactions</value>
   </data>
@@ -218,6 +233,12 @@
   </data>
   <data name="SettingsTitle" xml:space="preserve">
     <value>Settings</value>
+  </data>
+  <data name="SourceCurrencyLabel" xml:space="preserve">
+    <value>From Currency</value>
+  </data>
+  <data name="TargetCurrencyLabel" xml:space="preserve">
+    <value>To Currency</value>
   </data>
   <data name="ThemeDark" xml:space="preserve">
     <value>Dark</value>

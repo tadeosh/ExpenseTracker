@@ -39,6 +39,12 @@ namespace ExpenseTracker
             builder.Services.AddTransient<HomeViewModel>();
             builder.Services.AddTransient<HomePage>();
 
+            builder.Services.AddTransient<ExchangeRatesViewModel>();
+            builder.Services.AddTransient<ExchangeRatesPage>();
+
+            builder.Services.AddTransient<FavoriteCurrenciesViewModel>();
+            builder.Services.AddTransient<FavoriteCurrenciesPage>();
+
             return builder.Build();
         }
     }

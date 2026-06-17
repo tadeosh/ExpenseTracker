@@ -30,21 +30,44 @@ public partial class SettingsPage : ContentPage
     // NOWOŚĆ: Metoda ładująca wybraną walutę z pamięci
     private void LoadCurrency()
     {
-        string savedCurrency = Preferences.Default.Get("DefaultCurrency", "PLN");
-        int currencyIndex = CurrencyPicker.Items.IndexOf(savedCurrency);
+        CurrencyPicker.Items.Clear();
+        foreach (var c in Helpers.CurrencyHelper.GetSortedCurrencyDisplayList())
+        {
+            CurrencyPicker.Items.Add(c);
+        }
 
-        // Jeśli znalazł zapisaną walutę na liście, ustawia ją. Jeśli nie (np. pierwsze uruchomienie), ustawia pierwszą z listy (PLN)
+        string savedCurrencyCode = Preferences.Default.Get("DefaultCurrency", "PLN");
+        // Musimy sformatować kod z pamięci na piękny tekst, by dopasować go do pickera
+        string displayToFind = Helpers.CurrencyHelper.FormatDisplay(savedCurrencyCode);
+
+        int currencyIndex = CurrencyPicker.Items.IndexOf(displayToFind);
         CurrencyPicker.SelectedIndex = currencyIndex >= 0 ? currencyIndex : 0;
     }
 
-    // NOWOŚĆ: Metoda reagująca na zmianę waluty w interfejsie
     private void OnCurrencyChanged(object? sender, EventArgs e)
     {
         if (_isInitializing) return;
 
         if (CurrencyPicker.SelectedIndex != -1)
         {
-            Preferences.Default.Set("DefaultCurrency", CurrencyPicker.SelectedItem?.ToString());
+            string? selectedDisplay = CurrencyPicker.SelectedItem?.ToString();
+
+            // NOWOŚĆ: Jeśli wybrano linię, błyskawicznie cofamy wybór do aktualnej domyślnej waluty
+            if (selectedDisplay != null && selectedDisplay.Contains("──"))
+            {
+                string savedCurrencyCode = Preferences.Default.Get("DefaultCurrency", "PLN");
+                string displayToFind = Helpers.CurrencyHelper.FormatDisplay(savedCurrencyCode);
+                CurrencyPicker.SelectedIndex = CurrencyPicker.Items.IndexOf(displayToFind);
+                return;
+            }
+            
+            string? cleanCode = Helpers.CurrencyHelper.ExtractCode(selectedDisplay);
+
+            // Ignorujemy separator i zmieniamy w pamięci tylko poprawny kod
+            if (!string.IsNullOrEmpty(cleanCode))
+            {
+                Preferences.Default.Set("DefaultCurrency", cleanCode);
+            }
         }
     }
 
@@ -139,5 +162,17 @@ public partial class SettingsPage : ContentPage
     {
         await Shell.Current.GoToAsync("ProjectsPage");
     }
+
+    private async void OnManageExchangeRatesClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync("ExchangeRatesPage");
+    }
+
+    private async void OnManageFavoriteCurrenciesClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync("FavoriteCurrenciesPage");
+    }
+
 }
+
 

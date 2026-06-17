@@ -115,6 +115,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Add Exchange Rate.
+        /// </summary>
+        internal static string AddRateBtn {
+            get {
+                return ResourceManager.GetString("AddRateBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu New Transaction.
         /// </summary>
         internal static string AddTransactionTitle {
@@ -259,6 +268,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Favorite Currencies.
+        /// </summary>
+        internal static string FavoriteCurrenciesTitle {
+            get {
+                return ResourceManager.GetString("FavoriteCurrenciesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Home.
         /// </summary>
         internal static string HomePageTitle {
@@ -282,6 +300,24 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string ManageCategoriesBtn {
             get {
                 return ResourceManager.GetString("ManageCategoriesBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Exchange Rates.
+        /// </summary>
+        internal static string ManageExchangeRatesTitle {
+            get {
+                return ResourceManager.GetString("ManageExchangeRatesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Manage Favorite Currencies.
+        /// </summary>
+        internal static string ManageFavoriteCurrenciesBtn {
+            get {
+                return ResourceManager.GetString("ManageFavoriteCurrenciesBtn", resourceCulture);
             }
         }
         
@@ -340,6 +376,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Rate (e.g. 4,35).
+        /// </summary>
+        internal static string RateLabel {
+            get {
+                return ResourceManager.GetString("RateLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Recent Transactions.
         /// </summary>
         internal static string RecentTransactionsLabel {
@@ -363,6 +408,24 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string SettingsTitle {
             get {
                 return ResourceManager.GetString("SettingsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu From Currency.
+        /// </summary>
+        internal static string SourceCurrencyLabel {
+            get {
+                return ResourceManager.GetString("SourceCurrencyLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu To Currency.
+        /// </summary>
+        internal static string TargetCurrencyLabel {
+            get {
+                return ResourceManager.GetString("TargetCurrencyLabel", resourceCulture);
             }
         }
         

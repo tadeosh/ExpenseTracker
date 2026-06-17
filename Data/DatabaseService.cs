@@ -26,6 +26,7 @@ namespace ExpenseTracker.Data
             await _database.CreateTableAsync<Category>();
             await _database.CreateTableAsync<Project>();
             await _database.CreateTableAsync<Transaction>();
+            await _database.CreateTableAsync<ExchangeRate>();
         }
 
         // ==========================================
@@ -185,5 +186,57 @@ namespace ExpenseTracker.Data
             await InitAsync();
             return await _database.DeleteAsync(project);
         }
+
+        //===================================================
+        // --- ZARZĄDZANIE KURSAMI WALUT ---
+        //===================================================
+
+        public async Task<List<ExchangeRate>> GetExchangeRatesAsync()
+        {
+            await InitAsync();
+            return await _database.Table<ExchangeRate>().OrderByDescending(e => e.Date).ToListAsync();
+        }
+
+        public async Task SaveExchangeRateAsync(ExchangeRate rate)
+        {
+            await InitAsync();
+            if (rate.Id != 0)
+                await _database.UpdateAsync(rate);
+            else
+                await _database.InsertAsync(rate);
+        }
+
+        public async Task DeleteExchangeRateAsync(ExchangeRate rate)
+        {
+            await InitAsync();
+            await _database.DeleteAsync(rate);
+        }
+
+        // MAGIA: Inteligentne pobieranie kursu na konkretny dzień (lub ostatniego znanego)
+        public async Task<decimal?> GetApplicableExchangeRateAsync(string sourceCurrency, string targetCurrency, DateTime transactionDate)
+        {
+            await InitAsync();
+
+            // Szukamy najnowszego kursu, który został dodany przed datą transakcji lub dokładnie w tym samym dniu
+            var rate = await _database.Table<ExchangeRate>()
+                .Where(e => e.SourceCurrency == sourceCurrency && e.TargetCurrency == targetCurrency && e.Date <= transactionDate)
+                .OrderByDescending(e => e.Date)
+                .FirstOrDefaultAsync();
+
+            if (rate != null)
+                return rate.Rate;
+
+            // Jeśli użytkownik wpisał kurs w odwrotną stronę (np. mamy PLN->EUR, a szukamy EUR->PLN)
+            var reverseRate = await _database.Table<ExchangeRate>()
+                .Where(e => e.SourceCurrency == targetCurrency && e.TargetCurrency == sourceCurrency && e.Date <= transactionDate)
+                .OrderByDescending(e => e.Date)
+                .FirstOrDefaultAsync();
+
+            if (reverseRate != null && reverseRate.Rate > 0)
+                return 1m / reverseRate.Rate; // Zwracamy matematyczną odwrotność
+
+            return null; // Brak kursu w bazie
+        }
+
     }
 }

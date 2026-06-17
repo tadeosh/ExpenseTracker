@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
+             x:Class="ExpenseTracker.Views.FavoriteCurrenciesPage"
+             Title="{x:Static strings:AppResources.FavoriteCurrenciesTitle}"
+             BackgroundColor="{DynamicResource AppBackgroundColor}">
+
+    <CollectionView ItemsSource="{Binding Currencies}" Margin="20">
+        <CollectionView.ItemTemplate>
+            <DataTemplate>
+                <Border Margin="0,0,0,10" Padding="5" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <Label Grid.Column="0" Text="{Binding DisplayValue}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center"/>
+                        <Switch Grid.Column="1" IsToggled="{Binding IsFavorite}" OnColor="{DynamicResource PrimaryColor}"/>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentPage>
