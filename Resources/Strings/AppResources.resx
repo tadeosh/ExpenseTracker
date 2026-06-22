@@ -258,4 +258,64 @@
   <data name="TypeLabel" xml:space="preserve">
     <value>Transaction Type</value>
   </data>
+	<data name="Currency_PLN" xml:space="preserve">
+    <value>Polish Zloty</value>
+  </data>
+	<data name="Currency_EUR" xml:space="preserve">
+    <value>Euro</value>
+  </data>
+	<data name="Currency_USD" xml:space="preserve">
+    <value>US Dollar</value>
+  </data>
+	<data name="Currency_GBP" xml:space="preserve">
+    <value>British Pound</value>
+  </data>
+	<data name="Currency_CHF" xml:space="preserve">
+    <value>Swiss Franc</value>
+  </data>
+	<data name="Currency_CZK" xml:space="preserve">
+    <value>Czech Koruna</value>
+  </data>
+	<data name="Currency_NOK" xml:space="preserve">
+    <value>Norwegian Krone</value>
+  </data>
+	<data name="Currency_SEK" xml:space="preserve">
+    <value>Swedish Krona</value>
+  </data>
+	<data name="Currency_DKK" xml:space="preserve">
+    <value>Danish Krone</value>
+  </data>
+	<data name="Currency_UAH" xml:space="preserve">
+    <value>Ukrainian Hryvnia</value>
+  </data>
+	<data name="Currency_JPY" xml:space="preserve">
+    <value>Japanese Yen</value>
+  </data>
+	<data name="Currency_AUD" xml:space="preserve">
+    <value>Australian Dollar</value>
+  </data>
+	<data name="Currency_CAD" xml:space="preserve">
+    <value>Canadian Dollar</value>
+  </data>
+	<data name="Currency_HUF" xml:space="preserve">
+    <value>Hungarian Forint</value>
+  </data>
+	<data name="Currency_RON" xml:space="preserve">
+    <value>Romanian Leu</value>
+  </data>
+	<data name="Currency_BGN" xml:space="preserve">
+    <value>Bulgarian Lev</value>
+  </data>
+	<data name="Currency_TRY" xml:space="preserve">
+    <value>Turkish Lira</value>
+  </data>
+	<data name="Currency_ILS" xml:space="preserve">
+    <value>Israeli New Shekel</value>
+  </data>
+	<data name="Currency_AED" xml:space="preserve">
+    <value>UAE Dirham</value>
+  </data>
+	<data name="Currency_CNY" xml:space="preserve">
+    <value>Chinese Yuan</value>
+  </data>  	
 </root>

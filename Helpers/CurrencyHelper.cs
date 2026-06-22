@@ -1,34 +1,45 @@
-﻿namespace ExpenseTracker.Helpers
+﻿using System.Globalization;
+
+namespace ExpenseTracker.Helpers
 {
     public static class CurrencyHelper
     {
-        // Pełen słownik z flagami i nazwami (możesz dopisać dowolne inne z całego świata)
-        public static readonly Dictionary<string, (string Flag, string Name)> CurrencyData = new()
+        // Słownik trzyma teraz tylko kody i flagi (nazwy pobieramy dynamicznie z systemu)
+        public static readonly Dictionary<string, string> CurrencyData = new()
         {
-            {"PLN", ("🇵🇱", "Polski Złoty")},
-            {"EUR", ("🇪🇺", "Euro")},
-            {"USD", ("🇺🇸", "Dolar Amerykański")},
-            {"GBP", ("🇬🇧", "Funt Brytyjski")},
-            {"CHF", ("🇨🇭", "Frank Szwajcarski")},
-            {"CZK", ("🇨🇿", "Korona Czeska")},
-            {"NOK", ("🇳🇴", "Korona Norweska")},
-            {"SEK", ("🇸🇪", "Korona Szwedzka")},
-            {"DKK", ("🇩🇰", "Korona Duńska")},
-            {"UAH", ("🇺🇦", "Hrywna Ukraińska")},
-            {"JPY", ("🇯🇵", "Jen Japoński")},
-            {"AUD", ("🇦🇺", "Dolar Australijski")},
-            {"CAD", ("🇨🇦", "Dolar Kanadyjski")},
-            {"HUF", ("🇭🇺", "Forint Węgierski")},
-            {"RON", ("🇷🇴", "Lej Rumuński")},
-            {"BGN", ("🇧🇬", "Lew Bułgarski")},
-            {"TRY", ("🇹🇷", "Lira Turecka")},
-            {"ILS", ("🇮🇱", "Nowy Szekel Izraelski")},
-            {"AED", ("🇦🇪", "Dirham ZEA")},
-            {"CNY", ("🇨🇳", "Yuan Chiński")}
+            {"PLN", "🇵🇱"}, {"EUR", "🇪🇺"}, {"USD", "🇺🇸"}, {"GBP", "🇬🇧"}, {"CHF", "🇨🇭"},
+            {"CZK", "🇨🇿"}, {"NOK", "🇳🇴"}, {"SEK", "🇸🇪"}, {"DKK", "🇩🇰"}, {"UAH", "🇺🇦"},
+            {"JPY", "🇯🇵"}, {"AUD", "🇦🇺"}, {"CAD", "🇨🇦"}, {"HUF", "🇭🇺"}, {"RON", "🇷🇴"},
+            {"BGN", "🇧🇬"}, {"TRY", "🇹🇷"}, {"ILS", "🇮🇱"}, {"AED", "🇦🇪"}, {"CNY", "🇨🇳"}
         };
 
         // Zwraca same kody (np. "PLN", "EUR", "USD") potrzebne do logiki
         public static List<string> AllCurrencyCodes => CurrencyData.Keys.ToList();
+
+        private static string GetCurrencyNativeName(string currencyCode)
+        {
+            try
+            {
+                // Budujemy dynamicznie nazwę klucza, np. "Currency_PLN"
+                string resourceKey = $"Currency_{currencyCode}";
+
+                // Pyta menedżera zasobów AppResources o tekst dla tego klucza
+                string? localizedName = Resources.Strings.AppResources.ResourceManager.GetString(resourceKey, Resources.Strings.AppResources.Culture);
+
+                if (!string.IsNullOrEmpty(localizedName))
+                {
+                    return localizedName;
+                }
+            }
+            catch
+            {
+                // Bezpiecznik w razie problemów z zasobami
+            }
+
+            // Jeśli nie dodałeś tłumaczenia w pliku resx (np. dla nowej waluty), 
+            // aplikacja bezpiecznie pokaże po prostu "PLN"
+            return currencyCode;
+        }
 
         // Zwraca same kody np. ["PLN", "EUR"]
         public static List<string> GetFavoriteCurrencies()
@@ -71,18 +82,21 @@
         }
 
 
-        // Formatuje wyświetlanie w zależności od systemu operacyjnego
+        // Formatuje wyświetlanie w zależności od systemu operacyjnego i JĘZYKA
         public static string FormatDisplay(string code)
         {
             if (!CurrencyData.ContainsKey(code)) return code;
-            var data = CurrencyData[code];
+
+            // POBIERAMY TŁUMACZENIE Z SYSTEMU NA ŻYWO:
+            string localizedName = GetCurrencyNativeName(code);
+            string flag = CurrencyData[code];
 
 #if WINDOWS
-            // Windows nie obsługuje flag, więc zwracamy np. "PLN - Polski Złoty"
-            return $"{code} - {data.Name}";
+            // Windows nie obsługuje flag, więc zwracamy np. "PLN - Polski złoty" (po angielsku: "PLN - Polish zloty")
+            return $"{code} - {localizedName}";
 #else
-            // Android / iOS / Mac obsługują, więc: "🇵🇱 PLN - Polski Złoty"
-            return $"{data.Flag} {code} - {data.Name}";
+            // Android / iOS / Mac obsługują, więc: "🇵🇱 PLN - Polski złoty"
+            return $"{flag} {code} - {localizedName}";
 #endif
         }
 

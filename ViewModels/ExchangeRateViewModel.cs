@@ -15,10 +15,10 @@ namespace ExpenseTracker.ViewModels
 
         // Pola formularza
         [ObservableProperty]
-        public partial string? SelectedSourceCurrency { get; set; }
+        public partial string SelectedSourceCurrency { get; set; } = string.Empty;
 
         [ObservableProperty]
-        public partial string? SelectedTargetCurrency { get; set; }
+        public partial string SelectedTargetCurrency { get; set; } = string.Empty;
 
         [ObservableProperty]
         public partial string RateText { get; set; } = string.Empty;

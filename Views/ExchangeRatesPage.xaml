@@ -13,9 +13,23 @@
         <Border Grid.Row="0" Padding="15" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" Margin="0,0,0,15">
             <VerticalStackLayout Spacing="10">
                 <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
-                    <controls:CurrencyPicker Title="{Binding SourceCurrencyText}" SelectedItem="{Binding }" TextColor="{DynamicResource AppTextColor}"></controls:CurrencyPicker>
-                    <Entry Grid.Column="0" Placeholder="{x:Static strings:AppResources.SourceCurrencyLabel}" Text="{Binding SourceCurrencyText}" TextColor="{DynamicResource AppTextColor}" ReturnType="Next" MaxLength="3" TextTransform="Uppercase"/>
-                    <Entry Grid.Column="1" Placeholder="{x:Static strings:AppResources.TargetCurrencyLabel}" Text="{Binding TargetCurrencyText}" TextColor="{DynamicResource AppTextColor}" ReturnType="Next" MaxLength="3" TextTransform="Uppercase"/>
+
+                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                        <Label Text="{x:Static strings:AppResources.SourceCurrencyLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
+                        <Grid>
+                            <controls:CurrencyPicker SelectedItem="{Binding SelectedSourceCurrency}" />
+                            <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                        <Label Text="{x:Static strings:AppResources.TargetCurrencyLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
+                        <Grid>
+                            <controls:CurrencyPicker SelectedItem="{Binding SelectedTargetCurrency}" />
+                            <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
+                        </Grid>
+                    </VerticalStackLayout>
+
                 </Grid>
 
                 <Grid ColumnDefinitions="*, *" ColumnSpacing="10">

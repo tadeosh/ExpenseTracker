@@ -258,4 +258,64 @@
   <data name="TypeLabel" xml:space="preserve">
     <value>Transaktionstyp</value>
   </data>
+	<data name="Currency_PLN" xml:space="preserve">
+    <value>Polnischer Zloty</value>
+  </data>
+	<data name="Currency_EUR" xml:space="preserve">
+    <value>Euro</value>
+  </data>
+	<data name="Currency_USD" xml:space="preserve">
+    <value>US-Dollar</value>
+  </data>
+	<data name="Currency_GBP" xml:space="preserve">
+    <value>Britisches Pfund</value>
+  </data>
+	<data name="Currency_CHF" xml:space="preserve">
+    <value>Schweizer Franken</value>
+  </data>
+	<data name="Currency_CZK" xml:space="preserve">
+    <value>Tschechische Krone</value>
+  </data>
+	<data name="Currency_NOK" xml:space="preserve">
+    <value>Norwegische Krone</value>
+  </data>
+	<data name="Currency_SEK" xml:space="preserve">
+    <value>Schwedische Krone</value>
+  </data>
+	<data name="Currency_DKK" xml:space="preserve">
+    <value>Dänische Krone</value>
+  </data>
+	<data name="Currency_UAH" xml:space="preserve">
+    <value>Ukrainische Hrywnja</value>
+  </data>
+	<data name="Currency_JPY" xml:space="preserve">
+    <value>Japanischer Yen</value>
+  </data>
+	<data name="Currency_AUD" xml:space="preserve">
+    <value>Australischer Dollar</value>
+  </data>
+	<data name="Currency_CAD" xml:space="preserve">
+    <value>Kanadischer Dollar</value>
+  </data>
+	<data name="Currency_HUF" xml:space="preserve">
+    <value>Ungarischer Forint</value>
+  </data>
+	<data name="Currency_RON" xml:space="preserve">
+    <value>Rumänischer Leu</value>
+  </data>
+	<data name="Currency_BGN" xml:space="preserve">
+    <value>Bulgarischer Lew</value>
+  </data>
+	<data name="Currency_TRY" xml:space="preserve">
+    <value>Türkische Lira</value>
+  </data>
+	<data name="Currency_ILS" xml:space="preserve">
+    <value>Israelischer Schekel</value>
+  </data>
+	<data name="Currency_AED" xml:space="preserve">
+    <value>VAE-Dirham</value>
+  </data>
+	<data name="Currency_CNY" xml:space="preserve">
+    <value>Chinesischer Yuan</value>
+  </data>	
 </root>

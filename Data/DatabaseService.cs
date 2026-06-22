@@ -130,7 +130,8 @@ namespace ExpenseTracker.Data
             {
                 if (transfer.ExchangeRate.HasValue && transfer.ExchangeRate > 0)
                 {
-                    balance += transfer.Amount * transfer.ExchangeRate.Value;
+                    // Genialne w swojej prostocie: mnożymy przez odwrotność kursu (1 / kurs)
+                    balance += transfer.Amount * (1m / transfer.ExchangeRate.Value);
                 }
                 else
                 {

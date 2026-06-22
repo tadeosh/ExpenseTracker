@@ -19,7 +19,34 @@ namespace ExpenseTracker.Controls
             // 2. Podpinamy się pod zdarzenie zmiany wyboru
             SelectedIndexChanged += OnCurrencySelectedIndexChanged;
 
+            // REFORMOWANIE STYLU: Wymuszamy na MAUI, aby traktował kontrolkę jako element dynamiczny
+            // i poprawnie przeliczał kolory systemowe (w tym strzałkę) przy zmianie motywów
+            SetDynamicResource(TextColorProperty, "AppTextColor");
+            SetDynamicResource(TitleColorProperty, "AppTextColor");
+
             _isInitializing = false;
+        }
+
+        // Przechwytujemy każdą zmianę właściwości kontrolki
+        protected override void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+        {
+            base.OnPropertyChanged(propertyName);
+
+            // Jeśli system próbuje zmienić aktualnie wybrany element (SelectedItem)
+            if (propertyName == nameof(SelectedItem))
+            {
+                // Jeśli nowa wartość to null lub pusty string (np. przy otwarciu formularza lub po jego wyczyszczeniu)
+                if (SelectedItem == null || string.IsNullOrWhiteSpace(SelectedItem.ToString()))
+                {
+                    // Pobieramy domyślną walutę
+                    string defaultCode = Preferences.Default.Get("DefaultCurrency", "PLN");
+                    string displayToFind = CurrencyHelper.FormatDisplay(defaultCode);
+
+                    // Wymuszamy ją w pickerze. Ponieważ używamy obustronnego bindowania (TwoWay),
+                    // Picker automatycznie zaktualizuje zmienną w Twoim ViewModelu!
+                    SelectedItem = displayToFind;
+                }
+            }
         }
 
         private void OnCurrencySelectedIndexChanged(object? sender, EventArgs e)

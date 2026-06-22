@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
              xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:controls="clr-namespace:ExpenseTracker.Controls"
              x:Class="ExpenseTracker.Views.AccountsPage"
              Title="{x:Static strings:AppResources.AccountsPageTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}">
@@ -11,7 +12,11 @@
 
         <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10" BackgroundColor="{DynamicResource SectionBackgroundColor}">
             <Entry Placeholder="{x:Static strings:AppResources.AccountNameLabel}" Text="{Binding AccountName}" TextColor="{DynamicResource AppTextColor}" />
-            <Entry Placeholder="{x:Static strings:AppResources.CurrencyLabel}" Text="{Binding AccountCurrency}" TextColor="{DynamicResource AppTextColor}" />
+            <Grid>
+                <controls:CurrencyPicker Title="{x:Static strings:AppResources.CurrencyLabel}" 
+                         SelectedItem="{Binding AccountCurrency}" />
+                <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
+            </Grid>
             <Entry Placeholder="{x:Static strings:AppResources.BalanceLabel}" Text="{Binding AccountBalance}" Keyboard="Numeric" TextColor="{DynamicResource AppTextColor}" />
 
             <Button Text="{x:Static strings:AppResources.AddAccountBtn}" Command="{Binding AddAccountCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource AppBackgroundColor}" />

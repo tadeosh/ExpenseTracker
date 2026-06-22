@@ -5,13 +5,12 @@
              x:Class="ExpenseTracker.Views.AddTransactionPage"
              Title="{x:Static strings:AppResources.AddTransactionTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}"
-             HideSoftInputOnTapped="True"> 
+             HideSoftInputOnTapped="True">
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15" BackgroundColor="{DynamicResource SectionBackgroundColor}" Margin="15" >
 
             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10" Margin="0,5,0,15">
-
                 <Button Grid.Column="0" 
                         Text="{x:Static strings:AppResources.Enum_Expense}" 
                         Command="{Binding SetTransactionTypeCommand}" 
@@ -61,7 +60,6 @@
                 </Button>
             </Grid>
 
-
             <Entry Placeholder="{x:Static strings:AppResources.AmountLabel}" 
                    Text="{Binding AmountText}" 
                    Keyboard="Numeric" 
@@ -78,20 +76,29 @@
                    ReturnType="Done"
                    ClearButtonVisibility="WhileEditing" />
 
-            <Picker Title="{x:Static strings:AppResources.AccountLabel}"
-                    ItemsSource="{Binding Accounts}"
-                    SelectedItem="{Binding SelectedAccount}"
-                    ItemDisplayBinding="{Binding Name}"
-                    TextColor="{DynamicResource AppTextColor}"
-                    TitleColor="{DynamicResource AppTextColor}"/>
+            <VerticalStackLayout Spacing="2">
+                <Label Text="{x:Static strings:AppResources.AccountLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
+                <Grid>
+                    <Picker ItemsSource="{Binding Accounts}"
+                            SelectedItem="{Binding SelectedAccount}"
+                            ItemDisplayBinding="{Binding Name}"
+                            TextColor="{DynamicResource AppTextColor}"
+                            BackgroundColor="Transparent" />
+                    <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
+                </Grid>
+            </VerticalStackLayout>
 
-            <Picker Title="{x:Static strings:AppResources.DestinationAccountLabel}"
-                    ItemsSource="{Binding Accounts}"
-                    SelectedItem="{Binding DestinationAccount}"
-                    ItemDisplayBinding="{Binding Name}"
-                    TextColor="{DynamicResource AppTextColor}"
-                    TitleColor="{DynamicResource AppTextColor}"
-                    IsVisible="{Binding IsTransfer}"/>
+            <VerticalStackLayout Spacing="2" IsVisible="{Binding IsTransfer}">
+                <Label Text="{x:Static strings:AppResources.DestinationAccountLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
+                <Grid>
+                    <Picker ItemsSource="{Binding Accounts}"
+                            SelectedItem="{Binding DestinationAccount}"
+                            ItemDisplayBinding="{Binding Name}"
+                            TextColor="{DynamicResource AppTextColor}"
+                            BackgroundColor="Transparent" />
+                    <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
+                </Grid>
+            </VerticalStackLayout>
 
             <VerticalStackLayout IsVisible="{Binding IsCurrencyConversion}" Spacing="5">
                 <Label Text="{Binding CurrencyConversionLabel}" 
@@ -106,19 +113,29 @@
                        ClearButtonVisibility="WhileEditing" />
             </VerticalStackLayout>
 
-            <Picker Title="{x:Static strings:AppResources.CategoryLabel}"
-                    ItemsSource="{Binding Categories}"
-                    SelectedItem="{Binding SelectedCategory}"
-                    ItemDisplayBinding="{Binding Name}"
-                    TextColor="{DynamicResource AppTextColor}"
-                    TitleColor="{DynamicResource AppTextColor}"/>
+            <VerticalStackLayout Spacing="2">
+                <Label Text="{x:Static strings:AppResources.CategoryLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
+                <Grid>
+                    <Picker ItemsSource="{Binding Categories}"
+                            SelectedItem="{Binding SelectedCategory}"
+                            ItemDisplayBinding="{Binding Name}"
+                            TextColor="{DynamicResource AppTextColor}"
+                            BackgroundColor="Transparent" />
+                    <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
+                </Grid>
+            </VerticalStackLayout>
 
-            <Picker Title="{x:Static strings:AppResources.ProjectLabel}"
-                    ItemsSource="{Binding Projects}"
-                    SelectedItem="{Binding SelectedProject}"
-                    ItemDisplayBinding="{Binding Name}"
-                    TextColor="{DynamicResource AppTextColor}"
-                    TitleColor="{DynamicResource AppTextColor}"/>
+            <VerticalStackLayout Spacing="2">
+                <Label Text="{x:Static strings:AppResources.ProjectLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
+                <Grid>
+                    <Picker ItemsSource="{Binding Projects}"
+                            SelectedItem="{Binding SelectedProject}"
+                            ItemDisplayBinding="{Binding Name}"
+                            TextColor="{DynamicResource AppTextColor}"
+                            BackgroundColor="Transparent" />
+                    <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
+                </Grid>
+            </VerticalStackLayout>
 
             <Button Text="{x:Static strings:AppResources.SaveTransactionBtn}" 
                     Command="{Binding SaveTransactionCommand}" 

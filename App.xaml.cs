@@ -45,12 +45,15 @@ namespace ExpenseTracker
             {
                 case 0:
                     mergedDictionaries.Add(new Resources.Themes.LightTheme());
+                    Application.Current.UserAppTheme = AppTheme.Light;
                     break;
                 case 1:
                     mergedDictionaries.Add(new Resources.Themes.DarkTheme());
+                    Application.Current.UserAppTheme = AppTheme.Dark;
                     break;
                 case 2:
                     mergedDictionaries.Add(new Resources.Themes.HighContrastTheme());
+                    Application.Current.UserAppTheme = AppTheme.Dark;
                     break;
             }
         }

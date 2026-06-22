@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ExpenseTracker.Data;
+using ExpenseTracker.Helpers;
 using ExpenseTracker.Models;
 using System.Collections.ObjectModel;
 
@@ -16,6 +17,7 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial string AccountName { get; set; } = string.Empty;
 
+        // Ta zmienna przyjmie z Pickera pełny tekst: np. "🇵🇱 PLN - Polski Złoty"
         [ObservableProperty]
         public partial string AccountCurrency { get; set; } = string.Empty;
 
@@ -25,13 +27,17 @@ namespace ExpenseTracker.ViewModels
         public AccountsViewModel(DatabaseService databaseService)
         {
             _databaseService = databaseService;
-          //  LoadAccountsAsync();
+                        
+            //  LoadAccountsAsync();
         }
 
         [RelayCommand]
         private async Task AddAccountAsync()
         {
-            if (string.IsNullOrWhiteSpace(AccountName) || string.IsNullOrWhiteSpace(AccountCurrency))
+            // 1. DEKODOWANIE WALUTY (Wyciągamy czyste "PLN")
+            string? cleanCurrencyCode = CurrencyHelper.ExtractCode(AccountCurrency);
+
+            if (string.IsNullOrWhiteSpace(AccountName) || string.IsNullOrWhiteSpace(cleanCurrencyCode))
                 return;
 
             if (!decimal.TryParse(AccountBalance, out decimal initialBalance))
@@ -40,7 +46,7 @@ namespace ExpenseTracker.ViewModels
             var newAccount = new Account
             {
                 Name = AccountName,
-                Currency = AccountCurrency,
+                Currency = cleanCurrencyCode,
                 InitialBalance = initialBalance
             };
 

@@ -178,6 +178,186 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu UAE Dirham.
+        /// </summary>
+        internal static string Currency_AED {
+            get {
+                return ResourceManager.GetString("Currency_AED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Australian Dollar.
+        /// </summary>
+        internal static string Currency_AUD {
+            get {
+                return ResourceManager.GetString("Currency_AUD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Bulgarian Lev.
+        /// </summary>
+        internal static string Currency_BGN {
+            get {
+                return ResourceManager.GetString("Currency_BGN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Canadian Dollar.
+        /// </summary>
+        internal static string Currency_CAD {
+            get {
+                return ResourceManager.GetString("Currency_CAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Swiss Franc.
+        /// </summary>
+        internal static string Currency_CHF {
+            get {
+                return ResourceManager.GetString("Currency_CHF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Chinese Yuan.
+        /// </summary>
+        internal static string Currency_CNY {
+            get {
+                return ResourceManager.GetString("Currency_CNY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Czech Koruna.
+        /// </summary>
+        internal static string Currency_CZK {
+            get {
+                return ResourceManager.GetString("Currency_CZK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Danish Krone.
+        /// </summary>
+        internal static string Currency_DKK {
+            get {
+                return ResourceManager.GetString("Currency_DKK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Euro.
+        /// </summary>
+        internal static string Currency_EUR {
+            get {
+                return ResourceManager.GetString("Currency_EUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu British Pound.
+        /// </summary>
+        internal static string Currency_GBP {
+            get {
+                return ResourceManager.GetString("Currency_GBP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Hungarian Forint.
+        /// </summary>
+        internal static string Currency_HUF {
+            get {
+                return ResourceManager.GetString("Currency_HUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Israeli New Shekel.
+        /// </summary>
+        internal static string Currency_ILS {
+            get {
+                return ResourceManager.GetString("Currency_ILS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Japanese Yen.
+        /// </summary>
+        internal static string Currency_JPY {
+            get {
+                return ResourceManager.GetString("Currency_JPY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Norwegian Krone.
+        /// </summary>
+        internal static string Currency_NOK {
+            get {
+                return ResourceManager.GetString("Currency_NOK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Polish Zloty.
+        /// </summary>
+        internal static string Currency_PLN {
+            get {
+                return ResourceManager.GetString("Currency_PLN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Romanian Leu.
+        /// </summary>
+        internal static string Currency_RON {
+            get {
+                return ResourceManager.GetString("Currency_RON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Swedish Krona.
+        /// </summary>
+        internal static string Currency_SEK {
+            get {
+                return ResourceManager.GetString("Currency_SEK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Turkish Lira.
+        /// </summary>
+        internal static string Currency_TRY {
+            get {
+                return ResourceManager.GetString("Currency_TRY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Ukrainian Hryvnia.
+        /// </summary>
+        internal static string Currency_UAH {
+            get {
+                return ResourceManager.GetString("Currency_UAH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu US Dollar.
+        /// </summary>
+        internal static string Currency_USD {
+            get {
+                return ResourceManager.GetString("Currency_USD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Currency.
         /// </summary>
         internal static string CurrencyLabel {
