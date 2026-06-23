@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using ExpenseTracker.Data;
 using ExpenseTracker.Helpers;
 using ExpenseTracker.Models;
+using ExpenseTracker.Resources.Strings; // NOWOŚĆ: Referencja do tłumaczeń
 using System.Collections.ObjectModel;
 
 namespace ExpenseTracker.ViewModels
@@ -27,7 +28,7 @@ namespace ExpenseTracker.ViewModels
         public AccountsViewModel(DatabaseService databaseService)
         {
             _databaseService = databaseService;
-                        
+
             //  LoadAccountsAsync();
         }
 
@@ -37,10 +38,10 @@ namespace ExpenseTracker.ViewModels
             // 1. Wyciąganie kodu
             string? cleanCurrencyCode = Helpers.CurrencyHelper.ExtractCode(AccountCurrency);
 
-            // 2. Walidacja tekstowa Z KOMUNIKATEM
+            // 2. Walidacja tekstowa Z KOMUNIKATEM (ZMIANA NA AppResources)
             if (string.IsNullOrWhiteSpace(AccountName) || string.IsNullOrWhiteSpace(cleanCurrencyCode))
             {
-                await Shell.Current.DisplayAlert("Błąd", "Wprowadź nazwę konta i wybierz walutę.", "OK");
+                await Shell.Current.DisplayAlertAsync(AppResources.ErrorTitle, AppResources.AccountValidationMissingData, AppResources.OkBtn);
                 return;
             }
 
@@ -48,7 +49,7 @@ namespace ExpenseTracker.ViewModels
             string normalizedBalance = AccountBalance.Replace(",", ".");
             if (!decimal.TryParse(normalizedBalance, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal initialBalance))
             {
-                await Shell.Current.DisplayAlert("Błąd", "Wprowadź poprawną kwotę (np. 100.00).", "OK");
+                await Shell.Current.DisplayAlertAsync(AppResources.ErrorTitle, AppResources.AccountValidationInvalidAmount, AppResources.OkBtn);
                 return;
             }
 
@@ -76,8 +77,8 @@ namespace ExpenseTracker.ViewModels
                 string defaultCode = Preferences.Default.Get("DefaultCurrency", "PLN");
                 AccountCurrency = CurrencyHelper.FormatDisplay(defaultCode);
 
-                // Odkomentowałem Ci powiadomienie o sukcesie!
-                //await Shell.Current.DisplayAlert("Sukces", "Konto zostało dodane!", "OK");
+                // Informacja o sukcesie gotowa i przetłumaczona, jeśli kiedykolwiek jej użyjesz
+                // await Shell.Current.DisplayAlertAsync(AppResources.SuccessTitle, AppResources.AccountAddedSuccess, AppResources.OkBtn);
             });
         }
 

@@ -11,7 +11,6 @@ namespace ExpenseTracker.ViewModels
     {
         private readonly DatabaseService _databaseService;
 
-        // NOWOŚĆ: Dodajemy [ObservableProperty], żeby móc w kodzie hurtowo podmieniać całe listy (zamiast Clear i Add)
         [ObservableProperty]
         public partial ObservableCollection<AccountBalanceItem> AccountsBalances { get; set; } = new();
 
@@ -21,7 +20,6 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial bool HasNoTransactions { get; set; } = true;
 
-        // NOWOŚĆ: Flaga dla bezpiecznego ukrywania CollectionView na Windowsie
         [ObservableProperty]
         public partial bool HasTransactions { get; set; } = false;
 
@@ -31,7 +29,6 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial bool HasMissingRates { get; set; } = false;
 
-        // Tutaj będziemy trzymać treść błędu do wyświetlenia
         private string _missingRatesMessage = string.Empty;
 
         public HomeViewModel(DatabaseService databaseService)
@@ -42,18 +39,15 @@ namespace ExpenseTracker.ViewModels
         public async Task LoadDataAsync()
         {
             // --- 1. BEZPIECZNE ŁADOWANIE KONT ---
-            // --- 1. BEZPIECZNE ŁADOWANIE KONT ---
             var accounts = await _databaseService.GetAccountsAsync();
             var accountDictionary = accounts.ToDictionary(a => a.Id, a => a.Name);
 
-            // Pobieramy domyślną walutę z ustawień
             string defaultCurrency = Preferences.Default.Get("DefaultCurrency", "PLN");
             decimal totalNetWorth = 0;
 
-            // NOWOŚĆ: Lista do łapania brakujących kursów
             List<string> missingRatesList = new();
-
             var tempAccounts = new ObservableCollection<AccountBalanceItem>();
+
             foreach (var acc in accounts)
             {
                 decimal currentBalance = await _databaseService.GetAccountBalanceAsync(acc.Id);
@@ -72,33 +66,31 @@ namespace ExpenseTracker.ViewModels
                 {
                     var rateFromDb = await _databaseService.GetApplicableExchangeRateAsync(acc.Currency, defaultCurrency, DateTime.Today);
 
-                    decimal exchangeRate = 1m; // Awaryjnie 1:1
+                    decimal exchangeRate = 1m;
                     if (rateFromDb.HasValue && rateFromDb.Value > 0)
                     {
                         exchangeRate = rateFromDb.Value;
                     }
                     else
                     {
-                        // NOWOŚĆ: Nie znaleźliśmy kursu! Zapisujemy to na czarną listę.
                         missingRatesList.Add($"{acc.Currency} ➔ {defaultCurrency}");
                     }
 
-                    totalNetWorth += currentBalance * (1m / exchangeRate); // Nasza perfekcyjna matematyka
+                    totalNetWorth += currentBalance * (1m / exchangeRate);
                 }
             }
             AccountsBalances = tempAccounts;
 
-            // NOWOŚĆ: Podsumowanie brakujących kursów
+            // --- ZMIANA: Tłumaczenia z AppResources ---
             if (missingRatesList.Any())
             {
                 HasMissingRates = true;
-
-                // Usuwamy duplikaty (np. gdyby użytkownik miał 2 konta w USD, a brakuje kursu USD->PLN)
                 var uniqueRates = missingRatesList.Distinct();
 
-                _missingRatesMessage = "Aplikacja użyła awaryjnego przelicznika 1:1 dla następujących walut, ponieważ brakuje ich kursów w bazie:\n\n"
+                // Zlepiamy dynamicznie przetłumaczony komunikat
+                _missingRatesMessage = $"{AppResources.MissingRatesMsgPart1}\n\n"
                                        + string.Join("\n", uniqueRates)
-                                       + "\n\nDodaj brakujące kursy w ustawieniach, aby majątek liczył się w 100% poprawnie.";
+                                       + $"\n\n{AppResources.MissingRatesMsgPart2}";
             }
             else
             {
@@ -106,9 +98,7 @@ namespace ExpenseTracker.ViewModels
                 _missingRatesMessage = string.Empty;
             }
 
-            // Formatowanie wyświetlania Całkowitego Majątku
             TotalNetWorthDisplay = $"{totalNetWorth:N2} {defaultCurrency}";
-
 
             // --- 2. BEZPIECZNE ŁADOWANIE TRANSAKCJI ---
             var categories = await _databaseService.GetCategoriesAsync();
@@ -145,7 +135,8 @@ namespace ExpenseTracker.ViewModels
 
                         return new RecentTransactionItem
                         {
-                            CategoryName = t.CategoryId.HasValue && categoryDictionary.ContainsKey(t.CategoryId.Value) ? categoryDictionary[t.CategoryId.Value] : "Brak",
+                            // --- ZMIANA: Tłumaczenie dla braku kategorii ---
+                            CategoryName = t.CategoryId.HasValue && categoryDictionary.ContainsKey(t.CategoryId.Value) ? categoryDictionary[t.CategoryId.Value] : AppResources.CategoryNone,
                             SubcategoryName = "",
                             Description = t.Description,
                             AccountDisplay = accName,
@@ -167,17 +158,13 @@ namespace ExpenseTracker.ViewModels
                 .OrderByDescending(g => g.Date)
                 .ToList();
 
-            // Tworzymy tymczasową listę grup
             var tempGroups = new ObservableCollection<TransactionGroup>();
             foreach (var group in groupedData)
             {
                 tempGroups.Add(group);
             }
 
-            // Zastępujemy starą listę nową za jednym zamachem
             GroupedTransactions = tempGroups;
-
-            // Ustawiamy flagi widoczności
             HasNoTransactions = GroupedTransactions.Count == 0;
             HasTransactions = GroupedTransactions.Count > 0;
         }
@@ -191,7 +178,8 @@ namespace ExpenseTracker.ViewModels
         [RelayCommand]
         private async Task ShowMissingRatesInfoAsync()
         {
-            await Shell.Current.DisplayAlert("Brakujące kursy walut", _missingRatesMessage, "Zrozumiałem");
+            // --- ZMIANA: Tłumaczenia okienka z błędem ---
+            await Shell.Current.DisplayAlertAsync(AppResources.MissingRatesTitle, _missingRatesMessage, AppResources.UnderstoodBtn);
         }
     }
 
@@ -202,39 +190,33 @@ namespace ExpenseTracker.ViewModels
         public string Currency { get; set; } = string.Empty;
     }
 
-    // DTO dla pojedynczej transakcji na liście
     public class RecentTransactionItem
     {
         public string CategoryName { get; set; } = string.Empty;
-        public string SubcategoryName { get; set; } = string.Empty; // Na przyszłość
+        public string SubcategoryName { get; set; } = string.Empty;
 
         public string Description { get; set; } = string.Empty;
-        public string AccountDisplay { get; set; } = string.Empty; // Obsłuży format "A -> B"
+        public string AccountDisplay { get; set; } = string.Empty;
 
         public string ProjectName { get; set; } = string.Empty;
-        public string SubprojectName { get; set; } = string.Empty;  // Na przyszłość
+        public string SubprojectName { get; set; } = string.Empty;
 
         public string AmountDisplay { get; set; } = string.Empty;
         public Color AmountColor { get; set; } = Colors.Gray;
     }
 
-    // NOWOŚĆ: Klasa reprezentująca Grupę (jeden dzień)
     public class TransactionGroup : ObservableCollection<RecentTransactionItem>
     {
         public DateTime Date { get; private set; }
         public string DateDisplay { get; set; } = string.Empty;
         public string DayOfWeekDisplay { get; set; } = string.Empty;
 
-        // Sumy dzienne
         public string TotalIncomeDisplay { get; set; } = string.Empty;
         public string TotalExpenseDisplay { get; set; } = string.Empty;
 
-        // Konstruktor przyjmujący listę elementów do grupy
         public TransactionGroup(DateTime date, IEnumerable<RecentTransactionItem> items) : base(items)
         {
             Date = date;
         }
     }
-
-
 }

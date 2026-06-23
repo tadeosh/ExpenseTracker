@@ -61,6 +61,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Account has been added!.
+        /// </summary>
+        internal static string AccountAddedSuccess {
+            get {
+                return ResourceManager.GetString("AccountAddedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Account.
         /// </summary>
         internal static string AccountLabel {
@@ -84,6 +93,24 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string AccountsPageTitle {
             get {
                 return ResourceManager.GetString("AccountsPageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Enter a valid amount (e.g., 100.00)..
+        /// </summary>
+        internal static string AccountValidationInvalidAmount {
+            get {
+                return ResourceManager.GetString("AccountValidationInvalidAmount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Enter the account name and select a currency..
+        /// </summary>
+        internal static string AccountValidationMissingData {
+            get {
+                return ResourceManager.GetString("AccountValidationMissingData", resourceCulture);
             }
         }
         
@@ -151,6 +178,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Cancel.
+        /// </summary>
+        internal static string CancelBtn {
+            get {
+                return ResourceManager.GetString("CancelBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Categories.
         /// </summary>
         internal static string CategoriesTitle {
@@ -174,6 +210,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string CategoryNameLabel {
             get {
                 return ResourceManager.GetString("CategoryNameLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu None.
+        /// </summary>
+        internal static string CategoryNone {
+            get {
+                return ResourceManager.GetString("CategoryNone", resourceCulture);
             }
         }
         
@@ -367,6 +412,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Danger zone.
+        /// </summary>
+        internal static string DangerZone {
+            get {
+                return ResourceManager.GetString("DangerZone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Data Management.
         /// </summary>
         internal static string DataSettingsLabel {
@@ -412,6 +466,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu DESTROY DATA.
+        /// </summary>
+        internal static string DestroyDataBtn {
+            get {
+                return ResourceManager.GetString("DestroyDataBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Expense.
         /// </summary>
         internal static string Enum_Expense {
@@ -435,6 +498,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string Enum_Transfer {
             get {
                 return ResourceManager.GetString("Enum_Transfer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Error.
+        /// </summary>
+        internal static string ErrorTitle {
+            get {
+                return ResourceManager.GetString("ErrorTitle", resourceCulture);
             }
         }
         
@@ -511,6 +583,33 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The application used an emergency 1:1 conversion rate for the following currencies because their rates are missing in the database:.
+        /// </summary>
+        internal static string MissingRatesMsgPart1 {
+            get {
+                return ResourceManager.GetString("MissingRatesMsgPart1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Add the missing rates in the settings to calculate the total net worth correctly..
+        /// </summary>
+        internal static string MissingRatesMsgPart2 {
+            get {
+                return ResourceManager.GetString("MissingRatesMsgPart2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Missing exchange rates.
+        /// </summary>
+        internal static string MissingRatesTitle {
+            get {
+                return ResourceManager.GetString("MissingRatesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Total Net Worth.
         /// </summary>
         internal static string NetWorthLabel {
@@ -525,6 +624,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string NoTransactionsLabel {
             get {
                 return ResourceManager.GetString("NoTransactionsLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu OK.
+        /// </summary>
+        internal static string OkBtn {
+            get {
+                return ResourceManager.GetString("OkBtn", resourceCulture);
             }
         }
         
@@ -601,6 +709,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Success.
+        /// </summary>
+        internal static string SuccessTitle {
+            get {
+                return ResourceManager.GetString("SuccessTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu To Currency.
         /// </summary>
         internal static string TargetCurrencyLabel {
@@ -660,6 +777,78 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string TypeLabel {
             get {
                 return ResourceManager.GetString("TypeLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Got it.
+        /// </summary>
+        internal static string UnderstoodBtn {
+            get {
+                return ResourceManager.GetString("UnderstoodBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Warning.
+        /// </summary>
+        internal static string WarningTitle {
+            get {
+                return ResourceManager.GetString("WarningTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Wipe application data.
+        /// </summary>
+        internal static string WipeDataBtn {
+            get {
+                return ResourceManager.GetString("WipeDataBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu All accounts, transactions, categories, and projects will be permanently destroyed. Continue?.
+        /// </summary>
+        internal static string WipeDataFinalWarningMessage {
+            get {
+                return ResourceManager.GetString("WipeDataFinalWarningMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu FINAL WARNING.
+        /// </summary>
+        internal static string WipeDataFinalWarningTitle {
+            get {
+                return ResourceManager.GetString("WipeDataFinalWarningTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The application has been restored to factory settings..
+        /// </summary>
+        internal static string WipeDataSuccessMessage {
+            get {
+                return ResourceManager.GetString("WipeDataSuccessMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Are you sure you want to delete all data? This operation is irreversible..
+        /// </summary>
+        internal static string WipeDataWarningMessage {
+            get {
+                return ResourceManager.GetString("WipeDataWarningMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Yes.
+        /// </summary>
+        internal static string YesBtn {
+            get {
+                return ResourceManager.GetString("YesBtn", resourceCulture);
             }
         }
     }

@@ -258,64 +258,127 @@
   <data name="TypeLabel" xml:space="preserve">
     <value>Transaktionstyp</value>
   </data>
-	<data name="Currency_PLN" xml:space="preserve">
+  <data name="Currency_PLN" xml:space="preserve">
     <value>Polnischer Zloty</value>
   </data>
-	<data name="Currency_EUR" xml:space="preserve">
+  <data name="Currency_EUR" xml:space="preserve">
     <value>Euro</value>
   </data>
-	<data name="Currency_USD" xml:space="preserve">
+  <data name="Currency_USD" xml:space="preserve">
     <value>US-Dollar</value>
   </data>
-	<data name="Currency_GBP" xml:space="preserve">
+  <data name="Currency_GBP" xml:space="preserve">
     <value>Britisches Pfund</value>
   </data>
-	<data name="Currency_CHF" xml:space="preserve">
+  <data name="Currency_CHF" xml:space="preserve">
     <value>Schweizer Franken</value>
   </data>
-	<data name="Currency_CZK" xml:space="preserve">
+  <data name="Currency_CZK" xml:space="preserve">
     <value>Tschechische Krone</value>
   </data>
-	<data name="Currency_NOK" xml:space="preserve">
+  <data name="Currency_NOK" xml:space="preserve">
     <value>Norwegische Krone</value>
   </data>
-	<data name="Currency_SEK" xml:space="preserve">
+  <data name="Currency_SEK" xml:space="preserve">
     <value>Schwedische Krone</value>
   </data>
-	<data name="Currency_DKK" xml:space="preserve">
+  <data name="Currency_DKK" xml:space="preserve">
     <value>Dänische Krone</value>
   </data>
-	<data name="Currency_UAH" xml:space="preserve">
+  <data name="Currency_UAH" xml:space="preserve">
     <value>Ukrainische Hrywnja</value>
   </data>
-	<data name="Currency_JPY" xml:space="preserve">
+  <data name="Currency_JPY" xml:space="preserve">
     <value>Japanischer Yen</value>
   </data>
-	<data name="Currency_AUD" xml:space="preserve">
+  <data name="Currency_AUD" xml:space="preserve">
     <value>Australischer Dollar</value>
   </data>
-	<data name="Currency_CAD" xml:space="preserve">
+  <data name="Currency_CAD" xml:space="preserve">
     <value>Kanadischer Dollar</value>
   </data>
-	<data name="Currency_HUF" xml:space="preserve">
+  <data name="Currency_HUF" xml:space="preserve">
     <value>Ungarischer Forint</value>
   </data>
-	<data name="Currency_RON" xml:space="preserve">
+  <data name="Currency_RON" xml:space="preserve">
     <value>Rumänischer Leu</value>
   </data>
-	<data name="Currency_BGN" xml:space="preserve">
+  <data name="Currency_BGN" xml:space="preserve">
     <value>Bulgarischer Lew</value>
   </data>
-	<data name="Currency_TRY" xml:space="preserve">
+  <data name="Currency_TRY" xml:space="preserve">
     <value>Türkische Lira</value>
   </data>
-	<data name="Currency_ILS" xml:space="preserve">
+  <data name="Currency_ILS" xml:space="preserve">
     <value>Israelischer Schekel</value>
   </data>
-	<data name="Currency_AED" xml:space="preserve">
+  <data name="Currency_AED" xml:space="preserve">
     <value>VAE-Dirham</value>
   </data>
-	<data name="Currency_CNY" xml:space="preserve">
+  <data name="Currency_CNY" xml:space="preserve">
     <value>Chinesischer Yuan</value>
-  </data>	
+  </data>
+  <data name="MissingRatesMsgPart1" xml:space="preserve">
+    <value>Die App verwendete für die folgenden Währungen einen Notfall-Umrechnungskurs von 1:1, da deren Kurse in der Datenbank fehlen:</value>
+  </data>
+  <data name="MissingRatesMsgPart2" xml:space="preserve">
+    <value>Fügen Sie die fehlenden Kurse in den Einstellungen hinzu, um das Gesamtvermögen korrekt zu berechnen.</value>
+  </data>
+  <data name="MissingRatesTitle" xml:space="preserve">
+    <value>Fehlende Wechselkurse</value>
+  </data>
+  <data name="UnderstoodBtn" xml:space="preserve">
+    <value>Verstanden</value>
+  </data>
+  <data name="CategoryNone" xml:space="preserve">
+    <value>Keine</value>
+  </data>
+  <data name="ErrorTitle" xml:space="preserve">
+    <value>Fehler</value>
+  </data>
+  <data name="SuccessTitle" xml:space="preserve">
+    <value>Erfolg</value>
+  </data>
+  <data name="OkBtn" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="AccountValidationMissingData" xml:space="preserve">
+    <value>Geben Sie den Kontonamen ein und wählen Sie eine Währung aus.</value>
+  </data>
+  <data name="AccountValidationInvalidAmount" xml:space="preserve">
+    <value>Geben Sie einen gültigen Betrag ein (z. B. 100.00).</value>
+  </data>
+  <data name="AccountAddedSuccess" xml:space="preserve">
+    <value>Konto wurde hinzugefügt!</value>
+  </data>
+  <data name="WarningTitle" xml:space="preserve">
+    <value>Warnung</value>
+  </data>
+  <data name="WipeDataWarningMessage" xml:space="preserve">
+    <value>Sind Sie sicher, dass Sie alle Daten löschen möchten? Dieser Vorgang ist unwiderruflich.</value>
+  </data>
+  <data name="YesBtn" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="CancelBtn" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="WipeDataFinalWarningTitle" xml:space="preserve">
+    <value>LETZTE WARNUNG</value>
+  </data>
+  <data name="DestroyDataBtn" xml:space="preserve">
+    <value>DATEN VERNICHTEN</value>
+  </data>
+  <data name="WipeDataSuccessMessage" xml:space="preserve">
+    <value>Die Anwendung wurde auf die Werkseinstellungen zurückgesetzt.</value>
+  </data>
+  <data name="WipeDataFinalWarningMessage" xml:space="preserve">
+    <value>Alle Konten, Transaktionen, Kategorien und Projekte werden dauerhaft gelöscht. Fortfahren?</value>
+  </data>
+  <data name="DangerZone" xml:space="preserve">
+    <value>Gefahrenzone</value>
+  </data>
+  <data name="WipeDataBtn" xml:space="preserve">
+    <value>App-Daten löschen</value>
+  </data>
 </root>

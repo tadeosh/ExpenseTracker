@@ -258,64 +258,127 @@
   <data name="TypeLabel" xml:space="preserve">
     <value>Transaction Type</value>
   </data>
-	<data name="Currency_PLN" xml:space="preserve">
+  <data name="Currency_PLN" xml:space="preserve">
     <value>Polish Zloty</value>
   </data>
-	<data name="Currency_EUR" xml:space="preserve">
+  <data name="Currency_EUR" xml:space="preserve">
     <value>Euro</value>
   </data>
-	<data name="Currency_USD" xml:space="preserve">
+  <data name="Currency_USD" xml:space="preserve">
     <value>US Dollar</value>
   </data>
-	<data name="Currency_GBP" xml:space="preserve">
+  <data name="Currency_GBP" xml:space="preserve">
     <value>British Pound</value>
   </data>
-	<data name="Currency_CHF" xml:space="preserve">
+  <data name="Currency_CHF" xml:space="preserve">
     <value>Swiss Franc</value>
   </data>
-	<data name="Currency_CZK" xml:space="preserve">
+  <data name="Currency_CZK" xml:space="preserve">
     <value>Czech Koruna</value>
   </data>
-	<data name="Currency_NOK" xml:space="preserve">
+  <data name="Currency_NOK" xml:space="preserve">
     <value>Norwegian Krone</value>
   </data>
-	<data name="Currency_SEK" xml:space="preserve">
+  <data name="Currency_SEK" xml:space="preserve">
     <value>Swedish Krona</value>
   </data>
-	<data name="Currency_DKK" xml:space="preserve">
+  <data name="Currency_DKK" xml:space="preserve">
     <value>Danish Krone</value>
   </data>
-	<data name="Currency_UAH" xml:space="preserve">
+  <data name="Currency_UAH" xml:space="preserve">
     <value>Ukrainian Hryvnia</value>
   </data>
-	<data name="Currency_JPY" xml:space="preserve">
+  <data name="Currency_JPY" xml:space="preserve">
     <value>Japanese Yen</value>
   </data>
-	<data name="Currency_AUD" xml:space="preserve">
+  <data name="Currency_AUD" xml:space="preserve">
     <value>Australian Dollar</value>
   </data>
-	<data name="Currency_CAD" xml:space="preserve">
+  <data name="Currency_CAD" xml:space="preserve">
     <value>Canadian Dollar</value>
   </data>
-	<data name="Currency_HUF" xml:space="preserve">
+  <data name="Currency_HUF" xml:space="preserve">
     <value>Hungarian Forint</value>
   </data>
-	<data name="Currency_RON" xml:space="preserve">
+  <data name="Currency_RON" xml:space="preserve">
     <value>Romanian Leu</value>
   </data>
-	<data name="Currency_BGN" xml:space="preserve">
+  <data name="Currency_BGN" xml:space="preserve">
     <value>Bulgarian Lev</value>
   </data>
-	<data name="Currency_TRY" xml:space="preserve">
+  <data name="Currency_TRY" xml:space="preserve">
     <value>Turkish Lira</value>
   </data>
-	<data name="Currency_ILS" xml:space="preserve">
+  <data name="Currency_ILS" xml:space="preserve">
     <value>Israeli New Shekel</value>
   </data>
-	<data name="Currency_AED" xml:space="preserve">
+  <data name="Currency_AED" xml:space="preserve">
     <value>UAE Dirham</value>
   </data>
-	<data name="Currency_CNY" xml:space="preserve">
+  <data name="Currency_CNY" xml:space="preserve">
     <value>Chinese Yuan</value>
-  </data>  	
+  </data>
+  <data name="MissingRatesMsgPart1" xml:space="preserve">
+    <value>The application used an emergency 1:1 conversion rate for the following currencies because their rates are missing in the database:</value>
+  </data>
+  <data name="MissingRatesMsgPart2" xml:space="preserve">
+    <value>Add the missing rates in the settings to calculate the total net worth correctly.</value>
+  </data>
+  <data name="MissingRatesTitle" xml:space="preserve">
+    <value>Missing exchange rates</value>
+  </data>
+  <data name="UnderstoodBtn" xml:space="preserve">
+    <value>Got it</value>
+  </data>
+  <data name="CategoryNone" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="ErrorTitle" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="SuccessTitle" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="OkBtn" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="AccountValidationMissingData" xml:space="preserve">
+    <value>Enter the account name and select a currency.</value>
+  </data>
+  <data name="AccountValidationInvalidAmount" xml:space="preserve">
+    <value>Enter a valid amount (e.g., 100.00).</value>
+  </data>
+  <data name="AccountAddedSuccess" xml:space="preserve">
+    <value>Account has been added!</value>
+  </data>
+  <data name="WarningTitle" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="WipeDataWarningMessage" xml:space="preserve">
+    <value>Are you sure you want to delete all data? This operation is irreversible.</value>
+  </data>
+  <data name="YesBtn" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="CancelBtn" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="WipeDataFinalWarningTitle" xml:space="preserve">
+    <value>FINAL WARNING</value>
+  </data>
+  <data name="DestroyDataBtn" xml:space="preserve">
+    <value>DESTROY DATA</value>
+  </data>
+  <data name="WipeDataSuccessMessage" xml:space="preserve">
+    <value>The application has been restored to factory settings.</value>
+  </data>
+  <data name="WipeDataFinalWarningMessage" xml:space="preserve">
+    <value>All accounts, transactions, categories, and projects will be permanently destroyed. Continue?</value>
+  </data>
+  <data name="DangerZone" xml:space="preserve">
+    <value>Danger zone</value>
+  </data>
+  <data name="WipeDataBtn" xml:space="preserve">
+    <value>Wipe application data</value>
+  </data>
 </root>

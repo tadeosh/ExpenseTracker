@@ -166,26 +166,27 @@ public partial class SettingsPage : ContentPage
 
     private async void OnWipeDataClicked(object sender, EventArgs e)
     {
-        bool firstWarning = await DisplayAlert(
-            "Ostrzeżenie",
-            "Czy na pewno chcesz usunąć wszystkie dane? Ta operacja jest nieodwracalna.",
-            "Tak, usuń",
-            "Anuluj");
+        bool firstWarning = await DisplayAlertAsync(
+            AppResources.WarningTitle,
+            AppResources.WipeDataWarningMessage,
+            AppResources.YesBtn,
+            AppResources.CancelBtn);
 
         if (!firstWarning) return;
 
-        bool finalWarning = await DisplayAlert(
-            "OSTATNIE OSTRZEŻENIE",
-            "Wszystkie konta, transakcje, kategorie i projekty zostaną trwale zniszczone. Kontynuować?",
-            "ZNISZCZ DANE",
-            "Anuluj");
+        bool finalWarning = await DisplayAlertAsync(
+            AppResources.WipeDataFinalWarningTitle,
+            AppResources.WipeDataFinalWarningMessage,
+            AppResources.DestroyDataBtn,
+            AppResources.CancelBtn);
 
         if (!finalWarning) return;
 
         // Teraz _databaseService na 100% nie jest nullem, operacja wykona się bezpiecznie!
         await _databaseService.WipeAllDataAsync();
 
-        await DisplayAlert("Sukces", "Aplikacja została przywrócona do stanu fabrycznego.", "OK");
+        // Wykorzystujemy ustandaryzowane klucze dla sukcesu i przycisku OK
+        await DisplayAlertAsync(AppResources.SuccessTitle, AppResources.WipeDataSuccessMessage, AppResources.OkBtn);
 
         // Zamiast resetować rdzeń aplikacji, po prostu płynnie wracamy na pusty ekran główny
         await Shell.Current.GoToAsync("//HomePage");
