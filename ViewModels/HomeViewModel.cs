@@ -28,6 +28,12 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial string TotalNetWorthDisplay { get; set; } = string.Empty;
 
+        [ObservableProperty]
+        public partial bool HasMissingRates { get; set; } = false;
+
+        // Tutaj będziemy trzymać treść błędu do wyświetlenia
+        private string _missingRatesMessage = string.Empty;
+
         public HomeViewModel(DatabaseService databaseService)
         {
             _databaseService = databaseService;
@@ -44,6 +50,9 @@ namespace ExpenseTracker.ViewModels
             string defaultCurrency = Preferences.Default.Get("DefaultCurrency", "PLN");
             decimal totalNetWorth = 0;
 
+            // NOWOŚĆ: Lista do łapania brakujących kursów
+            List<string> missingRatesList = new();
+
             var tempAccounts = new ObservableCollection<AccountBalanceItem>();
             foreach (var acc in accounts)
             {
@@ -55,20 +64,47 @@ namespace ExpenseTracker.ViewModels
                     Currency = acc.Currency
                 });
 
-                // Obliczanie całkowitego majątku
                 if (acc.Currency == defaultCurrency)
                 {
                     totalNetWorth += currentBalance;
                 }
                 else
                 {
-                    // Szukamy zapisanego kursu wymiany (np. Rate_EUR_PLN). Jeśli nie ma, liczymy awaryjnie 1:1
-                    string rateKey = $"Rate_{acc.Currency}_{defaultCurrency}";
-                    double exchangeRate = Preferences.Default.Get(rateKey, 1.0);
-                    totalNetWorth += currentBalance * (decimal)exchangeRate;
+                    var rateFromDb = await _databaseService.GetApplicableExchangeRateAsync(acc.Currency, defaultCurrency, DateTime.Today);
+
+                    decimal exchangeRate = 1m; // Awaryjnie 1:1
+                    if (rateFromDb.HasValue && rateFromDb.Value > 0)
+                    {
+                        exchangeRate = rateFromDb.Value;
+                    }
+                    else
+                    {
+                        // NOWOŚĆ: Nie znaleźliśmy kursu! Zapisujemy to na czarną listę.
+                        missingRatesList.Add($"{acc.Currency} ➔ {defaultCurrency}");
+                    }
+
+                    totalNetWorth += currentBalance * (1m / exchangeRate); // Nasza perfekcyjna matematyka
                 }
             }
             AccountsBalances = tempAccounts;
+
+            // NOWOŚĆ: Podsumowanie brakujących kursów
+            if (missingRatesList.Any())
+            {
+                HasMissingRates = true;
+
+                // Usuwamy duplikaty (np. gdyby użytkownik miał 2 konta w USD, a brakuje kursu USD->PLN)
+                var uniqueRates = missingRatesList.Distinct();
+
+                _missingRatesMessage = "Aplikacja użyła awaryjnego przelicznika 1:1 dla następujących walut, ponieważ brakuje ich kursów w bazie:\n\n"
+                                       + string.Join("\n", uniqueRates)
+                                       + "\n\nDodaj brakujące kursy w ustawieniach, aby majątek liczył się w 100% poprawnie.";
+            }
+            else
+            {
+                HasMissingRates = false;
+                _missingRatesMessage = string.Empty;
+            }
 
             // Formatowanie wyświetlania Całkowitego Majątku
             TotalNetWorthDisplay = $"{totalNetWorth:N2} {defaultCurrency}";
@@ -150,6 +186,12 @@ namespace ExpenseTracker.ViewModels
         private async Task NavigateToAddTransactionAsync()
         {
             await Shell.Current.GoToAsync("//AddTransactionPage");
+        }
+
+        [RelayCommand]
+        private async Task ShowMissingRatesInfoAsync()
+        {
+            await Shell.Current.DisplayAlert("Brakujące kursy walut", _missingRatesMessage, "Zrozumiałem");
         }
     }
 

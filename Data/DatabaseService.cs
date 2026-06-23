@@ -239,5 +239,27 @@ namespace ExpenseTracker.Data
             return null; // Brak kursu w bazie
         }
 
+        // ===================================================
+        // --- RESETOWANIE BAZY DANYCH (FACTORY RESET) ---
+        // ===================================================
+
+        public async Task WipeAllDataAsync()
+        {
+            await InitAsync();
+
+            // Kaskadowo usuwamy wszystko. Kolejność nie ma aż takiego znaczenia dla SQLite w trybie prostej bazy,
+            // ale dobrą praktyką jest usuwanie najpierw dzieci (transakcji), potem rodziców (konta/kategorie).
+            await _database.DeleteAllAsync<Transaction>();
+            await _database.DeleteAllAsync<ExchangeRate>();
+            await _database.DeleteAllAsync<Account>();
+            await _database.DeleteAllAsync<Project>();
+            await _database.DeleteAllAsync<Category>();
+
+            // Czyszczenie ustawień zapisanych w preferencjach (opcjonalnie, ale wskazane przy "Factory Reset")
+            Preferences.Default.Remove("DefaultCurrency");
+            Preferences.Default.Remove("FavoriteCurrencies");
+            // Nie usuwamy wybranego języka i motywu, żeby aplikacja nie zgłupiała
+        }
+
     }
 }

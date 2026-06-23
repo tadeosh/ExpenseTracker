@@ -1,11 +1,13 @@
 using ExpenseTracker.Resources.Strings;
-//using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using ExpenseTracker.Data;
 using System.Globalization;
 
 namespace ExpenseTracker.Views;
 
 public partial class SettingsPage : ContentPage
 {
+    private readonly DatabaseService _databaseService;
+
     private readonly List<CultureInfo> _supportedLanguages = new()
     {
         new CultureInfo("en"),
@@ -13,21 +15,25 @@ public partial class SettingsPage : ContentPage
         new CultureInfo("de")
     };
 
-    // NOWOŚĆ: Flaga informująca, czy strona jest w trakcie początkowego ładowania
     private bool _isInitializing = true;
 
-    public SettingsPage()
+    // JEDYNY, PRAWIDŁOWY KONSTRUKTOR (Obsługuje bazę i konfiguruje stronę)
+    public SettingsPage(DatabaseService databaseService)
     {
         InitializeComponent();
+
+        // Zapisujemy wstrzyknięty serwis bazy danych do lokalnego pola
+        _databaseService = databaseService;
+
+        // Odpalamy Twoje oryginalne metody ładujące dane do pickerów
         LoadLanguages();
         LoadThemes();
         LoadCurrency();
 
-        // Zakończyliśmy początkowe ładowanie, od teraz Picker może reagować na kliknięcia użytkownika
+        // Zakończyliśmy początkowe ładowanie, od teraz Pickery mogą bezpiecznie reagować na zmiany
         _isInitializing = false;
     }
 
-    // NOWOŚĆ: Metoda ładująca wybraną walutę z pamięci
     private void LoadCurrency()
     {
         CurrencyPicker.Items.Clear();
@@ -37,7 +43,6 @@ public partial class SettingsPage : ContentPage
         }
 
         string savedCurrencyCode = Preferences.Default.Get("DefaultCurrency", "PLN");
-        // Musimy sformatować kod z pamięci na piękny tekst, by dopasować go do pickera
         string displayToFind = Helpers.CurrencyHelper.FormatDisplay(savedCurrencyCode);
 
         int currencyIndex = CurrencyPicker.Items.IndexOf(displayToFind);
@@ -52,7 +57,6 @@ public partial class SettingsPage : ContentPage
         {
             string? selectedDisplay = CurrencyPicker.SelectedItem?.ToString();
 
-            // NOWOŚĆ: Jeśli wybrano linię, błyskawicznie cofamy wybór do aktualnej domyślnej waluty
             if (selectedDisplay != null && selectedDisplay.Contains("──"))
             {
                 string savedCurrencyCode = Preferences.Default.Get("DefaultCurrency", "PLN");
@@ -60,10 +64,9 @@ public partial class SettingsPage : ContentPage
                 CurrencyPicker.SelectedIndex = CurrencyPicker.Items.IndexOf(displayToFind);
                 return;
             }
-            
+
             string? cleanCode = Helpers.CurrencyHelper.ExtractCode(selectedDisplay);
 
-            // Ignorujemy separator i zmieniamy w pamięci tylko poprawny kod
             if (!string.IsNullOrEmpty(cleanCode))
             {
                 Preferences.Default.Set("DefaultCurrency", cleanCode);
@@ -89,7 +92,6 @@ public partial class SettingsPage : ContentPage
 
     private void OnLanguageChanged(object? sender, EventArgs e)
     {
-        // NOWOŚĆ: Jeśli strona dopiero się ładuje, zignoruj to zdarzenie i wyjdź z metody
         if (_isInitializing) return;
 
         int selectedIndex = LanguagePicker.SelectedIndex;
@@ -97,10 +99,7 @@ public partial class SettingsPage : ContentPage
         if (selectedIndex != -1)
         {
             var selectedCulture = _supportedLanguages[selectedIndex];
-
-            // NOWOŚĆ: Zapisujemy język w pamięci telefonu przed przeładowaniem
             Preferences.Default.Set("AppLanguage", selectedCulture.TwoLetterISOLanguageName);
-
             SetLanguage(selectedCulture);
         }
     }
@@ -114,8 +113,6 @@ public partial class SettingsPage : ContentPage
         Thread.CurrentThread.CurrentUICulture = culture;
         AppResources.Culture = culture;
 
-        // NOWOŚĆ: Zabezpieczenie przed błędem NullReferenceException
-        // Sprawdzamy, czy okno faktycznie istnieje, zanim spróbujemy w nim coś zmienić
         if (this.Window != null)
         {
             this.Window.Page = new AppShell();
@@ -127,13 +124,12 @@ public partial class SettingsPage : ContentPage
     }
 
     private void LoadThemes()
-    {   
+    {
         ThemePicker.Items.Clear();
         ThemePicker.Items.Add(AppResources.ThemeLight);
         ThemePicker.Items.Add(AppResources.ThemeDark);
         ThemePicker.Items.Add(AppResources.ThemeHighContrast);
 
-        // Domyślnie ustawiamy Jasny (później nauczymy aplikację pamiętać ten wybór w bazie)
         ThemePicker.SelectedIndex = Preferences.Default.Get("AppTheme", 0);
     }
 
@@ -144,17 +140,12 @@ public partial class SettingsPage : ContentPage
         int selectedIndex = ThemePicker.SelectedIndex;
         if (selectedIndex == -1) return;
 
-        // NOWOŚĆ: Zapisujemy wybór w pamięci telefonu
         Preferences.Default.Set("AppTheme", selectedIndex);
-
-        // Wywołujemy naszą globalną metodę z App.xaml.cs
         App.ApplyTheme(selectedIndex);
     }
 
-    
     private async void OnManageCategoriesClicked(object? sender, EventArgs e)
     {
-        // Komenda Shell.Current.GoToAsync pozwala nam przeskoczyć do zarejestrowanej ścieżki
         await Shell.Current.GoToAsync("CategoriesPage");
     }
 
@@ -173,6 +164,30 @@ public partial class SettingsPage : ContentPage
         await Shell.Current.GoToAsync("FavoriteCurrenciesPage");
     }
 
+    private async void OnWipeDataClicked(object sender, EventArgs e)
+    {
+        bool firstWarning = await DisplayAlert(
+            "Ostrzeżenie",
+            "Czy na pewno chcesz usunąć wszystkie dane? Ta operacja jest nieodwracalna.",
+            "Tak, usuń",
+            "Anuluj");
+
+        if (!firstWarning) return;
+
+        bool finalWarning = await DisplayAlert(
+            "OSTATNIE OSTRZEŻENIE",
+            "Wszystkie konta, transakcje, kategorie i projekty zostaną trwale zniszczone. Kontynuować?",
+            "ZNISZCZ DANE",
+            "Anuluj");
+
+        if (!finalWarning) return;
+
+        // Teraz _databaseService na 100% nie jest nullem, operacja wykona się bezpiecznie!
+        await _databaseService.WipeAllDataAsync();
+
+        await DisplayAlert("Sukces", "Aplikacja została przywrócona do stanu fabrycznego.", "OK");
+
+        // Zamiast resetować rdzeń aplikacji, po prostu płynnie wracamy na pusty ekran główny
+        await Shell.Current.GoToAsync("//HomePage");
+    }
 }
-
-

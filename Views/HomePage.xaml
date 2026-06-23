@@ -34,7 +34,23 @@
             <Border Grid.Row="2" Margin="0,20,0,0" Padding="20,15" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{DynamicResource PrimaryColor}">
                 <Grid ColumnDefinitions="*, Auto">
                     <Label Grid.Column="0" Text="{x:Static strings:AppResources.NetWorthLabel}" TextColor="{DynamicResource HeaderTextColor}" VerticalOptions="Center" FontSize="16" FontAttributes="Bold"/>
-                    <Label Grid.Column="1" Text="{Binding TotalNetWorthDisplay}" TextColor="{DynamicResource HeaderTextColor}" FontAttributes="Bold" FontSize="20" VerticalOptions="Center"/>
+                    <HorizontalStackLayout HorizontalOptions="End" Spacing="10">
+                        <Label Grid.Column="1" Text="{Binding TotalNetWorthDisplay}" FontAttributes="Bold" FontSize="20" VerticalOptions="Center">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding HasMissingRates}" Value="True">
+                                    <Setter Property="TextColor" Value="#D32F2F" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Label" Binding="{Binding HasMissingRates}" Value="False">
+                                    <Setter Property="TextColor" Value="{DynamicResource HeaderTextColor}" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                        <Label Text="ⓘ" FontSize="28" TextColor="#D32F2F" VerticalOptions="Center" IsVisible="{Binding HasMissingRates}">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ShowMissingRatesInfoCommand}" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </HorizontalStackLayout>
                 </Grid>
             </Border>
 

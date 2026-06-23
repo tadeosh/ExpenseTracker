@@ -34,14 +34,23 @@ namespace ExpenseTracker.ViewModels
         [RelayCommand]
         private async Task AddAccountAsync()
         {
-            // 1. DEKODOWANIE WALUTY (Wyciągamy czyste "PLN")
-            string? cleanCurrencyCode = CurrencyHelper.ExtractCode(AccountCurrency);
+            // 1. Wyciąganie kodu
+            string? cleanCurrencyCode = Helpers.CurrencyHelper.ExtractCode(AccountCurrency);
 
+            // 2. Walidacja tekstowa Z KOMUNIKATEM
             if (string.IsNullOrWhiteSpace(AccountName) || string.IsNullOrWhiteSpace(cleanCurrencyCode))
+            {
+                await Shell.Current.DisplayAlert("Błąd", "Wprowadź nazwę konta i wybierz walutę.", "OK");
                 return;
+            }
 
-            if (!decimal.TryParse(AccountBalance, out decimal initialBalance))
+            // 3. Kuloodporne parsowanie kwoty (zamienia przecinki na kropki i radzi sobie z każdą kulturą)
+            string normalizedBalance = AccountBalance.Replace(",", ".");
+            if (!decimal.TryParse(normalizedBalance, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal initialBalance))
+            {
+                await Shell.Current.DisplayAlert("Błąd", "Wprowadź poprawną kwotę (np. 100.00).", "OK");
                 return;
+            }
 
             var newAccount = new Account
             {
@@ -50,12 +59,26 @@ namespace ExpenseTracker.ViewModels
                 InitialBalance = initialBalance
             };
 
+            // 4. Zapis do bazy i na listę
             await _databaseService.SaveAccountAsync(newAccount);
-            Accounts.Add(newAccount);
 
-            AccountName = string.Empty;
-            AccountCurrency = string.Empty;
-            AccountBalance = string.Empty;
+            // 5. BEZPIECZNA aktualizacja interfejsu (Wymuszenie Głównego Wątku)
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                // Dodajemy na listę
+                Accounts.Add(newAccount);
+
+                // 5. Czyszczenie formularza i informacja o sukcesie
+                AccountName = string.Empty;
+                AccountBalance = string.Empty;
+
+                // NAPRAWA: Bezpośrednio ustawiamy domyślną walutę, zapobiegając nieskończonej pętli z Pickerem
+                string defaultCode = Preferences.Default.Get("DefaultCurrency", "PLN");
+                AccountCurrency = CurrencyHelper.FormatDisplay(defaultCode);
+
+                // Odkomentowałem Ci powiadomienie o sukcesie!
+                //await Shell.Current.DisplayAlert("Sukces", "Konto zostało dodane!", "OK");
+            });
         }
 
         public async Task LoadAccountsAsync()
