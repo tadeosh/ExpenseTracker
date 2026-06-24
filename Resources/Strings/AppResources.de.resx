@@ -381,4 +381,22 @@
   <data name="WipeDataBtn" xml:space="preserve">
     <value>App-Daten löschen</value>
   </data>
+  <data name="CategoryParentLabel" xml:space="preserve">
+    <value>Übergeordnete Kategorie (optional)</value>
+  </data>
+  <data name="CategoryColorLabel" xml:space="preserve">
+    <value>Farbe</value>
+  </data>
+  <data name="SaveChangesBtn" xml:space="preserve">
+    <value>Änderungen speichern</value>
+  </data>
+  <data name="SaveBtn" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="EditBtn" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="DeleteBtn" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
 </root>

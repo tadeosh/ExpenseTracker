@@ -196,6 +196,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Color.
+        /// </summary>
+        internal static string CategoryColorLabel {
+            get {
+                return ResourceManager.GetString("CategoryColorLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Category.
         /// </summary>
         internal static string CategoryLabel {
@@ -219,6 +228,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string CategoryNone {
             get {
                 return ResourceManager.GetString("CategoryNone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Parent category (optional).
+        /// </summary>
+        internal static string CategoryParentLabel {
+            get {
+                return ResourceManager.GetString("CategoryParentLabel", resourceCulture);
             }
         }
         
@@ -448,6 +466,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Delete.
+        /// </summary>
+        internal static string DeleteBtn {
+            get {
+                return ResourceManager.GetString("DeleteBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Description.
         /// </summary>
         internal static string DescriptionLabel {
@@ -471,6 +498,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string DestroyDataBtn {
             get {
                 return ResourceManager.GetString("DestroyDataBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Edit.
+        /// </summary>
+        internal static string EditBtn {
+            get {
+                return ResourceManager.GetString("EditBtn", resourceCulture);
             }
         }
         
@@ -678,6 +714,24 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string RecentTransactionsLabel {
             get {
                 return ResourceManager.GetString("RecentTransactionsLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Save.
+        /// </summary>
+        internal static string SaveBtn {
+            get {
+                return ResourceManager.GetString("SaveBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Save changes.
+        /// </summary>
+        internal static string SaveChangesBtn {
+            get {
+                return ResourceManager.GetString("SaveChangesBtn", resourceCulture);
             }
         }
         

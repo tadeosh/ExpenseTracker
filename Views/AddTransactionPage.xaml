@@ -113,16 +113,85 @@
                        ClearButtonVisibility="WhileEditing" />
             </VerticalStackLayout>
 
-            <VerticalStackLayout Spacing="2">
-                <Label Text="{x:Static strings:AppResources.CategoryLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
-                <Grid>
-                    <Picker ItemsSource="{Binding Categories}"
-                            SelectedItem="{Binding SelectedCategory}"
-                            ItemDisplayBinding="{Binding Name}"
-                            TextColor="{DynamicResource AppTextColor}"
-                            BackgroundColor="Transparent" />
-                    <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
-                </Grid>
+            <VerticalStackLayout Spacing="2" ZIndex="10">
+                <!--<Label Text="{x:Static strings:AppResources.CategoryLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />-->
+
+                <Border StrokeThickness="0" BackgroundColor="Transparent">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ToggleCategoryDropdownCommand}" />
+                    </Border.GestureRecognizers>
+
+                    <Grid Padding="5,10" ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
+                        <Ellipse Grid.Column="0" WidthRequest="16" HeightRequest="16" VerticalOptions="Center">
+                            <Ellipse.Fill>
+                                <SolidColorBrush Color="{Binding SelectedCategoryColorHex}" />
+                            </Ellipse.Fill>
+                        </Ellipse>
+
+                        <Label Grid.Column="1" Text="{Binding SelectedCategoryName}" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" />
+                        <Label Grid.Column="2" Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,10,0" />
+
+                        <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.3" VerticalOptions="End" Margin="-5,5,-5,-10"/>
+                    </Grid>
+                </Border>
+
+                <Border IsVisible="{Binding IsCategoryDropdownOpen}" 
+                        BackgroundColor="{DynamicResource SectionBackgroundColor}" 
+                        StrokeShape="RoundRectangle 8"
+                        Stroke="{DynamicResource PrimaryColor}" 
+                        StrokeThickness="1" 
+                        Margin="0,5,0,0" 
+                        HeightRequest="250">
+                    <Grid ColumnDefinitions="*, *">
+
+                        <CollectionView Grid.Column="0" ItemsSource="{Binding MainCategories}" SelectedItem="{Binding SelectedMainCategory, Mode=TwoWay}" SelectionMode="Single">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="10" ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12" VerticalOptions="Center">
+                                            <Ellipse.Fill>
+                                                <SolidColorBrush Color="{Binding CategoryColor}" />
+                                            </Ellipse.Fill>
+                                        </Ellipse>
+
+                                        <Label Grid.Column="1" Text="{Binding DisplayName}" FontSize="14" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+
+                                        <Path Grid.Column="2" Data="M 9 18 L 15 12 L 9 6" Fill="Transparent" Stroke="{DynamicResource AppTextColor}" StrokeThickness="1.5" StrokeLineCap="Round" StrokeLineJoin="Round" VerticalOptions="Center" Opacity="0.3" IsVisible="{Binding HasSubcategories}" WidthRequest="12" HeightRequest="12"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <BoxView Grid.Column="0" HorizontalOptions="End" WidthRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.1" />
+
+                        <CollectionView Grid.Column="1" ItemsSource="{Binding SubCategories}" SelectedItem="{Binding SelectedSubCategory, Mode=TwoWay}" SelectionMode="Single">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="10" ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12" VerticalOptions="Center">
+                                            <Ellipse.Fill>
+                                                <SolidColorBrush Color="{Binding CategoryColor}" />
+                                            </Ellipse.Fill>
+                                        </Ellipse>
+                                        <Label Grid.Column="1" Text="{Binding Category.Name}" FontSize="14" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                    </Grid>
+                </Border>
             </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="2">

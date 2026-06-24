@@ -2,6 +2,7 @@
 using ExpenseTracker.ViewModels;
 using ExpenseTracker.Views;
 using Microsoft.Extensions.Logging;
+using CommunityToolkit.Maui;
 
 namespace ExpenseTracker
 {
@@ -12,6 +13,7 @@ namespace ExpenseTracker
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

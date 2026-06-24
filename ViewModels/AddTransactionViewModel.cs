@@ -13,8 +13,27 @@ namespace ExpenseTracker.ViewModels
 
         // Listy wyboru dla Pickerów na ekranie
         public ObservableCollection<Account> Accounts { get; } = new();
-        public ObservableCollection<Category> Categories { get; } = new();
         public ObservableCollection<Project> Projects { get; } = new();
+
+        // NOWOŚĆ: Kolekcje i stany dla naszego "Fałszywego Pickera" kategorii
+        public ObservableCollection<CategoryDisplayItem> MainCategories { get; } = new();
+        public ObservableCollection<CategoryDisplayItem> SubCategories { get; } = new();
+        private List<Category> _allCategories = new();
+
+        [ObservableProperty]
+        public partial bool IsCategoryDropdownOpen { get; set; } = false;
+
+        [ObservableProperty]
+        public partial string SelectedCategoryName { get; set; } = AppResources.CategoryLabel;
+
+        [ObservableProperty]
+        public partial string SelectedCategoryColorHex { get; set; } = "Transparent";
+
+        [ObservableProperty]
+        public partial CategoryDisplayItem? SelectedMainCategory { get; set; }
+
+        [ObservableProperty]
+        public partial CategoryDisplayItem? SelectedSubCategory { get; set; }
 
         // Ukryta zmienna do zapamiętania kursu z bazy (żeby wiedzieć, czy użytkownik go zmienił)
         private decimal? _lastFetchedRate = null;
@@ -63,7 +82,7 @@ namespace ExpenseTracker.ViewModels
         }
 
         // ==========================================
-        // NASŁUCHIWACZE (CZYSTE, BEZ DUPLIKATÓWI)
+        // NASŁUCHIWACZE 
         // ==========================================
 
         partial void OnSelectedTypeIndexChanged(int value)
@@ -120,13 +139,82 @@ namespace ExpenseTracker.ViewModels
             Accounts.Clear();
             foreach (var acc in accountsFromDb) Accounts.Add(acc);
 
-            var categoriesFromDb = await _databaseService.GetCategoriesAsync();
-            Categories.Clear();
-            foreach (var cat in categoriesFromDb) Categories.Add(cat);
-
             var projectsFromDb = await _databaseService.GetProjectsAsync();
             Projects.Clear();
             foreach (var proj in projectsFromDb) Projects.Add(proj);
+
+            // NOWOŚĆ: Budowanie hierarchicznej listy kategorii z liczeniem podkategorii
+            _allCategories = await _databaseService.GetCategoriesAsync();
+            var mainCats = _allCategories.Where(c => c.ParentId == null).OrderBy(c => c.DisplayOrder).ToList();
+
+            MainCategories.Clear();
+            foreach (var cat in mainCats)
+            {
+                var subCount = _allCategories.Count(c => c.ParentId == cat.Id);
+                MainCategories.Add(new CategoryDisplayItem
+                {
+                    Category = cat,
+                    SubcategoriesCount = subCount
+                });
+            }
+        }
+
+        // ==========================================
+        // OBSŁUGA WYBORU KATEGORII (Fałszywy Picker)
+        // ==========================================
+
+        [RelayCommand]
+        private void ToggleCategoryDropdown()
+        {
+            IsCategoryDropdownOpen = !IsCategoryDropdownOpen;
+            if (!IsCategoryDropdownOpen)
+            {
+                // Czyszczenie wyboru pośredniego po zamknięciu
+                SelectedMainCategory = null;
+                SelectedSubCategory = null;
+                SubCategories.Clear();
+            }
+        }
+
+        // Kiedy użytkownik kliknie Kategorię Główną po lewej stronie
+        partial void OnSelectedMainCategoryChanged(CategoryDisplayItem? value)
+        {
+            if (value == null) return;
+
+            SubCategories.Clear();
+            var subs = _allCategories.Where(c => c.ParentId == value.Category.Id).OrderBy(c => c.DisplayOrder).ToList();
+
+            if (subs.Any())
+            {
+                // Jeśli ma dzieci, ładujemy je po prawej stronie!
+                foreach (var sub in subs) SubCategories.Add(new CategoryDisplayItem { Category = sub });
+            }
+            else
+            {
+                // Jeśli nie ma dzieci, po prostu wybieramy ją od razu
+                ConfirmCategorySelection(value.Category);
+            }
+        }
+
+        // Kiedy użytkownik kliknie Podkategorię po prawej stronie
+        partial void OnSelectedSubCategoryChanged(CategoryDisplayItem? value)
+        {
+            if (value == null) return;
+            ConfirmCategorySelection(value.Category);
+        }
+
+        private void ConfirmCategorySelection(Category category)
+        {
+            SelectedCategory = category;
+            SelectedCategoryName = category.Name;
+            SelectedCategoryColorHex = category.ColorHex;
+
+            IsCategoryDropdownOpen = false;
+
+            // Sprzątamy stan widoku
+            SelectedMainCategory = null;
+            SelectedSubCategory = null;
+            SubCategories.Clear();
         }
 
         // ==========================================
@@ -137,7 +225,8 @@ namespace ExpenseTracker.ViewModels
         private async Task SaveTransactionAsync()
         {
             if (!decimal.TryParse(AmountText, out decimal amount) || amount <= 0) return;
-            if (string.IsNullOrWhiteSpace(DescriptionText) || SelectedAccount == null || SelectedCategory == null) return;
+            //if (string.IsNullOrWhiteSpace(DescriptionText) || SelectedAccount == null || SelectedCategory == null) return;
+            if (SelectedAccount == null) return;
 
             TransactionType type = SelectedTypeIndex switch
             {
@@ -178,7 +267,7 @@ namespace ExpenseTracker.ViewModels
                 Description = DescriptionText,
                 Type = type,
                 AccountId = SelectedAccount.Id,
-                CategoryId = SelectedCategory.Id,
+                CategoryId = SelectedCategory?.Id,
                 ProjectId = SelectedProject?.Id,
                 DestinationAccountId = type == TransactionType.Transfer ? DestinationAccount?.Id : null,
                 ExchangeRate = exchangeRate
@@ -192,6 +281,8 @@ namespace ExpenseTracker.ViewModels
             SelectedAccount = null;
             DestinationAccount = null;
             SelectedCategory = null;
+            SelectedCategoryName = AppResources.CategoryLabel;
+            SelectedCategoryColorHex = "Transparent";
             SelectedProject = null;
             ExchangeRateText = string.Empty;
 
