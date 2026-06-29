@@ -8,7 +8,7 @@ namespace ExpenseTracker.Data
         // Obiekt reprezentujący połączenie z bazą
         private SQLiteAsyncConnection _database = null!;
 
-        // Inicjalizacja bazy danych (tworzenie pliku i tabel)
+        // Inicjalizacja bazy danych (tworzenie pliku i tabel z szyfrowaniem SQLCipher)
         private async Task InitAsync()
         {
             // Jeśli połączenie już istnieje, nie robimy nic
@@ -18,8 +18,22 @@ namespace ExpenseTracker.Data
             // Ustalenie bezpiecznej ścieżki do pliku na danym systemie (Android/Windows)
             var dbPath = Path.Combine(FileSystem.AppDataDirectory, "ExpenseTracker.db3");
 
-            // Otwarcie połączenia z bazą
-            _database = new SQLiteAsyncConnection(dbPath);
+            //if (File.Exists(dbPath)) File.Delete(dbPath);
+
+            // NOWOŚĆ: Wyciągamy hasło ze sprzętowego, szyfrowanego schowka telefonu
+            var dbPassword = await SecureStorage.Default.GetAsync("DbPassword");
+
+            if (string.IsNullOrEmpty(dbPassword))
+            {
+                // Ekstremalne zabezpieczenie: jeśli aplikacja jakoś tu dotrze bez hasła, rzucamy wyjątek
+                throw new Exception("Brak głównego hasła do bazy danych!");
+            }
+
+            // NOWOŚĆ: Konfiguracja SQLCipher z 256-bitowym kluczem AES
+            var options = new SQLiteConnectionString(dbPath, true, key: dbPassword);
+
+            // Otwarcie połączenia z zaszyfrowaną bazą
+            _database = new SQLiteAsyncConnection(options);
 
             // Magia SQLite: Automatyczne tworzenie tabel na podstawie naszych klas
             await _database.CreateTableAsync<Account>();

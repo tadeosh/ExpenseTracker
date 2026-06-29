@@ -399,4 +399,25 @@
   <data name="DeleteBtn" xml:space="preserve">
     <value>Delete</value>
   </data>
+  <data name="SetupTitle" xml:space="preserve">
+    <value>🛡️ Security</value>
+  </data>
+  <data name="SetupWelcome" xml:space="preserve">
+    <value>Welcome to ExpenseTracker!</value>
+  </data>
+  <data name="SetupDescription" xml:space="preserve">
+    <value>Secure your database with a master password. This password will be the encryption key for all your financial data.</value>
+  </data>
+  <data name="SetupPasswordPlaceholder" xml:space="preserve">
+    <value>Enter new password...</value>
+  </data>
+  <data name="SetupConfirmPasswordPlaceholder" xml:space="preserve">
+    <value>Confirm password...</value>
+  </data>
+  <data name="ErrorPasswordEmpty" xml:space="preserve">
+    <value>Password cannot be empty!</value>
+  </data>
+  <data name="ErrorPasswordMismatch" xml:space="preserve">
+    <value>Passwords do not match!</value>
+  </data>
 </root>

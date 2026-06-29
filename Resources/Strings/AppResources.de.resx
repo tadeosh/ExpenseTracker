@@ -399,4 +399,25 @@
   <data name="DeleteBtn" xml:space="preserve">
     <value>Löschen</value>
   </data>
+  <data name="SetupTitle" xml:space="preserve">
+    <value>🛡️ Sicherheit</value>
+  </data>
+  <data name="SetupWelcome" xml:space="preserve">
+    <value>Willkommen bei ExpenseTracker!</value>
+  </data>
+  <data name="SetupDescription" xml:space="preserve">
+    <value>Sichern Sie Ihre Datenbank mit einem Master-Passwort. Dieses Passwort wird der Verschlüsselungsschlüssel für all Ihre Finanzdaten sein.</value>
+  </data>
+  <data name="SetupPasswordPlaceholder" xml:space="preserve">
+    <value>Neues Passwort eingeben...</value>
+  </data>
+  <data name="SetupConfirmPasswordPlaceholder" xml:space="preserve">
+    <value>Passwort bestätigen...</value>
+  </data>
+  <data name="ErrorPasswordEmpty" xml:space="preserve">
+    <value>Passwort darf nicht leer sein</value>
+  </data>
+  <data name="ErrorPasswordMismatch" xml:space="preserve">
+    <value>Passwörter stimmen nicht überein!</value>
+  </data>
 </root>

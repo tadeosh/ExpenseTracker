@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
+             x:Class="ExpenseTracker.Views.SetupPage"
+             BackgroundColor="{DynamicResource AppBackgroundColor}"
+             Shell.NavBarIsVisible="False">
+
+    <VerticalStackLayout Spacing="20" Padding="30" VerticalOptions="Center">
+
+        <Label Text="{x:Static strings:AppResources.SetupTitle}" FontSize="40" HorizontalOptions="Center" Margin="0,0,0,10"/>
+
+        <Label Text="{x:Static strings:AppResources.SetupWelcome}" FontSize="24" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
+        <Label Text="{x:Static strings:AppResources.SetupDescription}" TextColor="{DynamicResource AppTextColor}" HorizontalTextAlignment="Center" Opacity="0.8" />
+
+        <Border BackgroundColor="{DynamicResource SectionBackgroundColor}" StrokeShape="RoundRectangle 8" StrokeThickness="0" Padding="15,5" Margin="0,20,0,0">
+            <Entry x:Name="PasswordEntry" Placeholder="{x:Static strings:AppResources.SetupPasswordPlaceholder}" IsPassword="True" TextColor="{DynamicResource AppTextColor}" />
+        </Border>
+
+        <Border BackgroundColor="{DynamicResource SectionBackgroundColor}" StrokeShape="RoundRectangle 8" StrokeThickness="0" Padding="15,5">
+            <Entry x:Name="ConfirmPasswordEntry" Placeholder="{x:Static strings:AppResources.SetupConfirmPasswordPlaceholder}" IsPassword="True" TextColor="{DynamicResource AppTextColor}" />
+        </Border>
+
+        <Label x:Name="ErrorLabel" TextColor="#D32F2F" IsVisible="False" HorizontalTextAlignment="Center" FontAttributes="Bold" />
+
+        <Button Text="{x:Static strings:AppResources.SaveBtn}" Clicked="OnSaveClicked" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="White" Margin="0,20,0,0" FontAttributes="Bold" HeightRequest="50" CornerRadius="25"/>
+
+    </VerticalStackLayout>
+</ContentPage>

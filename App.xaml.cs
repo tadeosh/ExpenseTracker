@@ -1,4 +1,5 @@
 ﻿using ExpenseTracker.Resources.Strings;
+using ExpenseTracker.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 
@@ -25,11 +26,16 @@ namespace ExpenseTracker
             // Domyślnie ładujemy motyw jasny (indeks 0), jeśli nic nie zapisano.
             int savedThemeIndex = Preferences.Default.Get("AppTheme", 0);
             ApplyTheme(savedThemeIndex);
+
+            
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new AppShell());
+            //return new Window(new AppShell());
+            // Zamiast AppShell, ładujemy na start odizolowaną stronę zabezpieczeń.
+            // Dzięki temu AppShell nie zacznie w tle odpytywać zablokowanej bazy danych!
+            return new Window(new SetupPage());
         }
         public static void ApplyTheme(int themeIndex)
         {
@@ -56,6 +62,8 @@ namespace ExpenseTracker
                     Application.Current.UserAppTheme = AppTheme.Dark;
                     break;
             }
+
+           
         }
     }
 }

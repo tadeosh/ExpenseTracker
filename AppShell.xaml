@@ -22,6 +22,10 @@
             </Grid>
         </DataTemplate>
     </Shell.ItemTemplate>
+<!--
+    <FlyoutItem FlyoutItemIsVisible="False">
+        <ShellContent Route="SetupPage" ContentTemplate="{DataTemplate views:SetupPage}" />
+    </FlyoutItem> -->
 
     <FlyoutItem Title="{x:Static strings:AppResources.HomePageTitle}">
         <ShellContent 

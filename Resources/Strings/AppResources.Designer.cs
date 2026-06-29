@@ -538,6 +538,24 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Password cannot be empty!.
+        /// </summary>
+        internal static string ErrorPasswordEmpty {
+            get {
+                return ResourceManager.GetString("ErrorPasswordEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Passwords do not match!.
+        /// </summary>
+        internal static string ErrorPasswordMismatch {
+            get {
+                return ResourceManager.GetString("ErrorPasswordMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Error.
         /// </summary>
         internal static string ErrorTitle {
@@ -750,6 +768,51 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string SettingsTitle {
             get {
                 return ResourceManager.GetString("SettingsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Confirm password....
+        /// </summary>
+        internal static string SetupConfirmPasswordPlaceholder {
+            get {
+                return ResourceManager.GetString("SetupConfirmPasswordPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Secure your database with a master password. This password will be the encryption key for all your financial data..
+        /// </summary>
+        internal static string SetupDescription {
+            get {
+                return ResourceManager.GetString("SetupDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Enter new password....
+        /// </summary>
+        internal static string SetupPasswordPlaceholder {
+            get {
+                return ResourceManager.GetString("SetupPasswordPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu 🛡️ Security.
+        /// </summary>
+        internal static string SetupTitle {
+            get {
+                return ResourceManager.GetString("SetupTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Welcome to ExpenseTracker!.
+        /// </summary>
+        internal static string SetupWelcome {
+            get {
+                return ResourceManager.GetString("SetupWelcome", resourceCulture);
             }
         }
         

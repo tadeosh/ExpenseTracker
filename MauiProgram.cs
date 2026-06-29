@@ -27,6 +27,8 @@ namespace ExpenseTracker
             // AddSingleton oznacza, że aplikacja stworzy go raz i będzie używać tej samej kopii wszędzie.
             builder.Services.AddSingleton<DatabaseService>();
 
+            builder.Services.AddTransient<Views.SetupPage>();
+
             builder.Services.AddTransient<AccountsViewModel>(); 
             builder.Services.AddTransient<AccountsPage>();
 
