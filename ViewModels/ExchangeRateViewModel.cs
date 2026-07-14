@@ -61,7 +61,11 @@ namespace ExpenseTracker.ViewModels
             if (string.IsNullOrWhiteSpace(sourceCode) || string.IsNullOrWhiteSpace(targetCode))
                 return;
 
-            if (!decimal.TryParse(RateText, out decimal parsedRate) || parsedRate <= 0)
+            // NOWOŚĆ: Normalizujemy znak dziesiętny - zamieniamy przecinki na kropki
+            string normalizedRate = RateText.Replace(',', '.');
+
+            // Parsujemy twardo z użyciem InvariantCulture (które zawsze oczekuje kropki)
+            if (!decimal.TryParse(normalizedRate, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal parsedRate) || parsedRate <= 0)
                 return;
 
             var newRate = new ExchangeRate

@@ -135,6 +135,14 @@ namespace ExpenseTracker.ViewModels
 
         public async Task LoadDataAsync()
         {
+            // Trik inżynierski: Zapamiętujemy ID tego, co użytkownik już wybrał,
+            // żeby po odświeżeniu list nic mu nie zniknęło z formularza!
+            int? savedAccountId = SelectedAccount?.Id;
+            int? savedDestAccountId = DestinationAccount?.Id;
+            int? savedProjectId = SelectedProject?.Id;
+            int? savedCategoryId = SelectedCategory?.Id;
+
+            // Ładowanie z bazy
             var accountsFromDb = await _databaseService.GetAccountsAsync();
             Accounts.Clear();
             foreach (var acc in accountsFromDb) Accounts.Add(acc);
@@ -143,7 +151,6 @@ namespace ExpenseTracker.ViewModels
             Projects.Clear();
             foreach (var proj in projectsFromDb) Projects.Add(proj);
 
-            // NOWOŚĆ: Budowanie hierarchicznej listy kategorii z liczeniem podkategorii
             _allCategories = await _databaseService.GetCategoriesAsync();
             var mainCats = _allCategories.Where(c => c.ParentId == null).OrderBy(c => c.DisplayOrder).ToList();
 
@@ -151,11 +158,22 @@ namespace ExpenseTracker.ViewModels
             foreach (var cat in mainCats)
             {
                 var subCount = _allCategories.Count(c => c.ParentId == cat.Id);
-                MainCategories.Add(new CategoryDisplayItem
+                MainCategories.Add(new CategoryDisplayItem { Category = cat, SubcategoriesCount = subCount });
+            }
+
+            // ODTWARZANIE WYBORÓW (szukamy nowych obiektów na świeżych listach po ich ID)
+            if (savedAccountId.HasValue) SelectedAccount = Accounts.FirstOrDefault(a => a.Id == savedAccountId.Value);
+            if (savedDestAccountId.HasValue) DestinationAccount = Accounts.FirstOrDefault(a => a.Id == savedDestAccountId.Value);
+            if (savedProjectId.HasValue) SelectedProject = Projects.FirstOrDefault(p => p.Id == savedProjectId.Value);
+
+            if (savedCategoryId.HasValue)
+            {
+                SelectedCategory = _allCategories.FirstOrDefault(c => c.Id == savedCategoryId.Value);
+                if (SelectedCategory != null)
                 {
-                    Category = cat,
-                    SubcategoriesCount = subCount
-                });
+                    SelectedCategoryName = SelectedCategory.Name;
+                    SelectedCategoryColorHex = SelectedCategory.ColorHex;
+                }
             }
         }
 
@@ -224,8 +242,13 @@ namespace ExpenseTracker.ViewModels
         [RelayCommand]
         private async Task SaveTransactionAsync()
         {
-            if (!decimal.TryParse(AmountText, out decimal amount) || amount <= 0) return;
-            //if (string.IsNullOrWhiteSpace(DescriptionText) || SelectedAccount == null || SelectedCategory == null) return;
+            // Normalizujemy znak dziesiętny - zamieniamy przecinki na kropki
+            string normalizedAmount = AmountText.Replace(',', '.');
+
+            // Parsujemy twardo, niezależnie od języka systemu
+            if (!decimal.TryParse(normalizedAmount, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal amount) || amount <= 0)
+                return;
+
             if (SelectedAccount == null) return;
 
             TransactionType type = SelectedTypeIndex switch
@@ -246,7 +269,6 @@ namespace ExpenseTracker.ViewModels
                 if (!decimal.TryParse(ExchangeRateText, out decimal parsedRate) || parsedRate <= 0) return;
                 exchangeRate = parsedRate;
 
-                // --- AUTOMATYCZNE UCZENIE SIĘ KURSÓW WALUT ---
                 if (_lastFetchedRate == null || _lastFetchedRate.Value != parsedRate)
                 {
                     var newLearnedRate = new ExchangeRate
@@ -275,18 +297,31 @@ namespace ExpenseTracker.ViewModels
 
             await _databaseService.SaveTransactionAsync(transaction);
 
-            // Czyszczenie formularza
+            // Zamiast powielać kod czyszczenia, używamy nowej metody
+            ClearForm();
+            await Shell.Current.GoToAsync("//HomePage");
+        }
+
+        // NOWOŚĆ: Komenda dla przycisku Anuluj / Strzałki Wstecz
+        [RelayCommand]
+        private async Task CancelAsync()
+        {
+            ClearForm();
+            await Shell.Current.GoToAsync("//HomePage");
+        }
+
+        // NOWOŚĆ: Wydzielone czyszczenie formularza
+        private void ClearForm()
+        {
             AmountText = string.Empty;
             DescriptionText = string.Empty;
             SelectedAccount = null;
             DestinationAccount = null;
             SelectedCategory = null;
-            SelectedCategoryName = AppResources.CategoryLabel;
+            SelectedCategoryName = AppResources.CategoryLabel ?? "Kategoria";
             SelectedCategoryColorHex = "Transparent";
             SelectedProject = null;
             ExchangeRateText = string.Empty;
-
-            await Shell.Current.GoToAsync("//HomePage");
         }
 
         [RelayCommand]
@@ -296,6 +331,20 @@ namespace ExpenseTracker.ViewModels
             {
                 SelectedTypeIndex = index;
             }
+        }
+
+        // NOWOŚĆ: Skoki do dodawania brakujących elementów
+        [RelayCommand]
+        private async Task GoToCategoriesAsync()
+        {
+            // Otwiera podstronę na wierzchu stosu
+            await Shell.Current.GoToAsync("CategoriesPage");
+        }
+
+        [RelayCommand]
+        private async Task GoToProjectsAsync()
+        {
+            await Shell.Current.GoToAsync("ProjectsPage");
         }
     }
 }

@@ -7,6 +7,22 @@
              BackgroundColor="{DynamicResource AppBackgroundColor}"
              HideSoftInputOnTapped="True">
 
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="Auto, *" Padding="0,0,15,0">
+            <Path Grid.Column="0" Data="M 20 12 L 4 12 M 10 18 L 4 12 L 10 6"
+                  Fill="Transparent" Stroke="{DynamicResource HeaderTextColor}" StrokeThickness="2"
+                  StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="24" HeightRequest="24"
+                  VerticalOptions="Center" Margin="0,0,15,0">
+                <Path.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding CancelCommand}" />
+                </Path.GestureRecognizers>
+            </Path>
+
+            <Label Grid.Column="1" Text="{x:Static strings:AppResources.AddTransactionTitle}"
+                   FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource HeaderTextColor}" VerticalOptions="Center" />
+        </Grid>
+    </Shell.TitleView>
+
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="15" BackgroundColor="{DynamicResource SectionBackgroundColor}" Margin="15" >
 
@@ -60,33 +76,27 @@
                 </Button>
             </Grid>
 
-            <Entry Placeholder="{x:Static strings:AppResources.AmountLabel}" 
+            <DatePicker Date="{Binding SelectedDate}" 
+            TextColor="{DynamicResource AppTextColor}" />
+
+            <Entry x:Name="AmountEntry"
+                   Placeholder="{x:Static strings:AppResources.AmountLabel}" 
                    Text="{Binding AmountText}" 
                    Keyboard="Numeric" 
                    TextColor="{DynamicResource AppTextColor}"
                    ReturnType="Done" 
                    ClearButtonVisibility="WhileEditing" />
 
-            <DatePicker Date="{Binding SelectedDate}" 
-                        TextColor="{DynamicResource AppTextColor}" />
-
-            <Entry Placeholder="{x:Static strings:AppResources.DescriptionLabel}" 
-                   Text="{Binding DescriptionText}" 
-                   TextColor="{DynamicResource AppTextColor}"
-                   ReturnType="Done"
-                   ClearButtonVisibility="WhileEditing" />
-
-            <VerticalStackLayout Spacing="2">
-                <Label Text="{x:Static strings:AppResources.AccountLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
-                <Grid>
-                    <Picker ItemsSource="{Binding Accounts}"
-                            SelectedItem="{Binding SelectedAccount}"
-                            ItemDisplayBinding="{Binding Name}"
-                            TextColor="{DynamicResource AppTextColor}"
-                            BackgroundColor="Transparent" />
-                    <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
-                </Grid>
-            </VerticalStackLayout>
+            <Grid>
+                <Picker Title="{x:Static strings:AppResources.AccountLabel}"
+                        TitleColor="{DynamicResource AppTextColor}"
+                        ItemsSource="{Binding Accounts}"
+                        SelectedItem="{Binding SelectedAccount}"
+                        ItemDisplayBinding="{Binding Name}"
+                        TextColor="{DynamicResource AppTextColor}"
+                        BackgroundColor="Transparent" />
+                <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
+            </Grid>
 
             <VerticalStackLayout Spacing="2" IsVisible="{Binding IsTransfer}">
                 <Label Text="{x:Static strings:AppResources.DestinationAccountLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
@@ -114,26 +124,43 @@
             </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="2" ZIndex="10">
-                <!--<Label Text="{x:Static strings:AppResources.CategoryLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />-->
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Path Grid.Column="0" Data="M 12 5 v 14 M 5 12 h 14" Fill="Transparent" Stroke="{DynamicResource PrimaryColor}" StrokeThickness="2" StrokeLineCap="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center">
+                        <Path.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding GoToCategoriesCommand}" />
+                        </Path.GestureRecognizers>
+                    </Path>
 
-                <Border StrokeThickness="0" BackgroundColor="Transparent">
+                    <Border Grid.Column="1" StrokeThickness="0" BackgroundColor="Transparent" Margin="5,0,0,0">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding ToggleCategoryDropdownCommand}" />
                     </Border.GestureRecognizers>
 
-                    <Grid Padding="5,10" ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
-                        <Ellipse Grid.Column="0" WidthRequest="16" HeightRequest="16" VerticalOptions="Center">
-                            <Ellipse.Fill>
-                                <SolidColorBrush Color="{Binding SelectedCategoryColorHex}" />
-                            </Ellipse.Fill>
-                        </Ellipse>
+                    <Grid Padding="3,10" ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
+                            <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
 
-                        <Label Grid.Column="1" Text="{Binding SelectedCategoryName}" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" />
-                        <Label Grid.Column="2" Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,10,0" />
+                                <Ellipse WidthRequest="16" HeightRequest="16" VerticalOptions="Center">
+                                    <Ellipse.Fill>
+                                        <SolidColorBrush Color="{Binding SelectedCategoryColorHex}" />
+                                    </Ellipse.Fill>
+
+                                    <Ellipse.Triggers>
+                                        <DataTrigger TargetType="Ellipse" Binding="{Binding SelectedCategoryColorHex}" Value="Transparent">
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </DataTrigger>
+                                    </Ellipse.Triggers>
+                                </Ellipse>
+
+                                <Label Text="{Binding SelectedCategoryName}" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" />
+
+                            </HorizontalStackLayout>
+                        
+                            <Label Grid.Column="2" Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,10,0" />
 
                         <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.3" VerticalOptions="End" Margin="-5,5,-5,-10"/>
                     </Grid>
                 </Border>
+                </Grid>    
 
                 <Border IsVisible="{Binding IsCategoryDropdownOpen}" 
                         BackgroundColor="{DynamicResource SectionBackgroundColor}" 
@@ -195,22 +222,47 @@
             </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="2">
-                <Label Text="{x:Static strings:AppResources.ProjectLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
-                <Grid>
-                    <Picker ItemsSource="{Binding Projects}"
+                <Grid ColumnDefinitions="Auto, *" Margin="0,0,0,0" ColumnSpacing="10">
+                    <Path Grid.Column="0" Data="M 12 5 v 14 M 5 12 h 14" Fill="Transparent" Stroke="{DynamicResource PrimaryColor}" StrokeThickness="2" StrokeLineCap="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center">
+                        <Path.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding GoToProjectsCommand}" />
+                        </Path.GestureRecognizers>
+                    </Path>
+               
+                <Grid Grid.Column="1" Margin="5,0,0,0">
+                        <Picker Title="{x:Static strings:AppResources.ProjectLabel}"
+                            TitleColor="{DynamicResource AppTextColor}"
+                            ItemsSource="{Binding Projects}"
                             SelectedItem="{Binding SelectedProject}"
                             ItemDisplayBinding="{Binding Name}"
                             TextColor="{DynamicResource AppTextColor}"
                             BackgroundColor="Transparent" />
-                    <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
+                        <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
                 </Grid>
+                </Grid>     
             </VerticalStackLayout>
 
-            <Button Text="{x:Static strings:AppResources.SaveTransactionBtn}" 
-                    Command="{Binding SaveTransactionCommand}" 
-                    Margin="0,20,0,0"
-                    BackgroundColor="{DynamicResource PrimaryColor}" 
-                    TextColor="{DynamicResource HeaderTextColor}"/>
+            <Entry Placeholder="{x:Static strings:AppResources.DescriptionLabel}" 
+               Text="{Binding DescriptionText}" 
+               TextColor="{DynamicResource AppTextColor}"
+               ReturnType="Done"
+               ClearButtonVisibility="WhileEditing" />
+
+            <Grid ColumnDefinitions="*, *" ColumnSpacing="15" Margin="0,20,0,0">
+                <Button Grid.Column="0" 
+                        Text="{x:Static strings:AppResources.CancelBtn}" 
+                        Command="{Binding CancelCommand}" 
+                        BackgroundColor="Transparent" 
+                        TextColor="{DynamicResource AppTextColor}"
+                        BorderColor="{DynamicResource AppTextColor}"
+                        BorderWidth="1"/>
+
+                <Button Grid.Column="1" 
+                        Text="{x:Static strings:AppResources.SaveTransactionBtn}" 
+                        Command="{Binding SaveTransactionCommand}" 
+                        BackgroundColor="{DynamicResource PrimaryColor}" 
+                        TextColor="{DynamicResource HeaderTextColor}"/>
+            </Grid>
 
         </VerticalStackLayout>
     </ScrollView>
