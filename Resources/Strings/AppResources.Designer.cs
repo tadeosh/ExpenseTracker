@@ -160,6 +160,24 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu All categories.
+        /// </summary>
+        internal static string AllCategoriesLabel {
+            get {
+                return ResourceManager.GetString("AllCategoriesLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu All projects.
+        /// </summary>
+        internal static string AllProjectsLabel {
+            get {
+                return ResourceManager.GetString("AllProjectsLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Amount.
         /// </summary>
         internal static string AmountLabel {
@@ -583,6 +601,51 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Amount.
+        /// </summary>
+        internal static string HeaderAmount {
+            get {
+                return ResourceManager.GetString("HeaderAmount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Category.
+        /// </summary>
+        internal static string HeaderCategory {
+            get {
+                return ResourceManager.GetString("HeaderCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Date.
+        /// </summary>
+        internal static string HeaderDate {
+            get {
+                return ResourceManager.GetString("HeaderDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Description.
+        /// </summary>
+        internal static string HeaderDescription {
+            get {
+                return ResourceManager.GetString("HeaderDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Project.
+        /// </summary>
+        internal static string HeaderProject {
+            get {
+                return ResourceManager.GetString("HeaderProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Home.
         /// </summary>
         internal static string HomePageTitle {
@@ -633,6 +696,24 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string ManageProjectsBtn {
             get {
                 return ResourceManager.GetString("ManageProjectsBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Max Amount.
+        /// </summary>
+        internal static string MaxAmountPlaceholder {
+            get {
+                return ResourceManager.GetString("MaxAmountPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Min Amount.
+        /// </summary>
+        internal static string MinAmountPlaceholder {
+            get {
+                return ResourceManager.GetString("MinAmountPlaceholder", resourceCulture);
             }
         }
         
@@ -763,6 +844,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Search (description, category)....
+        /// </summary>
+        internal static string SearchPlaceholder {
+            get {
+                return ResourceManager.GetString("SearchPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Settings.
         /// </summary>
         internal static string SettingsTitle {
@@ -885,6 +975,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string TotalBalanceLabel {
             get {
                 return ResourceManager.GetString("TotalBalanceLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Account transactions.
+        /// </summary>
+        internal static string TransactionsPageTitle {
+            get {
+                return ResourceManager.GetString("TransactionsPageTitle", resourceCulture);
             }
         }
         

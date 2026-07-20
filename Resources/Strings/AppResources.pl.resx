@@ -420,4 +420,37 @@
   <data name="ErrorPasswordMismatch" xml:space="preserve">
     <value>Wpisane hasła nie są identyczne!</value>
   </data>
+  <data name="TransactionsPageTitle" xml:space="preserve">
+    <value>Transakcje konta</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Szukaj (opis, kategoria)...</value>
+  </data>
+  <data name="MinAmountPlaceholder" xml:space="preserve">
+    <value>Min. kwota</value>
+  </data>
+  <data name="MaxAmountPlaceholder" xml:space="preserve">
+    <value>Max. kwota</value>
+  </data>
+  <data name="AllCategoriesLabel" xml:space="preserve">
+    <value>Wszystkie kategorie</value>
+  </data>
+  <data name="AllProjectsLabel" xml:space="preserve">
+    <value>Wszystkie projekty</value>
+  </data>
+  <data name="HeaderDate" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="HeaderCategory" xml:space="preserve">
+    <value>Kategoria</value>
+  </data>
+  <data name="HeaderDescription" xml:space="preserve">
+    <value>Opis</value>
+  </data>
+  <data name="HeaderProject" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="HeaderAmount" xml:space="preserve">
+    <value>Kwota</value>
+  </data>
 </root>

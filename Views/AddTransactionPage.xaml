@@ -93,8 +93,17 @@
                         ItemsSource="{Binding Accounts}"
                         SelectedItem="{Binding SelectedAccount}"
                         ItemDisplayBinding="{Binding Name}"
-                        TextColor="{DynamicResource AppTextColor}"
-                        BackgroundColor="Transparent" />
+                        BackgroundColor="Transparent"
+                        TextColor="{DynamicResource WarningMsgColor}"
+                        FontAttributes="Bold">
+                    <Picker.Triggers>
+                        <!-- Gdy obiekt to null, wracamy do zwykłego tekstu -->
+                        <DataTrigger TargetType="Picker" Binding="{Binding SelectedItem, Source={RelativeSource Self}}" Value="{x:Null}">
+                            <Setter Property="TextColor" Value="{DynamicResource AppTextColor}" />
+                            <Setter Property="FontAttributes" Value="None" />
+                        </DataTrigger>
+                    </Picker.Triggers>
+                </Picker>
                 <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
             </Grid>
 
@@ -104,8 +113,17 @@
                     <Picker ItemsSource="{Binding Accounts}"
                             SelectedItem="{Binding DestinationAccount}"
                             ItemDisplayBinding="{Binding Name}"
-                            TextColor="{DynamicResource AppTextColor}"
-                            BackgroundColor="Transparent" />
+                            BackgroundColor="Transparent"
+                            TextColor="{DynamicResource WarningMsgColor}"
+                            FontAttributes="Bold">
+                        <Picker.Triggers>
+                            <!-- Gdy obiekt to null, wracamy do zwykłego tekstu -->
+                            <DataTrigger TargetType="Picker" Binding="{Binding SelectedItem, Source={RelativeSource Self}}" Value="{x:Null}">
+                                <Setter Property="TextColor" Value="{DynamicResource AppTextColor}" />
+                                <Setter Property="FontAttributes" Value="None" />
+                            </DataTrigger>
+                        </Picker.Triggers>
+                    </Picker>
                     <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
                 </Grid>
             </VerticalStackLayout>
@@ -151,7 +169,14 @@
                                     </Ellipse.Triggers>
                                 </Ellipse>
 
-                                <Label Text="{Binding SelectedCategoryName}" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" />
+                                <Label Text="{Binding SelectedCategoryName}" TextColor="{DynamicResource WarningMsgColor}" FontAttributes="Bold" VerticalOptions="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding SelectedCategoryColorHex}" Value="Transparent">
+                                            <Setter Property="TextColor" Value="{DynamicResource AppTextColor}" />
+                                            <Setter Property="FontAttributes" Value="None" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
 
                             </HorizontalStackLayout>
                         
@@ -231,12 +256,21 @@
                
                 <Grid Grid.Column="1" Margin="5,0,0,0">
                         <Picker Title="{x:Static strings:AppResources.ProjectLabel}"
-                            TitleColor="{DynamicResource AppTextColor}"
-                            ItemsSource="{Binding Projects}"
-                            SelectedItem="{Binding SelectedProject}"
-                            ItemDisplayBinding="{Binding Name}"
-                            TextColor="{DynamicResource AppTextColor}"
-                            BackgroundColor="Transparent" />
+                                TitleColor="{DynamicResource AppTextColor}"
+                                ItemsSource="{Binding Projects}"
+                                SelectedItem="{Binding SelectedProject}"
+                                ItemDisplayBinding="{Binding Name}"
+                                BackgroundColor="Transparent"
+                                TextColor="{DynamicResource WarningMsgColor}"
+                                FontAttributes="Bold">
+                            <Picker.Triggers>
+                                <!-- Gdy obiekt to null, wracamy do zwykłego tekstu -->
+                                <DataTrigger TargetType="Picker" Binding="{Binding SelectedItem, Source={RelativeSource Self}}" Value="{x:Null}">
+                                    <Setter Property="TextColor" Value="{DynamicResource AppTextColor}" />
+                                    <Setter Property="FontAttributes" Value="None" />
+                                </DataTrigger>
+                            </Picker.Triggers>
+                        </Picker>
                         <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
                 </Grid>
                 </Grid>     

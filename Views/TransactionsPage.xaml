@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
+             x:Class="ExpenseTracker.Views.TransactionsPage"
+             Title="{Binding AccountName}"
+             BackgroundColor="{DynamicResource AppBackgroundColor}">
+
+    <Grid RowDefinitions="Auto, Auto, Auto, *" Margin="15">
+
+        <!-- 1. WYSZUKIWARKA -->
+        <SearchBar Grid.Row="0" 
+                   Placeholder="{x:Static strings:AppResources.SearchPlaceholder}" 
+                   Text="{Binding SearchText}"
+                   TextColor="{DynamicResource AppTextColor}"
+                   Margin="0,0,0,10"/>
+
+        <!-- 2. FILTRY (Rozwijane w poziomie w ScrollView, żeby nie zaśmiecać ekranu) -->
+        <ScrollView Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15" HorizontalScrollBarVisibility="Never">
+            <HorizontalStackLayout Spacing="10">
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{DynamicResource SectionBackgroundColor}" Padding="10,0">
+                    <Entry Placeholder="{x:Static strings:AppResources.MinAmountPlaceholder}" Text="{Binding MinAmountText}" Keyboard="Numeric" WidthRequest="100"/>
+                </Border>
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{DynamicResource SectionBackgroundColor}" Padding="10,0">
+                    <Entry Placeholder="{x:Static strings:AppResources.MaxAmountPlaceholder}" Text="{Binding MaxAmountText}" Keyboard="Numeric" WidthRequest="100"/>
+                </Border>
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                    <Picker Title="{x:Static strings:AppResources.AllCategoriesLabel}" ItemsSource="{Binding AvailableCategories}" SelectedItem="{Binding SelectedCategory}" ItemDisplayBinding="{Binding Name}" WidthRequest="150" Margin="10,0"/>
+                </Border>
+                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                    <Picker Title="{x:Static strings:AppResources.AllProjectsLabel}" ItemsSource="{Binding AvailableProjects}" SelectedItem="{Binding SelectedProject}" ItemDisplayBinding="{Binding Name}" WidthRequest="150" Margin="10,0"/>
+                </Border>
+                <!-- Przycisk do czyszczenia filtrów -->
+                <Button Text="X" BackgroundColor="Transparent" TextColor="#D32F2F" Command="{Binding ClearFiltersCommand}" />
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- 3. KLIKALNE NAGŁÓWKI KOLUMN -->
+        <Grid Grid.Row="2" ColumnDefinitions="1.5*, 2*, 2.5*, 1.5*, 1.5*" Padding="5,10" BackgroundColor="{DynamicResource PrimaryColor}">
+            <Grid.Resources>
+                <Style TargetType="Label">
+                    <Setter Property="TextColor" Value="{DynamicResource HeaderTextColor}" />
+                    <Setter Property="FontAttributes" Value="Bold" />
+                    <Setter Property="FontSize" Value="12" />
+                </Style>
+            </Grid.Resources>
+
+            <HorizontalStackLayout Grid.Column="0">
+                <Label Text="{x:Static strings:AppResources.HeaderDate}" />
+                <Label Text="{Binding DateSortIcon}" Margin="2,0,0,0" />
+                <HorizontalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Date"/>
+                </HorizontalStackLayout.GestureRecognizers>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Grid.Column="1">
+                <Label Text="{x:Static strings:AppResources.HeaderCategory}" />
+                <Label Text="{Binding CategorySortIcon}" Margin="2,0,0,0" />
+                <HorizontalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Category"/>
+                </HorizontalStackLayout.GestureRecognizers>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Grid.Column="2">
+                <Label Text="{x:Static strings:AppResources.HeaderDescription}" />
+                <Label Text="{Binding DescriptionSortIcon}" Margin="2,0,0,0" />
+                <HorizontalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Description"/>
+                </HorizontalStackLayout.GestureRecognizers>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Grid.Column="3">
+                <Label Text="{x:Static strings:AppResources.HeaderProject}" />
+                <Label Text="{Binding ProjectSortIcon}" Margin="2,0,0,0" />
+                <HorizontalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Project"/>
+                </HorizontalStackLayout.GestureRecognizers>
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Grid.Column="4" HorizontalOptions="End">
+                <Label Text="{x:Static strings:AppResources.HeaderAmount}" />
+                <Label Text="{Binding AmountSortIcon}" Margin="2,0,0,0" />
+                <HorizontalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Amount"/>
+                </HorizontalStackLayout.GestureRecognizers>
+            </HorizontalStackLayout>
+        </Grid>
+
+        <!-- 4. LISTA TRANSAKCJI -->
+        <CollectionView Grid.Row="3" ItemsSource="{Binding Transactions}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <!-- Ważne: Kolumny muszą mieć identyczne proporcje jak w nagłówkach! -->
+                    <Grid ColumnDefinitions="1.5*, 2*, 2.5*, 1.5*, 1.5*" Padding="5,15" BackgroundColor="Transparent">
+                        <Label Grid.Column="0" Text="{Binding Transaction.Date, StringFormat='{0:d}'}" FontSize="12" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center"/>
+                        <Label Grid.Column="1" Text="{Binding CategoryName}" FontSize="12" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
+                        <Label Grid.Column="2" Text="{Binding Description}" FontSize="12" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
+                        <Label Grid.Column="3" Text="{Binding ProjectName}" FontSize="12" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
+                        <Label Grid.Column="4" Text="{Binding Transaction.Amount, StringFormat='{0:N2}'}" FontSize="12" FontAttributes="Bold" TextColor="{Binding AmountColor}" VerticalOptions="Center" HorizontalOptions="End"/>
+
+                        <BoxView Grid.ColumnSpan="5" HeightRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.1" VerticalOptions="End" Margin="0,15,0,-15"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Pływający przycisk dodawania transakcji (na samym dole Gridu) -->
+        <Button Grid.RowSpan="4"
+                Text="+"
+                FontSize="32"
+                FontAttributes="Bold"
+                WidthRequest="65"
+                HeightRequest="65"
+                CornerRadius="32" 
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Margin="0,0,20,30"
+                BackgroundColor="{DynamicResource PrimaryColor}"
+                TextColor="{DynamicResource HeaderTextColor}"
+                Command="{Binding NavigateToAddTransactionCommand}" />
+    </Grid>
+</ContentPage>

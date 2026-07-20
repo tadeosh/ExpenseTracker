@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
              x:Class="ExpenseTracker.Views.HomePage"
+             x:Name="MyHomePage"
              Title="{x:Static strings:AppResources.HomePageTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}">
 
@@ -12,7 +13,7 @@
 
             <Label Grid.Row="0" Text="{x:Static strings:AppResources.TotalBalanceLabel}" FontSize="20" FontAttributes="Bold" Margin="0,0,0,10" TextColor="{DynamicResource AppTextColor}"/>
 
-            <CollectionView Grid.Row="1" ItemsSource="{Binding AccountsBalances}" HeightRequest="110" HorizontalScrollBarVisibility="Always">
+            <CollectionView Grid.Row="1" ItemsSource="{Binding AccountsBalances}" HeightRequest="110" HorizontalScrollBarVisibility="Always" SelectionMode="Single" SelectedItem="{Binding SelectedAccountForNavigation}">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Horizontal" ItemSpacing="15" />
                 </CollectionView.ItemsLayout>

@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Input;
 using ExpenseTracker.ViewModels;
 
 namespace ExpenseTracker.Views;
@@ -19,4 +20,6 @@ public partial class HomePage : ContentPage
         // Pobiera na żywo najświeższe dane za każdym razem, gdy użytkownik wraca na stronę główną
         await _viewModel.LoadDataAsync();
     }
+
+    
 }

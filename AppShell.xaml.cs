@@ -11,6 +11,8 @@
             Routing.RegisterRoute("ProjectsPage", typeof(Views.ProjectsPage));
             Routing.RegisterRoute("ExchangeRatesPage", typeof(Views.ExchangeRatesPage));
             Routing.RegisterRoute("FavoriteCurrenciesPage", typeof(Views.FavoriteCurrenciesPage));
+            Routing.RegisterRoute("TransactionsPage",typeof(Views.TransactionsPage));
+            Routing.RegisterRoute("AddTransactionPage", typeof(Views.AddTransactionPage));
         }
     }
 }

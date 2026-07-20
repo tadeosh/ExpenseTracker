@@ -7,9 +7,23 @@ using System.Collections.ObjectModel;
 
 namespace ExpenseTracker.ViewModels
 {
+    [QueryProperty(nameof(PreselectedAccountId), "PreselectedAccountId")]
+    [QueryProperty(nameof(PreselectedCategoryId), "PreselectedCategoryId")] // NOWOŚĆ
+    [QueryProperty(nameof(PreselectedProjectId), "PreselectedProjectId")] // NOWOŚĆ
     public partial class AddTransactionViewModel : ObservableObject
     {
         private readonly DatabaseService _databaseService;
+
+        // NOWOŚĆ: Zmienna przechowująca przekazane z zewnątrz ID konta
+        [ObservableProperty]
+        public partial string? PreselectedAccountId { get; set; }
+
+        // NOWOŚĆ: Nowe parametry dla filtrów
+        [ObservableProperty]
+        public partial string? PreselectedCategoryId { get; set; }
+
+        [ObservableProperty]
+        public partial string? PreselectedProjectId { get; set; }
 
         // Listy wyboru dla Pickerów na ekranie
         public ObservableCollection<Account> Accounts { get; } = new();
@@ -162,7 +176,42 @@ namespace ExpenseTracker.ViewModels
             }
 
             // ODTWARZANIE WYBORÓW (szukamy nowych obiektów na świeżych listach po ich ID)
-            if (savedAccountId.HasValue) SelectedAccount = Accounts.FirstOrDefault(a => a.Id == savedAccountId.Value);
+            if (savedAccountId.HasValue)
+            {
+                SelectedAccount = Accounts.FirstOrDefault(a => a.Id == savedAccountId.Value);
+            }
+            // ZMIANA: Sprawdzamy, czy tekst nie jest pusty i próbujemy zamienić go na liczbę (int.TryParse)
+            else if (!string.IsNullOrEmpty(PreselectedAccountId) && int.TryParse(PreselectedAccountId, out int preselectedId))
+            {
+                SelectedAccount = Accounts.FirstOrDefault(a => a.Id == preselectedId);
+            }
+
+            // 2. Odtwarzanie Projektu
+            if (!string.IsNullOrEmpty(PreselectedProjectId) && int.TryParse(PreselectedProjectId, out int projId))
+            {
+                SelectedProject = Projects.FirstOrDefault(p => p.Id == projId);
+            }
+
+            // 3. Odtwarzanie Kategorii (Szukamy jej we wszystkich załadowanych kolekcjach)
+            if (!string.IsNullOrEmpty(PreselectedCategoryId) && int.TryParse(PreselectedCategoryId, out int catId))
+            {
+                // Musimy przeszukać główne kategorie i podkategorie
+                var foundMainCat = MainCategories.FirstOrDefault(mc => mc.Category.Id == catId)?.Category;
+                if (foundMainCat != null)
+                {
+                    SelectedCategory = foundMainCat;
+                }
+                else
+                {
+                    // Szukamy w podkategoriach, jeśli nie była to główna
+                    var foundSubCat = SubCategories.FirstOrDefault(sc => sc.Category.Id == catId)?.Category;
+                    if (foundSubCat != null)
+                    {
+                        SelectedCategory = foundSubCat;
+                    }
+                }
+            }
+
             if (savedDestAccountId.HasValue) DestinationAccount = Accounts.FirstOrDefault(a => a.Id == savedDestAccountId.Value);
             if (savedProjectId.HasValue) SelectedProject = Projects.FirstOrDefault(p => p.Id == savedProjectId.Value);
 
@@ -235,6 +284,11 @@ namespace ExpenseTracker.ViewModels
             SubCategories.Clear();
         }
 
+        partial void OnSelectedCategoryChanged(Category? value)
+        {
+            if(value != null) ConfirmCategorySelection(value);
+        }
+
         // ==========================================
         // ZAPIS TRANSAKCJI + UCZENIE KURSÓW
         // ==========================================
@@ -297,17 +351,28 @@ namespace ExpenseTracker.ViewModels
 
             await _databaseService.SaveTransactionAsync(transaction);
 
-            // Zamiast powielać kod czyszczenia, używamy nowej metody
-            ClearForm();
-            await Shell.Current.GoToAsync("//HomePage");
+            // Sprawdzamy, czy musimy wrócić na stronę konkretnego konta
+            bool goBackToTransactions = !string.IsNullOrEmpty(PreselectedAccountId);
+
+            // Nawigacja ".." zdejmuje formularz ze stosu, odsłaniając niezmienioną listę!
+            if (goBackToTransactions)
+                await Shell.Current.GoToAsync("..");
+            else
+                await Shell.Current.GoToAsync("//HomePage");
         }
 
         // NOWOŚĆ: Komenda dla przycisku Anuluj / Strzałki Wstecz
         [RelayCommand]
         private async Task CancelAsync()
         {
+            bool goBackToTransactions = !string.IsNullOrEmpty(PreselectedAccountId);
+
             ClearForm();
-            await Shell.Current.GoToAsync("//HomePage");
+
+            if (goBackToTransactions)
+                await Shell.Current.GoToAsync("..");
+            else
+                await Shell.Current.GoToAsync("//HomePage");
         }
 
         // NOWOŚĆ: Wydzielone czyszczenie formularza
@@ -322,6 +387,11 @@ namespace ExpenseTracker.ViewModels
             SelectedCategoryColorHex = "Transparent";
             SelectedProject = null;
             ExchangeRateText = string.Empty;
+
+            // NOWOŚĆ: Resetujemy przekazany parametr po wyjściu z formularza
+            PreselectedAccountId = null;
+            PreselectedCategoryId = null;
+            PreselectedProjectId = null;
         }
 
         [RelayCommand]

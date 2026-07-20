@@ -7,4 +7,5 @@
     <Color x:Key="AppTextColor">#121212</Color>
     <Color x:Key="PrimaryColor">#2B0B98</Color>
     <Color x:Key="HeaderTextColor">#FFFFFF</Color>
+    <Color x:Key="WarningMsgColor">#E89B43</Color>
 </ResourceDictionary>

@@ -31,6 +31,34 @@ namespace ExpenseTracker.ViewModels
 
         private string _missingRatesMessage = string.Empty;
 
+        // 1. Zmieniamy typ na 'object', aby uniknąć konfliktów typów.
+        // MAUI bez problemu przypisze tu kliknięty element z listy, niezależnie od jego klasy.
+        [ObservableProperty]
+        public partial object? SelectedAccountForNavigation { get; set; }
+
+        // 2. Metoda reagująca na zmianę (zauważ, że przyjmuje teraz 'object?')
+        partial void OnSelectedAccountForNavigationChanged(object? value)
+        {
+            if (value != null)
+            {
+                // 3. Używamy refleksji, aby poszukać właściwości o nazwie "Id" w klikniętym elemencie
+                var idProperty = value.GetType().GetProperty("Id");
+
+                if (idProperty != null)
+                {
+                    // Wyciągamy wartość Id jako liczbę całkowitą
+                    int accountId = (int)idProperty.GetValue(value)!;
+
+                    // Przechodzimy na nową stronę, przekazując wyciągnięte ID w adresie URL
+                    Shell.Current.GoToAsync($"TransactionsPage?AccountId={accountId}");
+                }
+
+                // 4. Ekstremalnie ważne: Czyścimy wybór w głównym wątku, 
+                // żeby po powrocie na tę stronę można było znowu kliknąć w dokładnie to samo konto!
+                MainThread.BeginInvokeOnMainThread(() => SelectedAccountForNavigation = null);
+            }
+        }
+
         public HomeViewModel(DatabaseService databaseService)
         {
             _databaseService = databaseService;
@@ -53,6 +81,7 @@ namespace ExpenseTracker.ViewModels
                 decimal currentBalance = await _databaseService.GetAccountBalanceAsync(acc.Id);
                 tempAccounts.Add(new AccountBalanceItem
                 {
+                    Id =acc.Id,
                     Name = acc.Name,
                     Balance = currentBalance,
                     Currency = acc.Currency
@@ -181,10 +210,12 @@ namespace ExpenseTracker.ViewModels
             // --- ZMIANA: Tłumaczenia okienka z błędem ---
             await Shell.Current.DisplayAlertAsync(AppResources.MissingRatesTitle, _missingRatesMessage, AppResources.UnderstoodBtn);
         }
+              
     }
 
     public class AccountBalanceItem
     {
+        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public decimal Balance { get; set; }
         public string Currency { get; set; } = string.Empty;

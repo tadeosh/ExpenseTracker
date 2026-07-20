@@ -420,4 +420,47 @@
   <data name="ErrorPasswordMismatch" xml:space="preserve">
     <value>Passwords do not match!</value>
   </data>
+  <data name="TransactionsPageTitle" xml:space="preserve">
+    <value>Account transactions</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Search (description, category)...</value>
+    <comment>TransactionsPage</comment>
+  </data>
+  <data name="MinAmountPlaceholder" xml:space="preserve">
+    <value>Min Amount</value>
+    <comment>TransactionsPage</comment>
+  </data>
+  <data name="MaxAmountPlaceholder" xml:space="preserve">
+    <value>Max Amount</value>
+    <comment>TransactionsPage</comment>
+  </data>
+  <data name="AllCategoriesLabel" xml:space="preserve">
+    <value>All categories</value>
+    <comment>TransactionsPage</comment>
+  </data>
+  <data name="AllProjectsLabel" xml:space="preserve">
+    <value>All projects</value>
+    <comment>TransactionsPage</comment>
+  </data>
+  <data name="HeaderDate" xml:space="preserve">
+    <value>Date</value>
+    <comment>TransactionsPage</comment>
+  </data>
+  <data name="HeaderCategory" xml:space="preserve">
+    <value>Category</value>
+    <comment>TransactionsPage</comment>
+  </data>
+  <data name="HeaderDescription" xml:space="preserve">
+    <value>Description</value>
+    <comment>TransactionsPage</comment>
+  </data>
+  <data name="HeaderProject" xml:space="preserve">
+    <value>Project</value>
+    <comment>TransactionsPage</comment>
+  </data>
+  <data name="HeaderAmount" xml:space="preserve">
+    <value>Amount</value>
+    <comment>TransactionsPage</comment>
+  </data>
 </root>
