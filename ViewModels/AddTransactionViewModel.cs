@@ -192,24 +192,11 @@ namespace ExpenseTracker.ViewModels
                 SelectedProject = Projects.FirstOrDefault(p => p.Id == projId);
             }
 
-            // 3. Odtwarzanie Kategorii (Szukamy jej we wszystkich załadowanych kolekcjach)
+            // 3. Odtwarzanie Kategorii (Szukamy jej na pełnej liście)
             if (!string.IsNullOrEmpty(PreselectedCategoryId) && int.TryParse(PreselectedCategoryId, out int catId))
             {
-                // Musimy przeszukać główne kategorie i podkategorie
-                var foundMainCat = MainCategories.FirstOrDefault(mc => mc.Category.Id == catId)?.Category;
-                if (foundMainCat != null)
-                {
-                    SelectedCategory = foundMainCat;
-                }
-                else
-                {
-                    // Szukamy w podkategoriach, jeśli nie była to główna
-                    var foundSubCat = SubCategories.FirstOrDefault(sc => sc.Category.Id == catId)?.Category;
-                    if (foundSubCat != null)
-                    {
-                        SelectedCategory = foundSubCat;
-                    }
-                }
+                // Wystarczy przeszukać _allCategories, która zawiera absolutnie wszystkie główne i podkategorie!
+                SelectedCategory = _allCategories.FirstOrDefault(c => c.Id == catId);
             }
 
             if (savedDestAccountId.HasValue) DestinationAccount = Accounts.FirstOrDefault(a => a.Id == savedDestAccountId.Value);
@@ -253,12 +240,16 @@ namespace ExpenseTracker.ViewModels
 
             if (subs.Any())
             {
-                // Jeśli ma dzieci, ładujemy je po prawej stronie!
+                // NOWOŚĆ: Dodajemy samą kategorię główną na samą górę listy podkategorii (prawa strona)!
+                // Dzięki temu użytkownik może kliknąć ją po prawej stronie, by przypisać wydatek "ogólnie".
+                SubCategories.Add(new CategoryDisplayItem { Category = value.Category });
+
+                // Następnie ładujemy resztę faktycznych podkategorii
                 foreach (var sub in subs) SubCategories.Add(new CategoryDisplayItem { Category = sub });
             }
             else
             {
-                // Jeśli nie ma dzieci, po prostu wybieramy ją od razu
+                // Jeśli nie ma dzieci, po prostu wybieramy ją od razu i zamykamy okienko
                 ConfirmCategorySelection(value.Category);
             }
         }
@@ -292,6 +283,21 @@ namespace ExpenseTracker.ViewModels
         // ==========================================
         // ZAPIS TRANSAKCJI + UCZENIE KURSÓW
         // ==========================================
+
+        // NOWOŚĆ: Kuloodporna metoda zamykająca formularz
+        private async Task CloseFormSafeAsync()
+        {
+            // Sprawdzamy, czy formularz został otwarty jako "nakładka" (na stosie jest więcej niż 1 strona)
+            if (Shell.Current.Navigation.NavigationStack.Count > 1)
+            {
+                await Shell.Current.Navigation.PopAsync();
+            }
+            else
+            {
+                // Jeśli stos jest pusty (otwarto absolutnie np. z menu), wymuszamy powrót na stronę główną
+                await Shell.Current.GoToAsync("//HomePage");
+            }
+        }
 
         [RelayCommand]
         private async Task SaveTransactionAsync()
@@ -350,15 +356,9 @@ namespace ExpenseTracker.ViewModels
             };
 
             await _databaseService.SaveTransactionAsync(transaction);
-
-            // Sprawdzamy, czy musimy wrócić na stronę konkretnego konta
-            bool goBackToTransactions = !string.IsNullOrEmpty(PreselectedAccountId);
-
-            // Nawigacja ".." zdejmuje formularz ze stosu, odsłaniając niezmienioną listę!
-            if (goBackToTransactions)
-                await Shell.Current.GoToAsync("..");
-            else
-                await Shell.Current.GoToAsync("//HomePage");
+            await CloseFormSafeAsync();
+            //await Shell.Current.GoToAsync("..");
+           // await Shell.Current.Navigation.PopAsync();
         }
 
         // NOWOŚĆ: Komenda dla przycisku Anuluj / Strzałki Wstecz
@@ -368,11 +368,10 @@ namespace ExpenseTracker.ViewModels
             bool goBackToTransactions = !string.IsNullOrEmpty(PreselectedAccountId);
 
             ClearForm();
+            await CloseFormSafeAsync();
+            //await Shell.Current.GoToAsync("..");
+            //await Shell.Current.Navigation.PopAsync();
 
-            if (goBackToTransactions)
-                await Shell.Current.GoToAsync("..");
-            else
-                await Shell.Current.GoToAsync("//HomePage");
         }
 
         // NOWOŚĆ: Wydzielone czyszczenie formularza

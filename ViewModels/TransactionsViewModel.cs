@@ -1,25 +1,30 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ExpenseTracker.Data;
 using ExpenseTracker.Models;
-using System.Collections.ObjectModel;
 using ExpenseTracker.Resources.Strings;
+using System.Collections.ObjectModel;
+
 
 namespace ExpenseTracker.ViewModels
 {
-    // Odbieramy parametr AccountId z nawigacji
-    [QueryProperty(nameof(AccountId), "AccountId")]
-    public partial class TransactionsViewModel : ObservableObject
+    // ZMIANA: Wracamy do najprostszego mechanizmu odbioru parametru
+    [QueryProperty(nameof(AccountIdParam), "AccountId")]
+    public partial class TransactionsViewModel : ObservableObject // <-- usunięto IQueryAttributable
     {
         private readonly DatabaseService _databaseService;
 
-        // Odbieramy parametr AccountId z nawigacji
+        // NOWOŚĆ: Odbiera ID konta jako tekst (może być null, jeśli wejdziemy z menu głównego)
         [ObservableProperty]
-        public partial int AccountId { get; set; }
+        public partial string? AccountIdParam { get; set; }
+
+        // NOWOŚĆ: Przechowuje faktyczną, odkodowaną liczbę (lub null, jeśli ładujemy wszystkie konta)
+        private int? _parsedAccountId;
 
         // Przechowuje nazwę konta do wyświetlenia w nagłówku
         [ObservableProperty]
-        public partial string AccountName { get; set; } = "Ładowanie...";
+        public partial string AccountName { get; set; } = "...";
 
         // Kolekcja dla interfejsu (to, co widzi użytkownik po przefiltrowaniu i posortowaniu)
         public ObservableCollection<TransactionDisplayItem> Transactions { get; } = new();
@@ -49,66 +54,98 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty] public partial string DescriptionSortIcon { get; set; } = "";
         [ObservableProperty] public partial string ProjectSortIcon { get; set; } = "";
         [ObservableProperty] public partial string AmountSortIcon { get; set; } = "";
+        [ObservableProperty] public partial string AccountSortIcon { get; set; } = "";
+
+        // Flaga dla widoku: true = wszystkie transakcje, false = konkretne konto
+        [ObservableProperty]
+        public partial bool IsGlobalView { get; set; }
+
+        // Lista kont dla pickera filtrów
+        public ObservableCollection<Account> AvailableAccounts { get; } = new();
+
+        // Wybrane konto w filtrze
+        [ObservableProperty]
+        public partial Account? SelectedAccount { get; set; }
 
         public TransactionsViewModel(DatabaseService databaseService)
         {
             _databaseService = databaseService;
         }
 
-        // Ta metoda odpali się automatycznie, gdy nadejdzie AccountId z HomePage
-        partial void OnAccountIdChanged(int value)
-        {
-            // Zabezpieczenie: Wymuszamy, by całe ładowanie i przypisywanie do ObservableCollection
-            // działo się na głównym wątku interfejsu użytkownika (MainThread).
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                await LoadDataAsync();
-            });
-        }
-
         public async Task LoadDataAsync()
         {
             try
             {
-                // 1. Pobieramy wszystkie potrzebne dane z bazy
+                // 1. ZAPAMIĘTUJEMY AKTUALNE FILTRY
+                int? savedCategoryId = SelectedCategory?.Id;
+                int? savedProjectId = SelectedProject?.Id;
+                int? savedAccountIdFilter = SelectedAccount?.Id; // NOWOŚĆ
+
+                // NOWOŚĆ: Dekodujemy ID konta
+                _parsedAccountId = null;
+                if (!string.IsNullOrEmpty(AccountIdParam) && int.TryParse(AccountIdParam, out int id))
+                {
+                    _parsedAccountId = id;
+                }
+
+                // NOWOŚĆ: Ustawiamy flagę IsGlobalView na true, jeśli nie przekazano _parsedAccountId
+                IsGlobalView = !_parsedAccountId.HasValue;
+
+                // Pobieranie danych z bazy
                 var accounts = await _databaseService.GetAccountsAsync();
                 var categories = await _databaseService.GetCategoriesAsync();
                 var projects = await _databaseService.GetProjectsAsync();
                 var rawTransactions = await _databaseService.GetTransactionsAsync();
 
-                // 2a. NOWOŚĆ: Szukamy nazwy konta i ustawiamy ją do wyświetlenia w XAML
-                var currentAccount = accounts.FirstOrDefault(a => a.Id == AccountId);
-                if (currentAccount != null)
+                // NOWOŚĆ: Dynamiczny tytuł strony
+                if (_parsedAccountId.HasValue)
                 {
-                    // Sklejamy przetłumaczony tytuł (np. "Transakcje konta") z nazwą wybranego konta
-                    AccountName = $"{AppResources.TransactionsPageTitle}: {currentAccount.Name}";
+                    var currentAccount = accounts.FirstOrDefault(a => a.Id == _parsedAccountId.Value);
+                    if (currentAccount != null)
+                    {
+                        AccountName = $"{AppResources.TransactionsPageTitle}: {currentAccount.Name}";
+                    }
+                }
+                else
+                {
+                    // Brak ID oznacza widok globalny
+                    AccountName = AppResources.AllTransactionsTitle ?? "Wszystkie transakcje";
                 }
 
-                // 2b. ZAPAMIĘTUJEMY AKTUALNE FILTRY
-                int? savedCategoryId = SelectedCategory?.Id;
-                int? savedProjectId = SelectedProject?.Id;
-
-                // 3a. Ładujemy pickery
+                // Ładujemy pickery
                 AvailableCategories.Clear();
                 AvailableProjects.Clear();
+                AvailableAccounts.Clear(); // NOWOŚĆ
                 foreach (var c in categories) AvailableCategories.Add(c);
                 foreach (var p in projects) AvailableProjects.Add(p);
+                foreach (var a in accounts) AvailableAccounts.Add(a); // NOWOŚĆ
 
-                // 3b. ODTWARZAMY FILTRY PO ZAŁADOWANIU
+                // ODTWARZAMY FILTRY PO ZAŁADOWANIU
                 if (savedCategoryId.HasValue)
                     SelectedCategory = AvailableCategories.FirstOrDefault(c => c.Id == savedCategoryId.Value);
                 if (savedProjectId.HasValue)
                     SelectedProject = AvailableProjects.FirstOrDefault(p => p.Id == savedProjectId.Value);
+                if (savedAccountIdFilter.HasValue) 
+                    SelectedAccount = AvailableAccounts.FirstOrDefault(a => a.Id == savedAccountIdFilter.Value); // NOWOŚĆ
 
-                // 4. Budujemy transakcje
-                _allTransactions = rawTransactions
-                    .Where(t => t.AccountId == AccountId)
+                // NOWOŚĆ: Filtrujemy transakcje tylko wtedy, gdy mamy konkretne konto
+                var filteredTransactions = rawTransactions.AsEnumerable();
+                if (_parsedAccountId.HasValue)
+                {
+                    filteredTransactions = filteredTransactions.Where(t => t.AccountId == _parsedAccountId.Value);
+                }
+
+                // Budujemy obiekty wyświetlane na liście
+                _allTransactions = filteredTransactions
                     .Select(t => new TransactionDisplayItem
                     {
                         Transaction = t,
                         CategoryName = categories.FirstOrDefault(c => c.Id == t.CategoryId)?.Name ?? "-",
                         ProjectName = projects.FirstOrDefault(p => p.Id == t.ProjectId)?.Name ?? "-",
-                        Description = t.Description ?? string.Empty
+                        Description = t.Description ?? string.Empty,
+                        // NOWOŚĆ: Dodajemy nazwę konta i flagę widoczności
+                        AccountName = accounts.FirstOrDefault(a => a.Id == t.AccountId)?.Name ?? "-",
+                        ShowAccount = IsGlobalView
                     }).ToList();
 
                 ApplyFiltersAndSort();
@@ -126,7 +163,8 @@ namespace ExpenseTracker.ViewModels
         partial void OnMaxAmountTextChanged(string value) => ApplyFiltersAndSort();
         partial void OnSelectedCategoryChanged(Category? value) => ApplyFiltersAndSort();
         partial void OnSelectedProjectChanged(Project? value) => ApplyFiltersAndSort();
-        
+        // Odśwież listę, gdy użytkownik zmieni filtr konta
+        partial void OnSelectedAccountChanged(Account? value) => ApplyFiltersAndSort();
 
         // --- LOGIKA SORTOWANIA ---
         [RelayCommand]
@@ -154,30 +192,38 @@ namespace ExpenseTracker.ViewModels
             MaxAmountText = string.Empty;
             SelectedCategory = null;
             SelectedProject = null;
+            SelectedAccount = null;
         }
 
         [RelayCommand]
         private async Task NavigateToAddTransactionAsync()
         {
-            // Budujemy bazowy adres z kontem
-            string url = $"AddTransactionPage?PreselectedAccountId={AccountId}";
+            // Budujemy listę parametrów do przekazania
+            var queryParams = new List<string>();
 
-            // Jeśli kategoria jest przefiltrowana, doklejamy jej ID
+            if (_parsedAccountId.HasValue)
+                queryParams.Add($"PreselectedAccountId={_parsedAccountId.Value}");
+
             if (SelectedCategory != null)
-                url += $"&PreselectedCategoryId={SelectedCategory.Id}";
+                queryParams.Add($"PreselectedCategoryId={SelectedCategory.Id}");
 
-            // Jeśli projekt jest przefiltrowany, doklejamy jego ID
             if (SelectedProject != null)
-                url += $"&PreselectedProjectId={SelectedProject.Id}";
+                queryParams.Add($"PreselectedProjectId={SelectedProject.Id}");
+
+            // Sklejamy bezpieczny adres URL
+            string url = "AddTransactionPage";
+            if (queryParams.Any())
+            {
+                url += "?" + string.Join("&", queryParams);
+            }
 
             await Shell.Current.GoToAsync(url);
-           // await Shell.Current.GoToAsync($"AddTransactionPage?PreselectedAccountId={AccountId}");
         }
 
         private void UpdateSortIcons()
         {
             // Resetujemy wszystkie ikonki
-            DateSortIcon = CategorySortIcon = DescriptionSortIcon = ProjectSortIcon = AmountSortIcon = "";
+            DateSortIcon = CategorySortIcon = DescriptionSortIcon = ProjectSortIcon = AmountSortIcon = AccountSortIcon = "";
             string icon = _isAscending ? "▲" : "▼";
 
             switch (_currentSortColumn)
@@ -187,6 +233,7 @@ namespace ExpenseTracker.ViewModels
                 case "Description": DescriptionSortIcon = icon; break;
                 case "Project": ProjectSortIcon = icon; break;
                 case "Amount": AmountSortIcon = icon; break;
+                case "Account": AccountSortIcon = icon; break;
             }
         }
 
@@ -202,7 +249,7 @@ namespace ExpenseTracker.ViewModels
                 query = query.Where(t =>
                     t.Description.ToLower().Contains(lowerSearch) ||
                     t.CategoryName.ToLower().Contains(lowerSearch) ||
-                    t.ProjectName.ToLower().Contains(lowerSearch));
+                    t.ProjectName.ToLower().Contains(lowerSearch));                    
             }
 
             // 2. Filtry kwotowe (używamy normalizacji przecinka tak jak robiliśmy to wcześniej!)
@@ -222,15 +269,22 @@ namespace ExpenseTracker.ViewModels
 
             if (SelectedProject != null)
                 query = query.Where(t => t.Transaction.ProjectId == SelectedProject.Id);
+            // NOWOŚĆ: Filtr konta (używany tylko w widoku globalnym)
+            if (SelectedAccount != null)
+            {
+                query = query.Where(x => x.Transaction.AccountId == SelectedAccount.Id);
+            }
 
             // 4. Sortowanie
             query = _currentSortColumn switch
             {
                 "Date" => _isAscending ? query.OrderBy(t => t.Transaction.Date) : query.OrderByDescending(t => t.Transaction.Date),
+                "Account" => _isAscending ? query.OrderBy(t => t.AccountName) : query.OrderByDescending(t => t.AccountName),
                 "Category" => _isAscending ? query.OrderBy(t => t.CategoryName) : query.OrderByDescending(t => t.CategoryName),
                 "Description" => _isAscending ? query.OrderBy(t => t.Description) : query.OrderByDescending(t => t.Description),
                 "Project" => _isAscending ? query.OrderBy(t => t.ProjectName) : query.OrderByDescending(t => t.ProjectName),
                 "Amount" => _isAscending ? query.OrderBy(t => t.Transaction.Amount) : query.OrderByDescending(t => t.Transaction.Amount),
+                
                 _ => query
             };
 
@@ -251,5 +305,11 @@ namespace ExpenseTracker.ViewModels
         public string ProjectName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public Color AmountColor => Transaction.Type == TransactionType.Expense ? Color.FromArgb("#E53935") : Color.FromArgb("#4CAF50");
+
+        // NOWOŚĆ: Nazwa konta do wyświetlenia na liście
+        public string AccountName { get; set; } = string.Empty;
+
+        // NOWOŚĆ: Flaga decydująca, czy pokazać nazwę konta w danym rzędzie
+        public bool ShowAccount { get; set; }
     }
 }

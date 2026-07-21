@@ -463,4 +463,8 @@
     <value>Amount</value>
     <comment>TransactionsPage</comment>
   </data>
+  <data name="AllTransactionsTitle" xml:space="preserve">
+    <value>Transactions list</value>
+    <comment>Menu</comment>
+  </data>
 </root>

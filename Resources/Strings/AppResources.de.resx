@@ -453,4 +453,7 @@
   <data name="HeaderAmount" xml:space="preserve">
     <value>Betrag</value>
   </data>
+  <data name="AllTransactionsTitle" xml:space="preserve">
+    <value>Transaktionsliste</value>
+  </data>
 </root>

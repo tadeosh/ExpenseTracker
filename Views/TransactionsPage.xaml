@@ -25,81 +25,126 @@
                     <Entry Placeholder="{x:Static strings:AppResources.MaxAmountPlaceholder}" Text="{Binding MaxAmountText}" Keyboard="Numeric" WidthRequest="100"/>
                 </Border>
                 <Border StrokeShape="RoundRectangle 8" BackgroundColor="{DynamicResource SectionBackgroundColor}">
-                    <Picker Title="{x:Static strings:AppResources.AllCategoriesLabel}" ItemsSource="{Binding AvailableCategories}" SelectedItem="{Binding SelectedCategory}" ItemDisplayBinding="{Binding Name}" WidthRequest="150" Margin="10,0"/>
+                    <Picker Title="{x:Static strings:AppResources.AllCategoriesLabel}" ItemsSource="{Binding AvailableCategories}" SelectedItem="{Binding SelectedCategory}" ItemDisplayBinding="{Binding Name}" TextColor="{DynamicResource AppTextColor}" TitleColor="{DynamicResource AppTextColor}" WidthRequest="150" Margin="10,0"/>
                 </Border>
                 <Border StrokeShape="RoundRectangle 8" BackgroundColor="{DynamicResource SectionBackgroundColor}">
-                    <Picker Title="{x:Static strings:AppResources.AllProjectsLabel}" ItemsSource="{Binding AvailableProjects}" SelectedItem="{Binding SelectedProject}" ItemDisplayBinding="{Binding Name}" WidthRequest="150" Margin="10,0"/>
+                    <Picker Title="{x:Static strings:AppResources.AllProjectsLabel}" ItemsSource="{Binding AvailableProjects}" SelectedItem="{Binding SelectedProject}" ItemDisplayBinding="{Binding Name}" TextColor="{DynamicResource AppTextColor}" TitleColor="{DynamicResource AppTextColor}" WidthRequest="150" Margin="10,0"/>
                 </Border>
+                <Grid IsVisible="{Binding IsGlobalView}">
+                    <Border StrokeShape="RoundRectangle 8" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                        <Picker Title="{x:Static strings:AppResources.AccountLabel}" ItemsSource="{Binding AvailableAccounts}" SelectedItem="{Binding SelectedAccount}" ItemDisplayBinding="{Binding Name}" TextColor="{DynamicResource AppTextColor}" TitleColor="{DynamicResource AppTextColor}" WidthRequest="150" Margin="10,0" />
+                    </Border>
+                </Grid>
                 <!-- Przycisk do czyszczenia filtrów -->
                 <Button Text="X" BackgroundColor="Transparent" TextColor="#D32F2F" Command="{Binding ClearFiltersCommand}" />
             </HorizontalStackLayout>
         </ScrollView>
 
-        <!-- 3. KLIKALNE NAGŁÓWKI KOLUMN -->
-        <Grid Grid.Row="2" ColumnDefinitions="1.5*, 2*, 2.5*, 1.5*, 1.5*" Padding="5,10" BackgroundColor="{DynamicResource PrimaryColor}">
-            <Grid.Resources>
-                <Style TargetType="Label">
-                    <Setter Property="TextColor" Value="{DynamicResource HeaderTextColor}" />
-                    <Setter Property="FontAttributes" Value="Bold" />
-                    <Setter Property="FontSize" Value="12" />
-                </Style>
-            </Grid.Resources>
+        <!-- 3. KLIKALNE NAGŁÓWKI KOLUMN (Dopasowane do widoku dwuwierszowego) -->
+    <Grid Grid.Row="2" ColumnDefinitions="2*, 2.5*, Auto" RowDefinitions="Auto, Auto" Padding="5,10" ColumnSpacing="10" RowSpacing="4" BackgroundColor="{DynamicResource PrimaryColor}">
+        <Grid.Resources>
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="{DynamicResource HeaderTextColor}" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="FontSize" Value="12" />
+            </Style>
+        </Grid.Resources>
 
-            <HorizontalStackLayout Grid.Column="0">
+        <!-- ================= WIERZ 1 ================= -->
+        
+        <!-- Kategoria (Kolumna 0) -->
+        <HorizontalStackLayout Grid.Row="0" Grid.Column="0">
+            <Label Text="{x:Static strings:AppResources.HeaderCategory}" />
+            <Label Text="{Binding CategorySortIcon}" Margin="2,0,0,0" />
+            <HorizontalStackLayout.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Category"/>
+            </HorizontalStackLayout.GestureRecognizers>
+        </HorizontalStackLayout>
+
+        <!-- Opis (Kolumna 1) -->
+        <HorizontalStackLayout Grid.Row="0" Grid.Column="1">
+            <Label Text="{x:Static strings:AppResources.HeaderDescription}" />
+            <Label Text="{Binding DescriptionSortIcon}" Margin="2,0,0,0" />
+            <HorizontalStackLayout.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Description"/>
+            </HorizontalStackLayout.GestureRecognizers>
+        </HorizontalStackLayout>
+
+        <!-- Kwota (Kolumna 2, zajmuje 2 rzędy tak jak na liście) -->
+        <HorizontalStackLayout Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" HorizontalOptions="End" VerticalOptions="Center">
+            <Label Text="{x:Static strings:AppResources.HeaderAmount}" />
+            <Label Text="{Binding AmountSortIcon}" Margin="2,0,0,0" />
+            <HorizontalStackLayout.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Amount"/>
+            </HorizontalStackLayout.GestureRecognizers>
+        </HorizontalStackLayout>
+
+
+        <!-- ================= WIERZ 2 ================= -->
+        
+        <!-- Data i opcjonalnie Konto (Kolumna 0) -->
+        <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="4" VerticalOptions="Center">
+            <!-- Data -->
+            <HorizontalStackLayout>
                 <Label Text="{x:Static strings:AppResources.HeaderDate}" />
                 <Label Text="{Binding DateSortIcon}" Margin="2,0,0,0" />
                 <HorizontalStackLayout.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Date"/>
                 </HorizontalStackLayout.GestureRecognizers>
             </HorizontalStackLayout>
-
-            <HorizontalStackLayout Grid.Column="1">
-                <Label Text="{x:Static strings:AppResources.HeaderCategory}" />
-                <Label Text="{Binding CategorySortIcon}" Margin="2,0,0,0" />
+            
+            <!-- Separator i nagłówek Konta (tylko dla widoku globalnego) -->
+            <Label Text="|" IsVisible="{Binding IsGlobalView}" Opacity="0.5"/>
+            <HorizontalStackLayout IsVisible="{Binding IsGlobalView}">
+                <Label Text="{x:Static strings:AppResources.AccountLabel}" />
+                <Label Text="{Binding AccountSortIcon}" Margin="2,0,0,0" />
                 <HorizontalStackLayout.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Category"/>
+                    <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Account"/>
                 </HorizontalStackLayout.GestureRecognizers>
             </HorizontalStackLayout>
+        </HorizontalStackLayout>
 
-            <HorizontalStackLayout Grid.Column="2">
-                <Label Text="{x:Static strings:AppResources.HeaderDescription}" />
-                <Label Text="{Binding DescriptionSortIcon}" Margin="2,0,0,0" />
-                <HorizontalStackLayout.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Description"/>
-                </HorizontalStackLayout.GestureRecognizers>
-            </HorizontalStackLayout>
-
-            <HorizontalStackLayout Grid.Column="3">
-                <Label Text="{x:Static strings:AppResources.HeaderProject}" />
-                <Label Text="{Binding ProjectSortIcon}" Margin="2,0,0,0" />
-                <HorizontalStackLayout.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Project"/>
-                </HorizontalStackLayout.GestureRecognizers>
-            </HorizontalStackLayout>
-
-            <HorizontalStackLayout Grid.Column="4" HorizontalOptions="End">
-                <Label Text="{x:Static strings:AppResources.HeaderAmount}" />
-                <Label Text="{Binding AmountSortIcon}" Margin="2,0,0,0" />
-                <HorizontalStackLayout.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Amount"/>
-                </HorizontalStackLayout.GestureRecognizers>
-            </HorizontalStackLayout>
-        </Grid>
+        <!-- Projekt (Kolumna 1) -->
+        <HorizontalStackLayout Grid.Row="1" Grid.Column="1" VerticalOptions="Center">
+            <Label Text="{x:Static strings:AppResources.HeaderProject}" />
+            <Label Text="{Binding ProjectSortIcon}" Margin="2,0,0,0" />
+            <HorizontalStackLayout.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding SortByCommand}" CommandParameter="Project"/>
+            </HorizontalStackLayout.GestureRecognizers>
+        </HorizontalStackLayout>
+        
+    </Grid>
 
         <!-- 4. LISTA TRANSAKCJI -->
         <CollectionView Grid.Row="3" ItemsSource="{Binding Transactions}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <!-- Ważne: Kolumny muszą mieć identyczne proporcje jak w nagłówkach! -->
-                    <Grid ColumnDefinitions="1.5*, 2*, 2.5*, 1.5*, 1.5*" Padding="5,15" BackgroundColor="Transparent">
-                        <Label Grid.Column="0" Text="{Binding Transaction.Date, StringFormat='{0:d}'}" FontSize="12" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center"/>
-                        <Label Grid.Column="1" Text="{Binding CategoryName}" FontSize="12" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
-                        <Label Grid.Column="2" Text="{Binding Description}" FontSize="12" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
-                        <Label Grid.Column="3" Text="{Binding ProjectName}" FontSize="12" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
-                        <Label Grid.Column="4" Text="{Binding Transaction.Amount, StringFormat='{0:N2}'}" FontSize="12" FontAttributes="Bold" TextColor="{Binding AmountColor}" VerticalOptions="Center" HorizontalOptions="End"/>
 
-                        <BoxView Grid.ColumnSpan="5" HeightRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.1" VerticalOptions="End" Margin="0,15,0,-15"/>
+                    <!-- Prosta siatka: 3 kolumny, 2 wiersze -->
+                    <Grid Padding="5,12" ColumnDefinitions="2*, 2.5*, Auto" RowDefinitions="Auto, Auto" ColumnSpacing="10" RowSpacing="4">
+
+                        <!-- WIERZ 1: Główne informacje (Kategoria, Opis, Kwota) -->
+                        <Label Grid.Row="0" Grid.Column="0" Text="{Binding CategoryName}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
+
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding Description}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
+
+                        <Label Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" Text="{Binding Transaction.Amount, StringFormat='{0:N2}'}" FontSize="16" FontAttributes="Bold" TextColor="{Binding AmountColor}" VerticalOptions="Center" HorizontalOptions="End" />
+
+                        <!-- WIERZ 2: Szczegóły pomocnicze (Data, Konto, Projekt) -->
+                        <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="4" VerticalOptions="Center">
+                            <Label Text="{Binding Transaction.Date, StringFormat='{0:dd.MM.yyyy}'}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.6"/>
+
+                            <!-- Konto pojawia się tylko w widoku globalnym dzięki ukrytej fladze -->
+                            <Label Text="|" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.4" IsVisible="{Binding ShowAccount}"/>
+                            <Label Text="{Binding AccountName}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" LineBreakMode="TailTruncation" IsVisible="{Binding ShowAccount}"/>
+                        </HorizontalStackLayout>
+
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding ProjectName}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+
+                        <!-- Linia oddzielająca element od następnego -->
+                        <BoxView Grid.Row="1" Grid.ColumnSpan="3" HeightRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.1" VerticalOptions="End" Margin="0,15,0,-12"/>
                     </Grid>
+
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

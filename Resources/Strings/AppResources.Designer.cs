@@ -178,6 +178,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Transactions list.
+        /// </summary>
+        internal static string AllTransactionsTitle {
+            get {
+                return ResourceManager.GetString("AllTransactionsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Amount.
         /// </summary>
         internal static string AmountLabel {

@@ -50,7 +50,7 @@ namespace ExpenseTracker.ViewModels
                     int accountId = (int)idProperty.GetValue(value)!;
 
                     // Przechodzimy na nową stronę, przekazując wyciągnięte ID w adresie URL
-                    Shell.Current.GoToAsync($"TransactionsPage?AccountId={accountId}");
+                    Shell.Current.GoToAsync($"AccountTransactionsRoute?AccountId={accountId}");
                 }
 
                 // 4. Ekstremalnie ważne: Czyścimy wybór w głównym wątku, 

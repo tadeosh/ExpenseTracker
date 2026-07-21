@@ -5,7 +5,9 @@
              x:Class="ExpenseTracker.Views.AddTransactionPage"
              Title="{x:Static strings:AppResources.AddTransactionTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}"
-             HideSoftInputOnTapped="True">
+             HideSoftInputOnTapped="True"
+             Shell.FlyoutBehavior="Disabled">
+
 
     <Shell.TitleView>
         <Grid ColumnDefinitions="Auto, *" Padding="0,0,15,0">
@@ -150,11 +152,11 @@
                     </Path>
 
                     <Border Grid.Column="1" StrokeThickness="0" BackgroundColor="Transparent" Margin="5,0,0,0">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding ToggleCategoryDropdownCommand}" />
-                    </Border.GestureRecognizers>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ToggleCategoryDropdownCommand}" />
+                        </Border.GestureRecognizers>
 
-                    <Grid Padding="3,10" ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
+                        <Grid Padding="3,10" ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
                             <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
 
                                 <Ellipse WidthRequest="16" HeightRequest="16" VerticalOptions="Center">
@@ -179,13 +181,13 @@
                                 </Label>
 
                             </HorizontalStackLayout>
-                        
+
                             <Label Grid.Column="2" Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,10,0" />
 
-                        <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.3" VerticalOptions="End" Margin="-5,5,-5,-10"/>
-                    </Grid>
-                </Border>
-                </Grid>    
+                            <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.3" VerticalOptions="End" Margin="-5,5,-5,-10"/>
+                        </Grid>
+                    </Border>
+                </Grid>
 
                 <Border IsVisible="{Binding IsCategoryDropdownOpen}" 
                         BackgroundColor="{DynamicResource SectionBackgroundColor}" 
@@ -253,8 +255,8 @@
                             <TapGestureRecognizer Command="{Binding GoToProjectsCommand}" />
                         </Path.GestureRecognizers>
                     </Path>
-               
-                <Grid Grid.Column="1" Margin="5,0,0,0">
+
+                    <Grid Grid.Column="1" Margin="5,0,0,0">
                         <Picker Title="{x:Static strings:AppResources.ProjectLabel}"
                                 TitleColor="{DynamicResource AppTextColor}"
                                 ItemsSource="{Binding Projects}"
@@ -272,8 +274,8 @@
                             </Picker.Triggers>
                         </Picker>
                         <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
+                    </Grid>
                 </Grid>
-                </Grid>     
             </VerticalStackLayout>
 
             <Entry Placeholder="{x:Static strings:AppResources.DescriptionLabel}" 
