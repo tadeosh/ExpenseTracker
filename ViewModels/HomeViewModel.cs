@@ -4,6 +4,7 @@ using ExpenseTracker.Data;
 using ExpenseTracker.Models;
 using ExpenseTracker.Resources.Strings;
 using System.Collections.ObjectModel;
+using ExpenseTracker.Helpers;
 
 namespace ExpenseTracker.ViewModels
 {
@@ -50,7 +51,7 @@ namespace ExpenseTracker.ViewModels
                     int accountId = (int)idProperty.GetValue(value)!;
 
                     // Przechodzimy na nową stronę, przekazując wyciągnięte ID w adresie URL
-                    Shell.Current.GoToAsync($"AccountTransactionsRoute?AccountId={accountId}");
+                    Shell.Current.GoToAsync($"{RoutesHelper.AccountTransactionsRoute}?AccountId={accountId}");
                 }
 
                 // 4. Ekstremalnie ważne: Czyścimy wybór w głównym wątku, 
@@ -76,9 +77,13 @@ namespace ExpenseTracker.ViewModels
             List<string> missingRatesList = new();
             var tempAccounts = new ObservableCollection<AccountBalanceItem>();
 
+            var balances = await _databaseService.GetAllAccountBalancesAsync();
+
             foreach (var acc in accounts)
             {
-                decimal currentBalance = await _databaseService.GetAccountBalanceAsync(acc.Id);
+                // decimal currentBalance = await _databaseService.GetAccountBalanceAsync(acc.Id);
+                var currentBalance = balances.GetValueOrDefault(acc.Id);
+
                 tempAccounts.Add(new AccountBalanceItem
                 {
                     Id =acc.Id,
@@ -201,7 +206,8 @@ namespace ExpenseTracker.ViewModels
         [RelayCommand]
         private async Task NavigateToAddTransactionAsync()
         {
-            await Shell.Current.GoToAsync("//AddTransactionPage");
+            //await Shell.Current.GoToAsync("//AddTransactionPage");
+            await Shell.Current.GoToAsync(RoutesHelper.AddTransactionPage);
         }
 
         [RelayCommand]

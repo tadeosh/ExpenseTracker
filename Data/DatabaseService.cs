@@ -116,7 +116,7 @@ namespace ExpenseTracker.Data
         }
 
         // Magia architektury: Dynamiczne wyliczanie aktualnego salda konta
-        public async Task<decimal> GetAccountBalanceAsync(int accountId)
+        /*public async Task<decimal> GetAccountBalanceAsync(int accountId)
         {
             await InitAsync();
 
@@ -154,6 +154,69 @@ namespace ExpenseTracker.Data
             }
 
             return balance;
+        } */
+
+        public async Task<Dictionary<int, decimal>>GetAllAccountBalancesAsync()
+        {
+            await InitAsync();
+
+            var accounts = await _database
+                .Table<Account>()
+                .ToListAsync();
+
+            var transactions = await _database
+                .Table<Transaction>()
+                .ToListAsync();
+
+            var result = accounts.ToDictionary(
+                a => a.Id,
+                a => a.InitialBalance);
+
+            foreach (var transaction in transactions)
+            {
+                switch (transaction.Type)
+                {
+                    case TransactionType.Income:
+
+                        result[transaction.AccountId] +=
+                            transaction.Amount;
+
+                        break;
+
+                    case TransactionType.Expense:
+
+                        result[transaction.AccountId] -=
+                            transaction.Amount;
+
+                        break;
+
+                    case TransactionType.Transfer:
+
+                        result[transaction.AccountId] -=
+                            transaction.Amount;
+
+                        if (transaction.DestinationAccountId.HasValue)
+                        {
+                            var amountToAdd = transaction.Amount;
+
+                            if (transaction.ExchangeRate.HasValue &&
+                                transaction.ExchangeRate > 0)
+                            {
+                                amountToAdd *=
+                                    (1m /
+                                     transaction.ExchangeRate.Value);
+                            }
+
+                            result[
+                                transaction.DestinationAccountId.Value]
+                                += amountToAdd;
+                        }
+
+                        break;
+                }
+            }
+
+            return result;
         }
 
         // ==========================================
