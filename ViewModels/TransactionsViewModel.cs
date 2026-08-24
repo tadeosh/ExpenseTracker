@@ -97,6 +97,11 @@ namespace ExpenseTracker.ViewModels
                 var projects = await _databaseService.GetProjectsAsync();
                 var rawTransactions = await _databaseService.GetTransactionsAsync();
 
+                var categoryDict = categories.ToDictionary(x => x.Id);
+                var projectDict = projects.ToDictionary(x => x.Id);
+                var accountDict = accounts.ToDictionary(x => x.Id);
+
+
                 // NOWOŚĆ: Dynamiczny tytuł strony
                 if (_parsedAccountId.HasValue)
                 {
@@ -140,11 +145,14 @@ namespace ExpenseTracker.ViewModels
                     .Select(t => new TransactionDisplayItem
                     {
                         Transaction = t,
-                        CategoryName = categories.FirstOrDefault(c => c.Id == t.CategoryId)?.Name ?? "-",
-                        ProjectName = projects.FirstOrDefault(p => p.Id == t.ProjectId)?.Name ?? "-",
+                        //CategoryName = categories.FirstOrDefault(c => c.Id == t.CategoryId)?.Name ?? "-",
+                        CategoryName = categoryDict.TryGetValue(t.CategoryId ?? 0, out var category) ? category.Name : "-",
+                        //ProjectName = projects.FirstOrDefault(p => p.Id == t.ProjectId)?.Name ?? "-",
+                        ProjectName = categoryDict.TryGetValue(t.ProjectId ?? 0, out var project) ? project.Name : "-",
                         Description = t.Description ?? string.Empty,
                         // NOWOŚĆ: Dodajemy nazwę konta i flagę widoczności
-                        AccountName = accounts.FirstOrDefault(a => a.Id == t.AccountId)?.Name ?? "-",
+                        //AccountName = accounts.FirstOrDefault(a => a.Id == t.AccountId)?.Name ?? "-",
+                        AccountName = accountDict.TryGetValue(t.AccountId, out var account) ? account.Name : "-",
                         ShowAccount = IsGlobalView
                     }).ToList();
 

@@ -326,11 +326,14 @@ namespace ExpenseTracker.Data
 
             // Kaskadowo usuwamy wszystko. Kolejność nie ma aż takiego znaczenia dla SQLite w trybie prostej bazy,
             // ale dobrą praktyką jest usuwanie najpierw dzieci (transakcji), potem rodziców (konta/kategorie).
-            await _database.DeleteAllAsync<Transaction>();
-            await _database.DeleteAllAsync<ExchangeRate>();
-            await _database.DeleteAllAsync<Account>();
-            await _database.DeleteAllAsync<Project>();
-            await _database.DeleteAllAsync<Category>();
+            await _database.RunInTransactionAsync(conn =>
+            {
+                conn.DeleteAll<Transaction>();
+                conn.DeleteAll<ExchangeRate>();
+                conn.DeleteAll<Account>();
+                conn.DeleteAll<Project>();
+                conn.DeleteAll<Category>();
+            });
 
             // Czyszczenie ustawień zapisanych w preferencjach (opcjonalnie, ale wskazane przy "Factory Reset")
             Preferences.Default.Remove("DefaultCurrency");
