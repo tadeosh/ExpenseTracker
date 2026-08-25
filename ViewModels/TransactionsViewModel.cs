@@ -5,6 +5,7 @@ using ExpenseTracker.Data;
 using ExpenseTracker.Models;
 using ExpenseTracker.Resources.Strings;
 using System.Collections.ObjectModel;
+using ExpenseTracker.Services.Interfaces;
 
 
 namespace ExpenseTracker.ViewModels
@@ -13,7 +14,7 @@ namespace ExpenseTracker.ViewModels
     [QueryProperty(nameof(AccountIdParam), "AccountId")]
     public partial class TransactionsViewModel : ObservableObject // <-- usunięto IQueryAttributable
     {
-        private readonly DatabaseService _databaseService;
+        private readonly IDatabaseService _databaseService;
 
         // NOWOŚĆ: Odbiera ID konta jako tekst (może być null, jeśli wejdziemy z menu głównego)
         [ObservableProperty]
@@ -67,7 +68,7 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial Account? SelectedAccount { get; set; }
 
-        public TransactionsViewModel(DatabaseService databaseService)
+        public TransactionsViewModel(IDatabaseService databaseService)
         {
             _databaseService = databaseService;
         }

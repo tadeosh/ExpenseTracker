@@ -4,13 +4,14 @@ using ExpenseTracker.Data;
 using ExpenseTracker.Models;
 using ExpenseTracker.Resources.Strings;
 using System.Collections.ObjectModel;
+using ExpenseTracker.Services.Interfaces;
 
 namespace ExpenseTracker.ViewModels
 {
     // NOWOŚĆ: IQueryAttributable pozwala łapać parametry nawigacji z poprzedniej strony
     public partial class CategoriesViewModel : ObservableObject, IQueryAttributable
     {
-        private readonly DatabaseService _databaseService;
+        private readonly IDatabaseService _databaseService;
 
         public ObservableCollection<CategoryDisplayItem> Categories { get; } = new();
 
@@ -44,7 +45,7 @@ namespace ExpenseTracker.ViewModels
         private Category? _categoryBeingEdited;
         private CategoryDisplayItem? _draggedItem;
 
-        public CategoriesViewModel(DatabaseService databaseService)
+        public CategoriesViewModel(IDatabaseService databaseService)
         {
             _databaseService = databaseService;
         }

@@ -1,9 +1,10 @@
 ﻿using SQLite;
 using ExpenseTracker.Models;
+using ExpenseTracker.Services.Interfaces;
 
 namespace ExpenseTracker.Data
 {
-    public class DatabaseService
+    public class DatabaseService : IDatabaseService
     {
         // Obiekt reprezentujący połączenie z bazą
         private SQLiteAsyncConnection _database = null!;
@@ -115,108 +116,91 @@ namespace ExpenseTracker.Data
                                   .ToListAsync();
         }
 
-        // Magia architektury: Dynamiczne wyliczanie aktualnego salda konta
-        /*public async Task<decimal> GetAccountBalanceAsync(int accountId)
+        public async Task<Dictionary<int, decimal>> GetAllAccountBalancesAsync()
         {
             await InitAsync();
+            var result = new Dictionary<int, decimal>();
 
-            var account = await _database.Table<Account>().Where(a => a.Id == accountId).FirstOrDefaultAsync();
-            if (account == null) return 0;
-
-            // Pobieramy wszystkie transakcje z bazy
-            var transactions = await _database.Table<Transaction>().ToListAsync();
-
-            // Zaczynamy od salda początkowego
-            decimal balance = account.InitialBalance;
-
-            // 1. Przychody (+)
-            balance += transactions.Where(t => t.AccountId == accountId && t.Type == TransactionType.Income).Sum(t => t.Amount);
-
-            // 2. Wydatki (-)
-            balance -= transactions.Where(t => t.AccountId == accountId && t.Type == TransactionType.Expense).Sum(t => t.Amount);
-
-            // 3. Transfery wychodzące z tego konta (-)
-            balance -= transactions.Where(t => t.AccountId == accountId && t.Type == TransactionType.Transfer).Sum(t => t.Amount);
-
-            // 4. Transfery przychodzące na to konto (+) wraz z przelicznikiem walut!
-            var incomingTransfers = transactions.Where(t => t.DestinationAccountId == accountId && t.Type == TransactionType.Transfer);
-            foreach (var transfer in incomingTransfers)
+            try
             {
-                if (transfer.ExchangeRate.HasValue && transfer.ExchangeRate > 0)
+                // 1. Pobieramy początkowe salda kont
+                var accounts = await _database.Table<Account>().ToListAsync();
+                result = accounts.ToDictionary(a => a.Id, a => a.InitialBalance);
+
+                // UWAGA: Tabela nazywa się "Transaction", co w SQL jest słowem kluczowym, 
+                // dlatego w surowych zapytaniach zabezpieczamy ją cudzysłowami: \"Transaction\"
+
+                // 2. Sumujemy Przychody (+)
+                var incomes = await _database.QueryAsync<BalanceResult>(
+                    "SELECT AccountId, SUM(Amount) as Total FROM \"Transaction\" WHERE Type = ? GROUP BY AccountId",
+                    (int)TransactionType.Income);
+
+                foreach (var income in incomes)
                 {
-                    // Genialne w swojej prostocie: mnożymy przez odwrotność kursu (1 / kurs)
-                    balance += transfer.Amount * (1m / transfer.ExchangeRate.Value);
+                    if (result.ContainsKey(income.AccountId))
+                        result[income.AccountId] += income.Total;
                 }
-                else
+
+                // 3. Sumujemy Wydatki (-)
+                var expenses = await _database.QueryAsync<BalanceResult>(
+                    "SELECT AccountId, SUM(Amount) as Total FROM \"Transaction\" WHERE Type = ? GROUP BY AccountId",
+                    (int)TransactionType.Expense);
+
+                foreach (var expense in expenses)
                 {
-                    balance += transfer.Amount;
+                    if (result.ContainsKey(expense.AccountId))
+                        result[expense.AccountId] -= expense.Total;
+                }
+
+                // 4. Sumujemy Transfery wychodzące z danego konta (-)
+                var transfersOut = await _database.QueryAsync<BalanceResult>(
+                    "SELECT AccountId, SUM(Amount) as Total FROM \"Transaction\" WHERE Type = ? GROUP BY AccountId",
+                    (int)TransactionType.Transfer);
+
+                foreach (var transferOut in transfersOut)
+                {
+                    if (result.ContainsKey(transferOut.AccountId))
+                        result[transferOut.AccountId] -= transferOut.Total;
+                }
+
+                // 5. Sumujemy Transfery przychodzące na dane konto (+) z uwzględnieniem kursu (ExchangeRate)
+                // Logika matematyczna (1 / ExchangeRate) jest wykonywana w locie przez silnik SQLite!
+                var transfersInQuery = @"
+            SELECT DestinationAccountId as AccountId, 
+                   SUM(
+                       CASE 
+                           WHEN ExchangeRate IS NOT NULL AND ExchangeRate > 0 THEN Amount * (1.0 / ExchangeRate)
+                           ELSE Amount 
+                       END
+                   ) as Total 
+            FROM ""Transaction"" 
+            WHERE Type = ? AND DestinationAccountId IS NOT NULL 
+            GROUP BY DestinationAccountId";
+
+                var transfersIn = await _database.QueryAsync<BalanceResult>(transfersInQuery, (int)TransactionType.Transfer);
+
+                foreach (var transferIn in transfersIn)
+                {
+                    if (result.ContainsKey(transferIn.AccountId))
+                        result[transferIn.AccountId] += transferIn.Total;
                 }
             }
-
-            return balance;
-        } */
-
-        public async Task<Dictionary<int, decimal>>GetAllAccountBalancesAsync()
-        {
-            await InitAsync();
-
-            var accounts = await _database
-                .Table<Account>()
-                .ToListAsync();
-
-            var transactions = await _database
-                .Table<Transaction>()
-                .ToListAsync();
-
-            var result = accounts.ToDictionary(
-                a => a.Id,
-                a => a.InitialBalance);
-
-            foreach (var transaction in transactions)
+            catch (Exception ex)
             {
-                switch (transaction.Type)
-                {
-                    case TransactionType.Income:
-
-                        result[transaction.AccountId] +=
-                            transaction.Amount;
-
-                        break;
-
-                    case TransactionType.Expense:
-
-                        result[transaction.AccountId] -=
-                            transaction.Amount;
-
-                        break;
-
-                    case TransactionType.Transfer:
-
-                        result[transaction.AccountId] -=
-                            transaction.Amount;
-
-                        if (transaction.DestinationAccountId.HasValue)
-                        {
-                            var amountToAdd = transaction.Amount;
-
-                            if (transaction.ExchangeRate.HasValue &&
-                                transaction.ExchangeRate > 0)
-                            {
-                                amountToAdd *=
-                                    (1m /
-                                     transaction.ExchangeRate.Value);
-                            }
-
-                            result[
-                                transaction.DestinationAccountId.Value]
-                                += amountToAdd;
-                        }
-
-                        break;
-                }
+                // Tutaj docelowo powinno znaleźć się wstrzyknięte ILogger<DatabaseService>
+                Console.WriteLine($"[CRITICAL] Błąd podczas obliczania sald: {ex.Message}");
+                throw; // Rzucamy dalej, aby ViewModel mógł pokazać błąd użytkownikowi
             }
 
             return result;
+        }
+
+        // =================== Klasa pomocnicza =============================
+        // Klasa używana wyłącznie wewnętrznie do rzutowania wyników zapytań agregujących SQL
+        public class BalanceResult
+        {
+            public int AccountId { get; set; }
+            public decimal Total { get; set; }
         }
 
         // ==========================================

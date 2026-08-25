@@ -5,12 +5,13 @@ using ExpenseTracker.Helpers;
 using ExpenseTracker.Models;
 using ExpenseTracker.Resources.Strings; // NOWOŚĆ: Referencja do tłumaczeń
 using System.Collections.ObjectModel;
+using ExpenseTracker.Services.Interfaces;
 
 namespace ExpenseTracker.ViewModels
 {
     public partial class AccountsViewModel : ObservableObject
     {
-        private readonly DatabaseService _databaseService;
+        private readonly IDatabaseService _databaseService;
 
         public ObservableCollection<Account> Accounts { get; } = new();
 
@@ -25,7 +26,7 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial string AccountBalance { get; set; } = string.Empty;
 
-        public AccountsViewModel(DatabaseService databaseService)
+        public AccountsViewModel(IDatabaseService databaseService)
         {
             _databaseService = databaseService;
 

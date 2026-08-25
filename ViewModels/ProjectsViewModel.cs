@@ -3,19 +3,20 @@ using CommunityToolkit.Mvvm.Input;
 using ExpenseTracker.Data;
 using ExpenseTracker.Models;
 using System.Collections.ObjectModel;
+using ExpenseTracker.Services.Interfaces;
 
 namespace ExpenseTracker.ViewModels
 {
     public partial class ProjectsViewModel : ObservableObject
     {
-        private readonly DatabaseService _databaseService;
+        private readonly IDatabaseService _databaseService;
 
         public ObservableCollection<Project> Projects { get; } = new();
 
         [ObservableProperty]
         public partial string ProjectName { get; set; } = string.Empty;
 
-        public ProjectsViewModel(DatabaseService databaseService)
+        public ProjectsViewModel(IDatabaseService databaseService)
         {
             _databaseService = databaseService;
         }

@@ -5,12 +5,14 @@ using ExpenseTracker.Models;
 using ExpenseTracker.Resources.Strings;
 using System.Collections.ObjectModel;
 using ExpenseTracker.Helpers;
+using ExpenseTracker.Services.Interfaces;
 
 namespace ExpenseTracker.ViewModels
 {
     public partial class HomeViewModel : ObservableObject
     {
-        private readonly DatabaseService _databaseService;
+        private readonly IDatabaseService _databaseService;
+        private readonly ISettingsService _settingsService;
 
         [ObservableProperty]
         public partial ObservableCollection<AccountBalanceItem> AccountsBalances { get; set; } = new();
@@ -32,37 +34,48 @@ namespace ExpenseTracker.ViewModels
 
         private string _missingRatesMessage = string.Empty;
 
-        // 1. Zmieniamy typ na 'object', aby uniknąć konfliktów typów.
-        // MAUI bez problemu przypisze tu kliknięty element z listy, niezależnie od jego klasy.
-        [ObservableProperty]
-        public partial object? SelectedAccountForNavigation { get; set; }
-
-        // 2. Metoda reagująca na zmianę (zauważ, że przyjmuje teraz 'object?')
-        partial void OnSelectedAccountForNavigationChanged(object? value)
-        {
-            if (value != null)
-            {
-                // 3. Używamy refleksji, aby poszukać właściwości o nazwie "Id" w klikniętym elemencie
-                var idProperty = value.GetType().GetProperty("Id");
-
-                if (idProperty != null)
-                {
-                    // Wyciągamy wartość Id jako liczbę całkowitą
-                    int accountId = (int)idProperty.GetValue(value)!;
-
-                    // Przechodzimy na nową stronę, przekazując wyciągnięte ID w adresie URL
-                    Shell.Current.GoToAsync($"{RoutesHelper.AccountTransactionsRoute}?AccountId={accountId}");
-                }
-
-                // 4. Ekstremalnie ważne: Czyścimy wybór w głównym wątku, 
-                // żeby po powrocie na tę stronę można było znowu kliknąć w dokładnie to samo konto!
-                MainThread.BeginInvokeOnMainThread(() => SelectedAccountForNavigation = null);
-            }
-        }
-
-        public HomeViewModel(DatabaseService databaseService)
+        public HomeViewModel(IDatabaseService databaseService, ISettingsService settingsService)
         {
             _databaseService = databaseService;
+            _settingsService = settingsService;
+        }
+
+        // 1. Zmieniamy typ na 'object', aby uniknąć konfliktów typów.
+        // MAUI bez problemu przypisze tu kliknięty element z listy, niezależnie od jego klasy.
+        /*  [ObservableProperty]
+          public partial object? SelectedAccountForNavigation { get; set; }
+
+          // 2. Metoda reagująca na zmianę (zauważ, że przyjmuje teraz 'object?')
+          partial void OnSelectedAccountForNavigationChanged(object? value)        
+          {
+              if (value != null)
+              {
+                  // 3. Używamy refleksji, aby poszukać właściwości o nazwie "Id" w klikniętym elemencie
+                  var idProperty = value.GetType().GetProperty("Id");
+
+                  if (idProperty != null)
+                  {
+                      // Wyciągamy wartość Id jako liczbę całkowitą
+                      int accountId = (int)idProperty.GetValue(value)!;
+
+                      // Przechodzimy na nową stronę, przekazując wyciągnięte ID w adresie URL
+                      Shell.Current.GoToAsync($"{RoutesHelper.AccountTransactionsRoute}?AccountId={accountId}");
+                  }
+
+                  // 4. Ekstremalnie ważne: Czyścimy wybór w głównym wątku, 
+                  // żeby po powrocie na tę stronę można było znowu kliknąć w dokładnie to samo konto!
+                  MainThread.BeginInvokeOnMainThread(() => SelectedAccountForNavigation = null);
+              }
+          } */
+
+        // NOWY KOD:
+        [RelayCommand]
+        private async Task AccountTappedAsync(AccountBalanceItem? account)
+        {
+            if (account == null) return;
+
+            // Bezpośredni, silnie typowany dostęp do "Id" - kompilator wie, czym jest account!
+            await Shell.Current.GoToAsync($"{RoutesHelper.AccountTransactionsRoute}?AccountId={account.Id}");
         }
 
         public async Task LoadDataAsync()
@@ -71,7 +84,8 @@ namespace ExpenseTracker.ViewModels
             var accounts = await _databaseService.GetAccountsAsync();
             var accountDictionary = accounts.ToDictionary(a => a.Id, a => a.Name);
 
-            string defaultCurrency = Preferences.Default.Get("DefaultCurrency", "PLN");
+            //string defaultCurrency = Preferences.Default.Get("DefaultCurrency", "PLN");
+            string defaultCurrency = _settingsService.DefaultCurrency;
             decimal totalNetWorth = 0;
 
             List<string> missingRatesList = new();

@@ -4,6 +4,7 @@ using ExpenseTracker.Data;
 using ExpenseTracker.Models;
 using ExpenseTracker.Resources.Strings;
 using System.Collections.ObjectModel;
+using ExpenseTracker.Services.Interfaces;
 
 namespace ExpenseTracker.ViewModels
 {
@@ -12,7 +13,7 @@ namespace ExpenseTracker.ViewModels
     [QueryProperty(nameof(PreselectedProjectId), "PreselectedProjectId")] // NOWOŚĆ
     public partial class AddTransactionViewModel : ObservableObject
     {
-        private readonly DatabaseService _databaseService;
+        private readonly IDatabaseService _databaseService;
 
         // NOWOŚĆ: Zmienna przechowująca przekazane z zewnątrz ID konta
         [ObservableProperty]
@@ -90,7 +91,7 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial string CurrencyConversionLabel { get; set; } = string.Empty;
 
-        public AddTransactionViewModel(DatabaseService databaseService)
+        public AddTransactionViewModel(IDatabaseService databaseService)
         {
             _databaseService = databaseService;
         }

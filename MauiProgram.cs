@@ -1,8 +1,10 @@
-﻿using ExpenseTracker.Data;
+﻿using CommunityToolkit.Maui;
+using ExpenseTracker.Data;
+using ExpenseTracker.Services;
+using ExpenseTracker.Services.Interfaces;
 using ExpenseTracker.ViewModels;
 using ExpenseTracker.Views;
 using Microsoft.Extensions.Logging;
-using CommunityToolkit.Maui;
 
 namespace ExpenseTracker
 {
@@ -25,7 +27,8 @@ namespace ExpenseTracker
 #endif
             // NOWOŚĆ: Rejestrujemy nasz serwis bazy danych.
             // AddSingleton oznacza, że aplikacja stworzy go raz i będzie używać tej samej kopii wszędzie.
-            builder.Services.AddSingleton<DatabaseService>();
+            builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
+            builder.Services.AddSingleton<ISettingsService, SettingsService>();
 
             builder.Services.AddTransient<Views.SetupPage>();
 
@@ -51,6 +54,9 @@ namespace ExpenseTracker
 
             builder.Services.AddTransient<Views.TransactionsPage>();
             builder.Services.AddTransient<ViewModels.TransactionsViewModel>();
+
+            builder.Services.AddTransient<SettingsViewModel>();
+            builder.Services.AddTransient<SettingsPage>();
 
             return builder.Build();
         }

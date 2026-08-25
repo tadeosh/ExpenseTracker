@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
+             xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
              x:Class="ExpenseTracker.Views.HomePage"
              x:Name="MyHomePage"
              Title="{x:Static strings:AppResources.HomePageTitle}"
@@ -13,13 +14,30 @@
 
             <Label Grid.Row="0" Text="{x:Static strings:AppResources.TotalBalanceLabel}" FontSize="20" FontAttributes="Bold" Margin="0,0,0,10" TextColor="{DynamicResource AppTextColor}"/>
 
-            <CollectionView Grid.Row="1" ItemsSource="{Binding AccountsBalances}" HeightRequest="110" HorizontalScrollBarVisibility="Always" SelectionMode="Single" SelectedItem="{Binding SelectedAccountForNavigation}">
+            <!-- 1. SelectionMode="None" - wyłączamy wbudowane zaznaczanie i usuwamy SelectedItem -->
+            <CollectionView Grid.Row="1" 
+                ItemsSource="{Binding AccountsBalances}" 
+                HeightRequest="110" 
+                HorizontalScrollBarVisibility="Always" 
+                SelectionMode="None">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Horizontal" ItemSpacing="15" />
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
+                    <!-- 2. Wskazujemy kompilatorowi, z jakim modelem danych mamy do czynienia wewnątrz listy -->
+                    <DataTemplate x:DataType="viewmodels:AccountBalanceItem">
                         <Border WidthRequest="150" Padding="15" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+
+                            <!-- 3. NOWOŚĆ: Reakcja na kliknięcie -->
+                            <Border.GestureRecognizers>
+                                <!-- Tłumaczenie magii poniżej:
+                         "Poszukaj komendy AccountTappedCommand w HomeViewModel (bo jesteśmy wewnątrz AccountBalanceItem), 
+                         i jako parametr prześlij samego siebie ({Binding .})" -->
+                                <TapGestureRecognizer 
+                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:HomeViewModel}}, Path=AccountTappedCommand}"
+                        CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+
                             <VerticalStackLayout Spacing="5" VerticalOptions="Center">
                                 <Label Text="{Binding Name}" FontSize="15" TextColor="{DynamicResource AppTextColor}" Opacity="0.8" LineBreakMode="TailTruncation"/>
                                 <HorizontalStackLayout Spacing="5">
@@ -31,6 +49,7 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+
 
             <Border Grid.Row="2" Margin="0,20,0,0" Padding="20,15" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{DynamicResource PrimaryColor}">
                 <Grid ColumnDefinitions="*, Auto">
@@ -62,9 +81,8 @@
                 <Label Grid.Row="1" Text="{x:Static strings:AppResources.NoTransactionsLabel}" IsVisible="{Binding HasNoTransactions}" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" Margin="0,20,0,0" />
 
                 <CollectionView Grid.Row="2" ItemsSource="{Binding GroupedTransactions}" IsGrouped="True" IsVisible="{Binding HasTransactions}">
-
                     <CollectionView.GroupHeaderTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="viewmodels:TransactionGroup">
                             <Border Margin="0,5,0,5" Padding="10,5" StrokeShape="RoundRectangle 6" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" Opacity="0.9">
                                 <Grid ColumnDefinitions="Auto, Auto, *, Auto, Auto" ColumnSpacing="10">
                                     <Label Grid.Column="0" Text="{Binding DateDisplay}" FontAttributes="Bold" FontSize="14" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center"/>
@@ -78,7 +96,7 @@
                     </CollectionView.GroupHeaderTemplate>
 
                     <CollectionView.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="viewmodels:RecentTransactionItem">
                             <Grid Padding="5,10" ColumnDefinitions="2.5*, 3.5*, 2*, Auto" ColumnSpacing="8">
                                 <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="2">
                                     <Label Text="{Binding CategoryName}" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />

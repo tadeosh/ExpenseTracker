@@ -3,12 +3,13 @@ using CommunityToolkit.Mvvm.Input;
 using ExpenseTracker.Data;
 using ExpenseTracker.Models;
 using System.Collections.ObjectModel;
+using ExpenseTracker.Services.Interfaces;
 
 namespace ExpenseTracker.ViewModels
 {
     public partial class ExchangeRatesViewModel : ObservableObject
     {
-        private readonly DatabaseService _databaseService;
+        private readonly IDatabaseService _databaseService;
 
         [ObservableProperty]
         public partial ObservableCollection<ExchangeRate> Rates { get; set; } = new();
@@ -28,7 +29,7 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial DateTime SelectedDate { get; set; } = DateTime.Today;
 
-        public ExchangeRatesViewModel(DatabaseService databaseService)
+        public ExchangeRatesViewModel(IDatabaseService databaseService)
         {
             _databaseService = databaseService;
         }
