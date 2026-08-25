@@ -467,4 +467,20 @@
     <value>Transactions list</value>
     <comment>Menu</comment>
   </data>
+  <data name="AmountInvalidMsg" xml:space="preserve">
+    <value>Enter a valid amount greater than zero.</value>
+    <comment>AddtransactionViewModel</comment>
+  </data>
+  <data name="AccountRequiredMsg" xml:space="preserve">
+    <value>Choose an account.</value>
+    <comment>AddtransactionViewModel</comment>
+  </data>
+  <data name="TransferAccountInvalidMsg" xml:space="preserve">
+    <value>Select the correct destination account (different from the source account).</value>
+    <comment>AddTransactionViewModel</comment>
+  </data>
+  <data name="ExchangeRateInvalidMsg" xml:space="preserve">
+    <value>Enter the correct currency exchange rate.</value>
+    <comment>AddtransactionViewMOdel</comment>
+  </data>
 </root>

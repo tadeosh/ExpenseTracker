@@ -15,6 +15,7 @@ namespace ExpenseTracker.Services.Interfaces
         Task<int> SaveTransactionAsync(Transaction transaction);
         Task<int> DeleteTransactionAsync(Transaction transaction);
         Task<List<Transaction>> GetRecentTransactionsAsync(int limit = 10);
+        Task<List<Transaction>> GetFilteredTransactionsAsync(int? accountId, int? categoryId, int? projectId, decimal? minAmount, decimal? maxAmount);
 
         // Kategorie
         Task<List<Category>> GetCategoriesAsync();

@@ -2,6 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
+             xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
+             x:DataType="viewmodels:AddTransactionViewModel"
              x:Class="ExpenseTracker.Views.AddTransactionPage"
              Title="{x:Static strings:AppResources.AddTransactionTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}"
@@ -197,17 +199,26 @@
                         Margin="0,5,0,0" 
                         HeightRequest="250">
                     <Grid ColumnDefinitions="*, *">
-
-                        <CollectionView Grid.Column="0" ItemsSource="{Binding MainCategories}" SelectedItem="{Binding SelectedMainCategory, Mode=TwoWay}" SelectionMode="Single">
+                        <!-- ZMIANA: Usunięto SelectionMode i SelectedItem -->
+                        <CollectionView Grid.Column="0" ItemsSource="{Binding MainCategories}" SelectionMode="None">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Padding="10" ColumnSpacing="8">
+                                <!-- ZMIANA: Dodano DataType oraz GestureRecognizer -->
+                                <!-- Zakładam, że CategoryDisplayItem jest w tym samym namespace co ViewModels lub przenieś go do Models -->
+                                <DataTemplate x:DataType="viewmodels:CategoryDisplayItem">
+                                    <Grid Padding="10" ColumnSpacing="8" BackgroundColor="Transparent">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer 
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AddTransactionViewModel}}, Path=MainCategoryTappedCommand}"
+                                CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
+
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
+                                        <!-- ... Reszta wizualna dla MainCategory bez zmian (Label, Ellipse itp.) ... -->
                                         <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12" VerticalOptions="Center">
                                             <Ellipse.Fill>
                                                 <SolidColorBrush Color="{Binding CategoryColor}" />
@@ -224,15 +235,24 @@
 
                         <BoxView Grid.Column="0" HorizontalOptions="End" WidthRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.1" />
 
-                        <CollectionView Grid.Column="1" ItemsSource="{Binding SubCategories}" SelectedItem="{Binding SelectedSubCategory, Mode=TwoWay}" SelectionMode="Single">
+                        <!-- ZMIANA: Usunięto SelectionMode i SelectedItem -->
+                        <CollectionView Grid.Column="1" ItemsSource="{Binding SubCategories}" SelectionMode="None">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Padding="10" ColumnSpacing="8">
+                                <!-- ZMIANA: Dodano DataType oraz GestureRecognizer -->
+                                <DataTemplate x:DataType="viewmodels:CategoryDisplayItem">
+                                    <Grid Padding="10" ColumnSpacing="8" BackgroundColor="Transparent">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer 
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AddTransactionViewModel}}, Path=SubCategoryTappedCommand}"
+                                CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
+
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
 
+                                        <!-- ... Reszta wizualna dla SubCategory bez zmian ... -->
                                         <Ellipse Grid.Column="0" WidthRequest="12" HeightRequest="12" VerticalOptions="Center">
                                             <Ellipse.Fill>
                                                 <SolidColorBrush Color="{Binding CategoryColor}" />

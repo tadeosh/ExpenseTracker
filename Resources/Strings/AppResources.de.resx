@@ -456,4 +456,16 @@
   <data name="AllTransactionsTitle" xml:space="preserve">
     <value>Transaktionsliste</value>
   </data>
+  <data name="AmountInvalidMsg" xml:space="preserve">
+    <value>Bitte geben Sie einen gültigen Betrag größer als Null ein.</value>
+  </data>
+  <data name="AccountRequiredMsg" xml:space="preserve">
+    <value>Konto wählen.</value>
+  </data>
+  <data name="TransferAccountInvalidMsg" xml:space="preserve">
+    <value>Wählen Sie ein gültiges Zielkonto (das sich vom Quellkonto unterscheidet).</value>
+  </data>
+  <data name="ExchangeRateInvalidMsg" xml:space="preserve">
+    <value>Bitte geben Sie den korrekten Wechselkurs ein.</value>
+  </data>
 </root>

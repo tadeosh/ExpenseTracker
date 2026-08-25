@@ -195,6 +195,33 @@ namespace ExpenseTracker.Data
             return result;
         }
 
+        public async Task<List<Transaction>> GetFilteredTransactionsAsync(int? accountId, int? categoryId, int? projectId, decimal? minAmount, decimal? maxAmount)
+        {
+            await InitAsync();
+
+            // Startujemy zapytanie (jeszcze nie idzie do bazy)
+            var query = _database.Table<Transaction>();
+
+            // Dynamicznie doklejamy warunki WHERE w SQL, jeśli parametry nie są nullami
+            if (accountId.HasValue)
+                query = query.Where(t => t.AccountId == accountId.Value);
+
+            if (categoryId.HasValue)
+                query = query.Where(t => t.CategoryId == categoryId.Value);
+
+            if (projectId.HasValue)
+                query = query.Where(t => t.ProjectId == projectId.Value);
+
+            if (minAmount.HasValue)
+                query = query.Where(t => t.Amount >= minAmount.Value);
+
+            if (maxAmount.HasValue)
+                query = query.Where(t => t.Amount <= maxAmount.Value);
+
+            // Dopiero tutaj faktycznie wysyłamy zapytanie do bazy i pobieramy WĄSKI wycinek danych!
+            return await query.ToListAsync();
+        }
+
         // =================== Klasa pomocnicza =============================
         // Klasa używana wyłącznie wewnętrznie do rzutowania wyników zapytań agregujących SQL
         public class BalanceResult

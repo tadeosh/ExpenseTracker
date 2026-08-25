@@ -88,6 +88,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Choose an account..
+        /// </summary>
+        internal static string AccountRequiredMsg {
+            get {
+                return ResourceManager.GetString("AccountRequiredMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Accounts.
         /// </summary>
         internal static string AccountsPageTitle {
@@ -183,6 +192,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string AllTransactionsTitle {
             get {
                 return ResourceManager.GetString("AllTransactionsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Enter a valid amount greater than zero..
+        /// </summary>
+        internal static string AmountInvalidMsg {
+            get {
+                return ResourceManager.GetString("AmountInvalidMsg", resourceCulture);
             }
         }
         
@@ -592,6 +610,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Enter the correct currency exchange rate..
+        /// </summary>
+        internal static string ExchangeRateInvalidMsg {
+            get {
+                return ResourceManager.GetString("ExchangeRateInvalidMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Exchange Rate.
         /// </summary>
         internal static string ExchangeRateLabel {
@@ -993,6 +1020,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string TransactionsPageTitle {
             get {
                 return ResourceManager.GetString("TransactionsPageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Select the correct destination account (different from the source account)..
+        /// </summary>
+        internal static string TransferAccountInvalidMsg {
+            get {
+                return ResourceManager.GetString("TransferAccountInvalidMsg", resourceCulture);
             }
         }
         
