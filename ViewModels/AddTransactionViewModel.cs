@@ -115,36 +115,77 @@ namespace ExpenseTracker.ViewModels
         partial void OnDestinationAccountChanged(Account? value) => CheckCurrencyConversion();
         partial void OnSelectedDateChanged(DateTime value) => CheckCurrencyConversion();
 
-        private async void CheckCurrencyConversion()
+        //private async void CheckCurrencyConversion()
+        //{
+        //    if (IsTransfer && SelectedAccount != null && DestinationAccount != null && SelectedAccount.Currency != DestinationAccount.Currency)
+        //    {
+        //        IsCurrencyConversion = true;
+        //        CurrencyConversionLabel = $"{SelectedAccount.Currency} -> {DestinationAccount.Currency}";
+
+        //        var rate = await _databaseService.GetApplicableExchangeRateAsync(
+        //            SelectedAccount.Currency,
+        //            DestinationAccount.Currency,
+        //            SelectedDate);
+
+        //        if (rate.HasValue)
+        //        {
+        //            ExchangeRateText = rate.Value.ToString("0.####", CultureInfo.InvariantCulture);
+        //            _lastFetchedRate = rate.Value;
+        //        }
+        //        else
+        //        {
+        //            ExchangeRateText = string.Empty;
+        //            _lastFetchedRate = null;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        IsCurrencyConversion = false;
+        //        CurrencyConversionLabel = string.Empty;
+        //        ExchangeRateText = string.Empty;
+        //        _lastFetchedRate = null;
+        //    }
+        //}
+
+        // ZMIANA: Usuwamy "async void" i opakowujemy logikę!
+        private void CheckCurrencyConversion()
         {
-            if (IsTransfer && SelectedAccount != null && DestinationAccount != null && SelectedAccount.Currency != DestinationAccount.Currency)
-            {
-                IsCurrencyConversion = true;
-                CurrencyConversionLabel = $"{SelectedAccount.Currency} -> {DestinationAccount.Currency}";
-
-                var rate = await _databaseService.GetApplicableExchangeRateAsync(
-                    SelectedAccount.Currency,
-                    DestinationAccount.Currency,
-                    SelectedDate);
-
-                if (rate.HasValue)
-                {
-                    ExchangeRateText = rate.Value.ToString("0.####", CultureInfo.InvariantCulture);
-                    _lastFetchedRate = rate.Value;
-                }
-                else
-                {
-                    ExchangeRateText = string.Empty;
-                    _lastFetchedRate = null;
-                }
-            }
-            else
+            // Jeśli warunki nie są spełnione, od razu zerujemy
+            if (!IsTransfer || SelectedAccount == null || DestinationAccount == null || SelectedAccount.Currency == DestinationAccount.Currency)
             {
                 IsCurrencyConversion = false;
                 CurrencyConversionLabel = string.Empty;
                 ExchangeRateText = string.Empty;
                 _lastFetchedRate = null;
+                return;
             }
+
+            IsCurrencyConversion = true;
+            CurrencyConversionLabel = $"{SelectedAccount.Currency} -> {DestinationAccount.Currency}";
+
+            // "Fire-and-forget" w tle, bezpieczne dla wątku UI!
+            Task.Run(async () =>
+            {
+                var rate = await _databaseService.GetApplicableExchangeRateAsync(
+                    SelectedAccount.Currency,
+                    DestinationAccount.Currency,
+                    SelectedDate);
+
+                // Kiedy mamy wynik z bazy, wracamy na wątek główny żeby zaktualizować XAML
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (rate.HasValue)
+                    {
+                        ExchangeRateText = rate.Value.ToString("0.####", CultureInfo.InvariantCulture);
+                        _lastFetchedRate = rate.Value;
+                    }
+                    else
+                    {
+                        ExchangeRateText = string.Empty;
+                        _lastFetchedRate = null;
+                    }
+                });
+            });
         }
 
         public async Task LoadDataAsync()
@@ -261,33 +302,36 @@ namespace ExpenseTracker.ViewModels
                 _ => TransactionType.Expense
             };
 
-            if (type == TransactionType.Transfer && (DestinationAccount == null || SelectedAccount.Id == DestinationAccount.Id))
-            {
-                await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.TransferAccountInvalidMsg ?? "Wybierz prawidłowe konto docelowe (inne niż źródłowe).", AppResources.OkBtn ?? "OK");
-                return;
-            }
-
             decimal? exchangeRate = null;
-            if (IsCurrencyConversion)
+            if (type == TransactionType.Transfer)
             {
-                string normalizedRate = ExchangeRateText.Replace(',', '.');
-                if (!decimal.TryParse(normalizedRate, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal parsedRate) || parsedRate <= 0)
+                if (DestinationAccount == null || SelectedAccount.Id == DestinationAccount.Id)
                 {
-                    await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.ExchangeRateInvalidMsg ?? "Wprowadź prawidłowy kurs waluty.", AppResources.OkBtn ?? "OK");
+                    await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.TransferAccountInvalidMsg ?? "Wybierz prawidłowe konto docelowe (inne niż źródłowe).", AppResources.OkBtn ?? "OK");
                     return;
                 }
-                exchangeRate = parsedRate;
 
-                if (_lastFetchedRate == null || _lastFetchedRate.Value != parsedRate)
+                if (IsCurrencyConversion)
                 {
-                    var newLearnedRate = new ExchangeRate
+                    string normalizedRate = ExchangeRateText.Replace(',', '.');
+                    if (!decimal.TryParse(normalizedRate, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal parsedRate) || parsedRate <= 0)
                     {
-                        SourceCurrency = SelectedAccount.Currency,
-                        TargetCurrency = DestinationAccount.Currency,
-                        Rate = parsedRate,
-                        Date = SelectedDate
-                    };
-                    await _databaseService.SaveExchangeRateAsync(newLearnedRate);
+                        await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.ExchangeRateInvalidMsg ?? "Wprowadź prawidłowy kurs waluty.", AppResources.OkBtn ?? "OK");
+                        return;
+                    }
+                    exchangeRate = parsedRate;
+
+                    if (_lastFetchedRate == null || _lastFetchedRate.Value != parsedRate)
+                    {
+                        var newLearnedRate = new ExchangeRate
+                        {
+                            SourceCurrency = SelectedAccount.Currency,
+                            TargetCurrency = DestinationAccount.Currency,
+                            Rate = parsedRate,
+                            Date = SelectedDate
+                        };
+                        await _databaseService.SaveExchangeRateAsync(newLearnedRate);
+                    }
                 }
             }
 

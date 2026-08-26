@@ -50,18 +50,38 @@ namespace ExpenseTracker.ViewModels
             _databaseService = databaseService;
         }
 
-        // NOWOŚĆ: Ta metoda odpala się automatycznie, gdy wchodzimy na stronę z parametrami
-        public void ApplyQueryAttributes(IDictionary<string, object> query)
+        [RelayCommand]
+        private async Task GoBackAsync()
         {
-            if (query.TryGetValue("ParentCategory", out var categoryObj) && categoryObj is Category parentCat)
+            await Shell.Current.GoToAsync("..");
+        }
+
+        // NOWOŚĆ: Ta metoda odpala się automatycznie, gdy wchodzimy na stronę z parametrami
+        // 1. ZMIANA: Odbieramy tylko ID i ładujemy obiekt z bazy
+        public async void ApplyQueryAttributes(IDictionary<string, object> query)
+        {
+            if (query.TryGetValue("ParentCategoryId", out var idObj) && idObj is int parentId)
             {
-                CurrentParentCategory = parentCat;
-                // Jeśli weszliśmy w głąb, zmieniamy tytuł na pasku
-                PageTitle = parentCat.Name;
+                // Ponieważ metoda z interfejsu IQueryAttributable nie jest async Task,
+                // ładujemy dane wywołując prywatną metodę asynchroniczną.
+                await LoadParentCategoryAsync(parentId);
             }
         }
 
-        // NOWOŚĆ: Komenda nawigująca w głąb (do podkategorii)
+        private async Task LoadParentCategoryAsync(int parentId)
+        {
+            // Pobieramy z bazy danych na podstawie ID
+            var categories = await _databaseService.GetCategoriesAsync();
+            CurrentParentCategory = categories.FirstOrDefault(c => c.Id == parentId);
+
+            if (CurrentParentCategory != null)
+            {
+                PageTitle = CurrentParentCategory.Name;
+                await LoadCategoriesAsync(); // Odświeżamy listę podkategorii
+            }
+        }
+
+        // 2. ZMIANA: Wysyłamy TYLKO numer ID zamiast całego obiektu
         [RelayCommand]
         private async Task OpenSubcategoriesAsync(CategoryDisplayItem item)
         {
@@ -69,10 +89,9 @@ namespace ExpenseTracker.ViewModels
 
             var navigationParameter = new Dictionary<string, object>
             {
-                { "ParentCategory", item.Category }
+                { "ParentCategoryId", item.Category.Id } // Przekazujemy tylko int
             };
 
-            // Wypychamy nową instancję tej samej strony na stos!
             await Shell.Current.GoToAsync(nameof(Views.CategoriesPage), navigationParameter);
         }
 
@@ -249,6 +268,8 @@ namespace ExpenseTracker.ViewModels
 
             CancelEdit();
         }
+
+       
     }
 
     public partial class CategoryDisplayItem : ObservableObject

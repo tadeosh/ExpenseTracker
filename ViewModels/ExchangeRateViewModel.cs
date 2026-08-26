@@ -98,7 +98,7 @@ namespace ExpenseTracker.ViewModels
         }
 
         // Magiczny mechanizm: odpala się, gdy próbujesz zmienić walutę źródłową
-        partial void OnSelectedSourceCurrencyChanged(string? oldValue, string? newValue)
+        partial void OnSelectedSourceCurrencyChanged(string oldValue, string newValue)
         {
             if (newValue != null && newValue.Contains("──"))
             {
@@ -108,7 +108,7 @@ namespace ExpenseTracker.ViewModels
         }
 
         // To samo dla waluty docelowej
-        partial void OnSelectedTargetCurrencyChanged(string? oldValue, string? newValue)
+        partial void OnSelectedTargetCurrencyChanged(string oldValue, string newValue)
         {
             if (newValue != null && newValue.Contains("──"))
             {

@@ -27,13 +27,13 @@ namespace ExpenseTracker.ViewModels
 
         // Właściwości trzymające wybrany element
         [ObservableProperty]
-        private string? _selectedCurrency;
+        private string? _selectedCurrency = null!;
 
         [ObservableProperty]
-        private string? _selectedLanguage;
+        private string? _selectedLanguage = null!;
 
         [ObservableProperty]
-        private string? _selectedTheme;
+        private string? _selectedTheme = null!;
 
         private bool _isInitializing = true;
 

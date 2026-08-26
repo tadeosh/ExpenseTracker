@@ -4,7 +4,8 @@
              xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
              x:Class="ExpenseTracker.Views.ProjectsPage"
              Title="{x:Static strings:AppResources.ProjectsTitle}"
-             BackgroundColor="{DynamicResource AppBackgroundColor}">
+             BackgroundColor="{DynamicResource AppBackgroundColor}"
+             Shell.FlyoutBehavior="Disabled">
 
     <Grid RowDefinitions="Auto, *">
         <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10" BackgroundColor="{DynamicResource SectionBackgroundColor}">

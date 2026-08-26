@@ -5,7 +5,16 @@
              xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="ExpenseTracker.Views.CategoriesPage"             
-             BackgroundColor="{DynamicResource AppBackgroundColor}">
+             BackgroundColor="{DynamicResource AppBackgroundColor}"
+             Title="{Binding PageTitle}"
+             Shell.FlyoutBehavior="Disabled">
+
+
+
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior Command="{Binding GoBackCommand}" />
+    </Shell.BackButtonBehavior>
+
 
     <Shell.TitleView>
         <Grid ColumnDefinitions="*, Auto" Padding="0,0,15,0">
@@ -34,7 +43,7 @@
             </Path>
 
         </Grid>
-    </Shell.TitleView>
+    </Shell.TitleView> 
 
     <VerticalStackLayout Spacing="0">
         <VerticalStackLayout Padding="20" Spacing="15" 

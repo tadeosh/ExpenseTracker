@@ -10,17 +10,22 @@
              HideSoftInputOnTapped="True"
              Shell.FlyoutBehavior="Disabled">
 
+    <!-- NOWOŚĆ: Nadpisujemy zachowanie natywnej, systemowej strzałki MAUI -->
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior Command="{Binding CancelCommand}" />
+    </Shell.BackButtonBehavior>
 
+    
     <Shell.TitleView>
         <Grid ColumnDefinitions="Auto, *" Padding="0,0,15,0">
-            <Path Grid.Column="0" Data="M 20 12 L 4 12 M 10 18 L 4 12 L 10 6"
+            <!--<Path Grid.Column="0" Data="M 20 12 L 4 12 M 10 18 L 4 12 L 10 6"
                   Fill="Transparent" Stroke="{DynamicResource HeaderTextColor}" StrokeThickness="2"
                   StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="24" HeightRequest="24"
                   VerticalOptions="Center" Margin="0,0,15,0">
                 <Path.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding CancelCommand}" />
                 </Path.GestureRecognizers>
-            </Path>
+            </Path>-->
 
             <Label Grid.Column="1" Text="{x:Static strings:AppResources.AddTransactionTitle}"
                    FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource HeaderTextColor}" VerticalOptions="Center" />

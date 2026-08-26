@@ -21,7 +21,14 @@ namespace ExpenseTracker.Views
             if (!string.IsNullOrEmpty(existingPassword))
             {
                 // MAGIA: Jeśli mamy hasło, bez mrugnięcia okiem podmieniamy aplikację na główną!
-                Application.Current.MainPage = new AppShell();
+                //Application.Current.MainPage = new AppShell();
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (Application.Current?.Windows.Count > 0)
+                    {
+                        Application.Current.Windows[0].Page = new AppShell();
+                    }
+                });
             }
         }
 
@@ -47,7 +54,14 @@ namespace ExpenseTracker.Views
             await SecureStorage.Default.SetAsync("DbPassword", PasswordEntry.Text);
 
             // 2. MAGIA: Podmieniamy aplikację na główną, która teraz bez problemu połączy się z bazą!
-            Application.Current.MainPage = new AppShell();
+            //Application.Current.MainPage = new AppShell();
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (Application.Current?.Windows.Count > 0)
+                {
+                    Application.Current.Windows[0].Page = new AppShell();
+                }
+            });
         }
     }
 }

@@ -13,15 +13,26 @@ public partial class AddTransactionPage : ContentPage
         BindingContext = _viewModel;
     }
 
-    protected override async void OnAppearing()
+    //protected override async void OnAppearing()
+    //{
+    //    base.OnAppearing();
+    //    await _viewModel.LoadDataAsync();
+    //    if (string.IsNullOrEmpty(AmountEntry.Text))
+    //    {
+    //        await Task.Delay(100);
+    //        AmountEntry.Focus();
+    //    }
+    //}
+
+    protected override void OnNavigatedTo(NavigatedToEventArgs args)
     {
-        base.OnAppearing();
-        await _viewModel.LoadDataAsync();
-        if (string.IsNullOrEmpty(AmountEntry.Text))
+        base.OnNavigatedTo(args);
+
+        // Odpalamy ładowanie bezpiecznie na wątku UI, po zakończeniu przejścia
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
-            await Task.Delay(100);
-            AmountEntry.Focus();
-        }
+            await _viewModel.LoadDataAsync();
+        });
     }
 
     // NOWOŚĆ: Przechwytuje sprzętowy przycisk "Wstecz" na Androidzie
