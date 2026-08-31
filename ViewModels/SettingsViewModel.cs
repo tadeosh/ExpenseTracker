@@ -144,7 +144,7 @@ namespace ExpenseTracker.ViewModels
         [RelayCommand]
         private async Task WipeDataAsync()
         {
-            bool firstWarning = await Shell.Current.DisplayAlert(
+            bool firstWarning = await Shell.Current.DisplayAlertAsync(
                 AppResources.WarningTitle,
                 AppResources.WipeDataWarningMessage,
                 AppResources.YesBtn,
@@ -152,7 +152,7 @@ namespace ExpenseTracker.ViewModels
 
             if (!firstWarning) return;
 
-            bool finalWarning = await Shell.Current.DisplayAlert(
+            bool finalWarning = await Shell.Current.DisplayAlertAsync(
                 AppResources.WipeDataFinalWarningTitle,
                 AppResources.WipeDataFinalWarningMessage,
                 AppResources.DestroyDataBtn,
@@ -163,13 +163,13 @@ namespace ExpenseTracker.ViewModels
             try
             {
                 await _databaseService.WipeAllDataAsync();
-                await Shell.Current.DisplayAlert(AppResources.SuccessTitle, AppResources.WipeDataSuccessMessage, AppResources.OkBtn);
+                await Shell.Current.DisplayAlertAsync(AppResources.SuccessTitle, AppResources.WipeDataSuccessMessage, AppResources.OkBtn);
                 await Shell.Current.GoToAsync("//HomePage");
             }
             catch (Exception ex)
             {
                 // Dzięki temu, że zwracamy Task, błąd nie ubije aplikacji!
-                await Shell.Current.DisplayAlert("Error", $"Data wipe failed: {ex.Message}", "OK");
+                await Shell.Current.DisplayAlertAsync("Error", $"Data wipe failed: {ex.Message}", AppResources.OkBtn);
             }
         }
     }

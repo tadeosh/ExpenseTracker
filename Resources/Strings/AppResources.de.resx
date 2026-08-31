@@ -468,4 +468,10 @@
   <data name="ExchangeRateInvalidMsg" xml:space="preserve">
     <value>Bitte geben Sie den korrekten Wechselkurs ein.</value>
   </data>
+  <data name="DeleteCatCascadeInlineWarning" xml:space="preserve">
+    <value>Achtung: Unterkategorien werden ebenfalls gelöscht!</value>
+  </data>
+  <data name="DeleteCatCascadeWarningMsg" xml:space="preserve">
+    <value>Diese Kategorie enthält Unterkategorien. Beim Löschen werden auch alle archiviert. Möchten Sie fortfahren?</value>
+  </data>
 </root>

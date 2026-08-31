@@ -95,26 +95,43 @@
                    TextColor="{DynamicResource AppTextColor}"
                    ReturnType="Done" 
                    ClearButtonVisibility="WhileEditing" />
+            <Label Text="{Binding AmountError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0">
+                <Label.Triggers>
+                    <DataTrigger TargetType="Label" Binding="{Binding AmountError}" Value="{x:Null}">
+                        <Setter Property="IsVisible" Value="False" />
+                    </DataTrigger>
+                </Label.Triggers>
+            </Label>
 
-            <Grid>
-                <Picker Title="{x:Static strings:AppResources.AccountLabel}"
-                        TitleColor="{DynamicResource AppTextColor}"
-                        ItemsSource="{Binding Accounts}"
-                        SelectedItem="{Binding SelectedAccount}"
-                        ItemDisplayBinding="{Binding Name}"
-                        BackgroundColor="Transparent"
-                        TextColor="{DynamicResource WarningMsgColor}"
-                        FontAttributes="Bold">
-                    <Picker.Triggers>
-                        <!-- Gdy obiekt to null, wracamy do zwykłego tekstu -->
-                        <DataTrigger TargetType="Picker" Binding="{Binding SelectedItem, Source={RelativeSource Self}}" Value="{x:Null}">
-                            <Setter Property="TextColor" Value="{DynamicResource AppTextColor}" />
-                            <Setter Property="FontAttributes" Value="None" />
+            <VerticalStackLayout Spacing="0">
+                <Grid>
+                    <Picker Title="{x:Static strings:AppResources.AccountLabel}"
+                TitleColor="{DynamicResource AppTextColor}"
+                ItemsSource="{Binding Accounts}"
+                SelectedItem="{Binding SelectedAccount}"
+                ItemDisplayBinding="{Binding Name}"
+                BackgroundColor="Transparent"
+                TextColor="{DynamicResource WarningMsgColor}"
+                FontAttributes="Bold">
+                        <Picker.Triggers>
+                            <DataTrigger TargetType="Picker" Binding="{Binding SelectedItem, Source={RelativeSource Self}}" Value="{x:Null}">
+                                <Setter Property="TextColor" Value="{DynamicResource AppTextColor}" />
+                                <Setter Property="FontAttributes" Value="None" />
+                            </DataTrigger>
+                        </Picker.Triggers>
+                    </Picker>
+                    <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
+                </Grid>
+
+                <!-- Walidacja konta źródłowego -->
+                <Label Text="{Binding AccountError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding AccountError}" Value="{x:Null}">
+                            <Setter Property="IsVisible" Value="False" />
                         </DataTrigger>
-                    </Picker.Triggers>
-                </Picker>
-                <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
-            </Grid>
+                    </Label.Triggers>
+                </Label>
+            </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="2" IsVisible="{Binding IsTransfer}">
                 <Label Text="{x:Static strings:AppResources.DestinationAccountLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
@@ -135,6 +152,14 @@
                     </Picker>
                     <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
                 </Grid>
+                <!-- Walidacja konta docelowego -->
+                <Label Text="{Binding DestinationAccountError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding DestinationAccountError}" Value="{x:Null}">
+                            <Setter Property="IsVisible" Value="False" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
             </VerticalStackLayout>
 
             <VerticalStackLayout IsVisible="{Binding IsCurrencyConversion}" Spacing="5">
@@ -148,6 +173,14 @@
                        TextColor="{DynamicResource AppTextColor}"
                        ReturnType="Done"
                        ClearButtonVisibility="WhileEditing" />
+                <!-- Walidacja kursu wymiany -->
+                <Label Text="{Binding ExchangeRateError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding ExchangeRateError}" Value="{x:Null}">
+                            <Setter Property="IsVisible" Value="False" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
             </VerticalStackLayout>
 
             <VerticalStackLayout Spacing="2" ZIndex="10">

@@ -15,6 +15,7 @@ namespace ExpenseTracker
             Routing.RegisterRoute(RoutesHelper.FavoriteCurrenciesPage, typeof(Views.FavoriteCurrenciesPage));
           //  Routing.RegisterRoute(RoutesHelper.TransactionsPage, typeof(Views.TransactionsPage));
             Routing.RegisterRoute(RoutesHelper.AddTransactionPage, typeof(Views.AddTransactionPage));
+            Routing.RegisterRoute(RoutesHelper.AccountTransactionsRoute, typeof(Views.TransactionsPage));
         }
 
 

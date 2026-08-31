@@ -468,4 +468,10 @@
   <data name="ExchangeRateInvalidMsg" xml:space="preserve">
     <value>Wprowadź prawidłowy kurs waluty.</value>
   </data>
+  <data name="DeleteCatCascadeInlineWarning" xml:space="preserve">
+    <value>Uwaga: Podkategorie również zostaną usunięte!</value>
+  </data>
+  <data name="DeleteCatCascadeWarningMsg" xml:space="preserve">
+    <value>Ta kategoria posiada podkategorie. Jej usunięcie spowoduje również zarchiwizowanie wszystkich podkategorii. Czy kontynuować?</value>
+  </data>
 </root>

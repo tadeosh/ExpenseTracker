@@ -19,5 +19,7 @@ namespace ExpenseTracker.Models
         // NOWOŚĆ: Przechowuje pozycję elementu na liście
         public int DisplayOrder { get; set; }
 
+        public bool IsArchived { get; set; } = false; // NOWOŚĆ: Pole do archiwizacji kategorii
+
     }
 }

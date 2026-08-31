@@ -11,5 +11,7 @@ namespace ExpenseTracker.Models
 
         // Analogicznie do Kategorii - jeśli ma wartość, jest to sub-projekt
         public int? ParentId { get; set; }
+
+        public bool IsArchived { get; set; } = false;
     }
 }

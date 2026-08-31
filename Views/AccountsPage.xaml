@@ -11,13 +11,45 @@
     <Grid RowDefinitions="Auto, *">
 
         <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10" BackgroundColor="{DynamicResource SectionBackgroundColor}">
-            <Entry Placeholder="{x:Static strings:AppResources.AccountNameLabel}" Text="{Binding AccountName}" TextColor="{DynamicResource AppTextColor}" />
-            <Grid>
-                <controls:CurrencyPicker Title="{x:Static strings:AppResources.CurrencyLabel}" 
-                         SelectedItem="{Binding AccountCurrency}" />
-                <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
-            </Grid>
-            <Entry Placeholder="{x:Static strings:AppResources.BalanceLabel}" Text="{Binding AccountBalance}" Keyboard="Numeric" TextColor="{DynamicResource AppTextColor}" />
+            <!-- NAZWA KONTA -->
+            <VerticalStackLayout Spacing="0">
+                <Entry Placeholder="{x:Static strings:AppResources.AccountNameLabel}" Text="{Binding AccountName}" TextColor="{DynamicResource AppTextColor}" />
+                <Label Text="{Binding AccountNameError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding AccountNameError}" Value="{x:Null}">
+                            <Setter Property="IsVisible" Value="False" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+            </VerticalStackLayout>
+
+            <!-- WALUTA -->
+            <VerticalStackLayout Spacing="0">
+                <Grid>
+                    <controls:CurrencyPicker Title="{x:Static strings:AppResources.CurrencyLabel}" 
+                                     SelectedItem="{Binding AccountCurrency}" />
+                    <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
+                </Grid>
+                <Label Text="{Binding AccountCurrencyError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding AccountCurrencyError}" Value="{x:Null}">
+                            <Setter Property="IsVisible" Value="False" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+            </VerticalStackLayout>
+            
+            <!-- SALDO -->
+            <VerticalStackLayout Spacing="0">
+                <Entry Placeholder="{x:Static strings:AppResources.BalanceLabel}" Text="{Binding AccountBalance}" Keyboard="Numeric" TextColor="{DynamicResource AppTextColor}" />
+                <Label Text="{Binding AccountBalanceError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding AccountBalanceError}" Value="{x:Null}">
+                            <Setter Property="IsVisible" Value="False" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+            </VerticalStackLayout>
 
             <Button Text="{x:Static strings:AppResources.AddAccountBtn}" Command="{Binding AddAccountCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource AppBackgroundColor}" />
         </VerticalStackLayout>

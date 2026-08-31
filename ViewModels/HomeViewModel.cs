@@ -40,42 +40,24 @@ namespace ExpenseTracker.ViewModels
             _settingsService = settingsService;
         }
 
-        // 1. Zmieniamy typ na 'object', aby uniknąć konfliktów typów.
-        // MAUI bez problemu przypisze tu kliknięty element z listy, niezależnie od jego klasy.
-        /*  [ObservableProperty]
-          public partial object? SelectedAccountForNavigation { get; set; }
-
-          // 2. Metoda reagująca na zmianę (zauważ, że przyjmuje teraz 'object?')
-          partial void OnSelectedAccountForNavigationChanged(object? value)        
-          {
-              if (value != null)
-              {
-                  // 3. Używamy refleksji, aby poszukać właściwości o nazwie "Id" w klikniętym elemencie
-                  var idProperty = value.GetType().GetProperty("Id");
-
-                  if (idProperty != null)
-                  {
-                      // Wyciągamy wartość Id jako liczbę całkowitą
-                      int accountId = (int)idProperty.GetValue(value)!;
-
-                      // Przechodzimy na nową stronę, przekazując wyciągnięte ID w adresie URL
-                      Shell.Current.GoToAsync($"{RoutesHelper.AccountTransactionsRoute}?AccountId={accountId}");
-                  }
-
-                  // 4. Ekstremalnie ważne: Czyścimy wybór w głównym wątku, 
-                  // żeby po powrocie na tę stronę można było znowu kliknąć w dokładnie to samo konto!
-                  MainThread.BeginInvokeOnMainThread(() => SelectedAccountForNavigation = null);
-              }
-          } */
-
+       
         // NOWY KOD:
         [RelayCommand]
         private async Task AccountTappedAsync(AccountBalanceItem? account)
         {
             if (account == null) return;
 
+            // Bezpieczne przekazanie parametru przez słownik
+            var navParams = new Dictionary<string, object>
+            {
+                // Klucz musi odpowiadać temu, co odbiera TransactionsViewModel
+                { "AccountId", account.Id.ToString() }
+            };
+
             // Bezpośredni, silnie typowany dostęp do "Id" - kompilator wie, czym jest account!
-            await Shell.Current.GoToAsync($"{RoutesHelper.AccountTransactionsRoute}?AccountId={account.Id}");
+            //await Shell.Current.GoToAsync($"{RoutesHelper.AccountTransactionsRoute}?AccountId={account.Id}");
+            // ZMIANA ARCHITEKTONICZNA: Dodajemy "///" aby przeskoczyć do innej gałęzi Shell
+            await Shell.Current.GoToAsync(RoutesHelper.AccountTransactionsRoute, navParams);
         }
 
         public async Task LoadDataAsync()
@@ -149,7 +131,7 @@ namespace ExpenseTracker.ViewModels
             TotalNetWorthDisplay = $"{totalNetWorth:N2} {defaultCurrency}";
 
             // --- 2. BEZPIECZNE ŁADOWANIE TRANSAKCJI ---
-            var categories = await _databaseService.GetCategoriesAsync();
+            var categories = await _databaseService.GetCategoriesAsync(includeArchived: true);
             var categoryDictionary = categories.ToDictionary(c => c.Id, c => c.Name);
 
             var projects = await _databaseService.GetProjectsAsync();

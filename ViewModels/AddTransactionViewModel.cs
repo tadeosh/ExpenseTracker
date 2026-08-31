@@ -3,15 +3,12 @@ using CommunityToolkit.Mvvm.Input;
 using ExpenseTracker.Models;
 using ExpenseTracker.Resources.Strings;
 using ExpenseTracker.Services.Interfaces;
+using FluentValidation;
 using System.Collections.ObjectModel;
 using System.Globalization;
 
 namespace ExpenseTracker.ViewModels
-{
-    // ZMIANA: MAUI automatycznie zmapuje parametry z URL na nullable int!
-    //[QueryProperty(nameof(PreselectedAccountId), "PreselectedAccountId")]
-    //[QueryProperty(nameof(PreselectedCategoryId), "PreselectedCategoryId")]
-    //[QueryProperty(nameof(PreselectedProjectId), "PreselectedProjectId")]
+{    
     public partial class AddTransactionViewModel : ObservableObject, IQueryAttributable
     {
         private readonly IDatabaseService _databaseService;
@@ -79,9 +76,23 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial string CurrencyConversionLabel { get; set; } = string.Empty;
 
-        public AddTransactionViewModel(IDatabaseService databaseService)
+        //Do wyswietlania błędów walidacji w UI
+        [ObservableProperty] public partial string? AmountError { get; set; }
+        [ObservableProperty] public partial string? AccountError { get; set; }
+        [ObservableProperty] public partial string? DestinationAccountError { get; set; }
+        [ObservableProperty] public partial string? ExchangeRateError { get; set; }
+
+        private readonly IValidator<AddTransactionViewModel> _validator;
+        public AddTransactionViewModel(IDatabaseService databaseService, IValidator<AddTransactionViewModel> validator)
         {
             _databaseService = databaseService;
+            _validator = validator;
+        }
+
+        // Metoda do czyszczenia błędów przed kolejną próbą zapisu
+        private void ClearErrors()
+        {
+            AmountError = AccountError = DestinationAccountError = ExchangeRateError = null;
         }
 
         // ================ implementacja interfejscu Queryattributable ============================
@@ -114,38 +125,6 @@ namespace ExpenseTracker.ViewModels
         partial void OnSelectedAccountChanged(Account? value) => CheckCurrencyConversion();
         partial void OnDestinationAccountChanged(Account? value) => CheckCurrencyConversion();
         partial void OnSelectedDateChanged(DateTime value) => CheckCurrencyConversion();
-
-        //private async void CheckCurrencyConversion()
-        //{
-        //    if (IsTransfer && SelectedAccount != null && DestinationAccount != null && SelectedAccount.Currency != DestinationAccount.Currency)
-        //    {
-        //        IsCurrencyConversion = true;
-        //        CurrencyConversionLabel = $"{SelectedAccount.Currency} -> {DestinationAccount.Currency}";
-
-        //        var rate = await _databaseService.GetApplicableExchangeRateAsync(
-        //            SelectedAccount.Currency,
-        //            DestinationAccount.Currency,
-        //            SelectedDate);
-
-        //        if (rate.HasValue)
-        //        {
-        //            ExchangeRateText = rate.Value.ToString("0.####", CultureInfo.InvariantCulture);
-        //            _lastFetchedRate = rate.Value;
-        //        }
-        //        else
-        //        {
-        //            ExchangeRateText = string.Empty;
-        //            _lastFetchedRate = null;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        IsCurrencyConversion = false;
-        //        CurrencyConversionLabel = string.Empty;
-        //        ExchangeRateText = string.Empty;
-        //        _lastFetchedRate = null;
-        //    }
-        //}
 
         // ZMIANA: Usuwamy "async void" i opakowujemy logikę!
         private void CheckCurrencyConversion()
@@ -278,22 +257,108 @@ namespace ExpenseTracker.ViewModels
             SubCategories.Clear();
         }
 
+        //[RelayCommand]
+        //private async Task SaveTransactionAsync()
+        //{
+        //    // --- WALIDACJA ---
+        //    string normalizedAmount = AmountText.Replace(',', '.');
+        //    if (!decimal.TryParse(normalizedAmount, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal amount) || amount <= 0)
+        //    {
+        //        await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.AmountInvalidMsg ?? "Wprowadź prawidłową kwotę większą od zera.", AppResources.OkBtn ?? "OK");
+        //        return;
+        //    }
+
+        //    if (SelectedAccount == null)
+        //    {
+        //        await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.AccountRequiredMsg ?? "Wybierz konto.", AppResources.OkBtn ?? "OK");
+        //        return;
+        //    }
+
+        //    TransactionType type = SelectedTypeIndex switch
+        //    {
+        //        1 => TransactionType.Income,
+        //        2 => TransactionType.Transfer,
+        //        _ => TransactionType.Expense
+        //    };
+
+        //    decimal? exchangeRate = null;
+        //    if (type == TransactionType.Transfer)
+        //    {
+        //        if (DestinationAccount == null || SelectedAccount.Id == DestinationAccount.Id)
+        //        {
+        //            await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.TransferAccountInvalidMsg ?? "Wybierz prawidłowe konto docelowe (inne niż źródłowe).", AppResources.OkBtn ?? "OK");
+        //            return;
+        //        }
+
+        //        if (IsCurrencyConversion)
+        //        {
+        //            string normalizedRate = ExchangeRateText.Replace(',', '.');
+        //            if (!decimal.TryParse(normalizedRate, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal parsedRate) || parsedRate <= 0)
+        //            {
+        //                await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.ExchangeRateInvalidMsg ?? "Wprowadź prawidłowy kurs waluty.", AppResources.OkBtn ?? "OK");
+        //                return;
+        //            }
+        //            exchangeRate = parsedRate;
+
+        //            if (_lastFetchedRate == null || _lastFetchedRate.Value != parsedRate)
+        //            {
+        //                var newLearnedRate = new ExchangeRate
+        //                {
+        //                    SourceCurrency = SelectedAccount.Currency,
+        //                    TargetCurrency = DestinationAccount.Currency,
+        //                    Rate = parsedRate,
+        //                    Date = SelectedDate
+        //                };
+        //                await _databaseService.SaveExchangeRateAsync(newLearnedRate);
+        //            }
+        //        }
+        //    }
+
+        //    // --- ZAPIS ---
+        //    var transaction = new Transaction
+        //    {
+        //        Amount = amount,
+        //        Date = SelectedDate,
+        //        Description = DescriptionText,
+        //        Type = type,
+        //        AccountId = SelectedAccount.Id,
+        //        CategoryId = SelectedCategory?.Id,
+        //        ProjectId = SelectedProject?.Id,
+        //        DestinationAccountId = type == TransactionType.Transfer ? DestinationAccount?.Id : null,
+        //        ExchangeRate = exchangeRate
+        //    };
+
+        //    await _databaseService.SaveTransactionAsync(transaction);
+        //    await CloseFormSafeAsync();
+        //}
+
         [RelayCommand]
         private async Task SaveTransactionAsync()
         {
-            // --- WALIDACJA ---
-            string normalizedAmount = AmountText.Replace(',', '.');
-            if (!decimal.TryParse(normalizedAmount, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal amount) || amount <= 0)
+            ClearErrors();
+
+            // Uruchomienie FluentValidation
+            var validationResult = await _validator.ValidateAsync(this);
+
+            if (!validationResult.IsValid)
             {
-                await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.AmountInvalidMsg ?? "Wprowadź prawidłową kwotę większą od zera.", AppResources.OkBtn ?? "OK");
-                return;
+                // Mapowanie błędów do właściwości UI
+                foreach (var error in validationResult.Errors)
+                {
+                    switch (error.PropertyName)
+                    {
+                        case nameof(AmountText): AmountError = error.ErrorMessage; break;
+                        case nameof(SelectedAccount): AccountError = error.ErrorMessage; break;
+                        case nameof(DestinationAccount): DestinationAccountError = error.ErrorMessage; break;
+                        case nameof(ExchangeRateText): ExchangeRateError = error.ErrorMessage; break;
+                    }
+                }
+                return; // Zatrzymujemy zapis, błędy pojawią się w UI
             }
 
-            if (SelectedAccount == null)
-            {
-                await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.AccountRequiredMsg ?? "Wybierz konto.", AppResources.OkBtn ?? "OK");
-                return;
-            }
+            // --- ZAPIS ---
+            // Skoro walidacja przeszła (IsVaild = true), parsujemy z pewnością sukcesu
+            decimal amount = decimal.Parse(AmountText.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture);
 
             TransactionType type = SelectedTypeIndex switch
             {
@@ -303,46 +368,31 @@ namespace ExpenseTracker.ViewModels
             };
 
             decimal? exchangeRate = null;
-            if (type == TransactionType.Transfer)
+            if (type == TransactionType.Transfer && IsCurrencyConversion)
             {
-                if (DestinationAccount == null || SelectedAccount.Id == DestinationAccount.Id)
-                {
-                    await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.TransferAccountInvalidMsg ?? "Wybierz prawidłowe konto docelowe (inne niż źródłowe).", AppResources.OkBtn ?? "OK");
-                    return;
-                }
+                decimal parsedRate = decimal.Parse(ExchangeRateText.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture);
+                exchangeRate = parsedRate;
 
-                if (IsCurrencyConversion)
+                if (_lastFetchedRate == null || _lastFetchedRate.Value != parsedRate)
                 {
-                    string normalizedRate = ExchangeRateText.Replace(',', '.');
-                    if (!decimal.TryParse(normalizedRate, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal parsedRate) || parsedRate <= 0)
+                    var newLearnedRate = new ExchangeRate
                     {
-                        await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.ExchangeRateInvalidMsg ?? "Wprowadź prawidłowy kurs waluty.", AppResources.OkBtn ?? "OK");
-                        return;
-                    }
-                    exchangeRate = parsedRate;
-
-                    if (_lastFetchedRate == null || _lastFetchedRate.Value != parsedRate)
-                    {
-                        var newLearnedRate = new ExchangeRate
-                        {
-                            SourceCurrency = SelectedAccount.Currency,
-                            TargetCurrency = DestinationAccount.Currency,
-                            Rate = parsedRate,
-                            Date = SelectedDate
-                        };
-                        await _databaseService.SaveExchangeRateAsync(newLearnedRate);
-                    }
+                        SourceCurrency = SelectedAccount!.Currency,
+                        TargetCurrency = DestinationAccount!.Currency,
+                        Rate = parsedRate,
+                        Date = SelectedDate
+                    };
+                    await _databaseService.SaveExchangeRateAsync(newLearnedRate);
                 }
             }
 
-            // --- ZAPIS ---
             var transaction = new Transaction
             {
                 Amount = amount,
                 Date = SelectedDate,
                 Description = DescriptionText,
                 Type = type,
-                AccountId = SelectedAccount.Id,
+                AccountId = SelectedAccount!.Id,
                 CategoryId = SelectedCategory?.Id,
                 ProjectId = SelectedProject?.Id,
                 DestinationAccountId = type == TransactionType.Transfer ? DestinationAccount?.Id : null,
@@ -370,6 +420,7 @@ namespace ExpenseTracker.ViewModels
 
         private void ClearForm()
         {
+            ClearErrors();
             AmountText = string.Empty;
             DescriptionText = string.Empty;
             SelectedAccount = null;

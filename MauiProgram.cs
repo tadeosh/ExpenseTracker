@@ -5,6 +5,8 @@ using ExpenseTracker.Services.Interfaces;
 using ExpenseTracker.ViewModels;
 using ExpenseTracker.Views;
 using Microsoft.Extensions.Logging;
+using FluentValidation;
+using ExpenseTracker.Validators;
 
 namespace ExpenseTracker
 {
@@ -57,6 +59,10 @@ namespace ExpenseTracker
 
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<SettingsPage>();
+
+            builder.Services.AddTransient<IValidator<AddTransactionViewModel>, AddTransactionValidator>();
+            builder.Services.AddTransient<IValidator<AccountsViewModel>, AccountsValidator>();
+            builder.Services.AddTransient<IValidator<CategoriesViewModel>, CategoriesValidator>();
 
             return builder.Build();
         }

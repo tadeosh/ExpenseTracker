@@ -6,6 +6,8 @@
         string AppLanguage { get; set; }
         int AppTheme { get; set; }
 
+        string RecentCategoryColors { get; set; }
+
         // Metoda do czyszczenia preferencji (przyda się przy Factory Reset)
         void ClearBusinessSettings();
     }

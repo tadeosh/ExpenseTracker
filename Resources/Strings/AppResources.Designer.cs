@@ -520,6 +520,24 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Warning: Subcategories will also be deleted!.
+        /// </summary>
+        internal static string DeleteCatCascadeInlineWarning {
+            get {
+                return ResourceManager.GetString("DeleteCatCascadeInlineWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu This category has subcategories. Deleting it will also archive all of them. Are you sure you want to continue?.
+        /// </summary>
+        internal static string DeleteCatCascadeWarningMsg {
+            get {
+                return ResourceManager.GetString("DeleteCatCascadeWarningMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Description.
         /// </summary>
         internal static string DescriptionLabel {

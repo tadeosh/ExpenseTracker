@@ -18,12 +18,12 @@ namespace ExpenseTracker.Services.Interfaces
         Task<List<Transaction>> GetFilteredTransactionsAsync(int? accountId, int? categoryId, int? projectId, decimal? minAmount, decimal? maxAmount);
 
         // Kategorie
-        Task<List<Category>> GetCategoriesAsync();
+        Task<List<Category>> GetCategoriesAsync(bool includeArchived = false);
         Task<int> SaveCategoryAsync(Category category);
         Task<int> DeleteCategoryAsync(Category category);
 
         // Projekty
-        Task<List<Project>> GetProjectsAsync();
+        Task<List<Project>> GetProjectsAsync(bool includeArchived = false);
         Task<int> SaveProjectAsync(Project project);
         Task<int> DeleteProjectAsync(Project project);
 

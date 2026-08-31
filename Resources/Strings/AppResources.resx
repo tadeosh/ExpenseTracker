@@ -483,4 +483,12 @@
     <value>Enter the correct currency exchange rate.</value>
     <comment>AddtransactionViewMOdel</comment>
   </data>
+  <data name="DeleteCatCascadeInlineWarning" xml:space="preserve">
+    <value>Warning: Subcategories will also be deleted!</value>
+    <comment>CatogoriesViewModel</comment>
+  </data>
+  <data name="DeleteCatCascadeWarningMsg" xml:space="preserve">
+    <value>This category has subcategories. Deleting it will also archive all of them. Are you sure you want to continue?</value>
+    <comment>CategoriesViewModel</comment>
+  </data>
 </root>

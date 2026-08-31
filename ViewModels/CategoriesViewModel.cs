@@ -3,8 +3,10 @@ using CommunityToolkit.Mvvm.Input;
 using ExpenseTracker.Data;
 using ExpenseTracker.Models;
 using ExpenseTracker.Resources.Strings;
-using System.Collections.ObjectModel;
 using ExpenseTracker.Services.Interfaces;
+using FluentValidation;
+using System.Collections.ObjectModel;
+using System.Text.Json;
 
 namespace ExpenseTracker.ViewModels
 {
@@ -12,18 +14,27 @@ namespace ExpenseTracker.ViewModels
     public partial class CategoriesViewModel : ObservableObject, IQueryAttributable
     {
         private readonly IDatabaseService _databaseService;
+        private readonly IValidator<CategoriesViewModel> _validator;
+        private readonly ISettingsService _settingsService;
 
         public ObservableCollection<CategoryDisplayItem> Categories { get; } = new();
 
-        public ObservableCollection<string> AvailableColors { get; } = new(new[]
-        {
-            "#F44336", "#E91E63", "#9C27B0", "#673AB7", "#3F51B5",
-            "#2196F3", "#03A9F4", "#00BCD4", "#009688", "#4CAF50",
-            "#8BC34A", "#CDDC39", "#FFEB3B", "#FFC107", "#FF9800", "#FF5722"
-        });
+        public ObservableCollection<string> RecentColors { get; } = new();
 
         [ObservableProperty]
         public partial string SelectedColor { get; set; } = "#2196F3";
+
+        // NOWOŚĆ: Właściwości dla suwaków (wartości 0-255)
+        [ObservableProperty] public partial double ColorRed { get; set; }
+        [ObservableProperty] public partial double ColorGreen { get; set; }
+        [ObservableProperty] public partial double ColorBlue { get; set; }
+
+        private bool _isUpdatingColor = false;
+
+        // Metody wywoływane automatycznie przez CommunityToolkit przy przesunięciu suwaka
+        partial void OnColorRedChanged(double value) => UpdateHexFromRgb();
+        partial void OnColorGreenChanged(double value) => UpdateHexFromRgb();
+        partial void OnColorBlueChanged(double value) => UpdateHexFromRgb();
 
         [ObservableProperty]
         public partial string CategoryName { get; set; } = string.Empty;
@@ -45,9 +56,20 @@ namespace ExpenseTracker.ViewModels
         private Category? _categoryBeingEdited;
         private CategoryDisplayItem? _draggedItem;
 
-        public CategoriesViewModel(IDatabaseService databaseService)
+        [ObservableProperty]
+        public partial string? CategoryNameError { get; set; } // NOWOŚĆ: Pole błędu
+
+        // ZMIANA: Zaktualizowany konstruktor
+        public CategoriesViewModel(IDatabaseService databaseService, IValidator<CategoriesViewModel> validator, ISettingsService settingsService)
         {
             _databaseService = databaseService;
+            _validator = validator;
+            _settingsService = settingsService;
+        }
+
+        private void ClearErrors()
+        {
+            CategoryNameError = null;
         }
 
         [RelayCommand]
@@ -55,6 +77,81 @@ namespace ExpenseTracker.ViewModels
         {
             await Shell.Current.GoToAsync("..");
         }
+
+        //=============== Color Picker =====================
+        private void UpdateHexFromRgb()
+        {
+            if (_isUpdatingColor) return;
+            _isUpdatingColor = true;
+
+            // Generuje nowy kod HEX na podstawie pozycji 3 suwaków
+            SelectedColor = Microsoft.Maui.Graphics.Color.FromRgb((int)ColorRed, (int)ColorGreen, (int)ColorBlue).ToHex();
+
+            _isUpdatingColor = false;
+        }
+
+        // Metoda wywoływana, gdy z kodu przypiszemy SelectedColor (np. przy edycji lub wpisaniu HEX ręcznie)
+        partial void OnSelectedColorChanged(string value)
+        {
+            if (_isUpdatingColor || string.IsNullOrWhiteSpace(value)) return;
+
+            if (Microsoft.Maui.Graphics.Color.TryParse(value, out var color))
+            {
+                _isUpdatingColor = true;
+                // color.Red zwraca wartość 0.0 - 1.0, więc mnożymy przez 255 dla suwaka
+                ColorRed = color.Red * 255;
+                ColorGreen = color.Green * 255;
+                ColorBlue = color.Blue * 255;
+                _isUpdatingColor = false;
+            }
+        }
+
+        // 1. Ładowanie ostatnich kolorów przy starcie (np. wywoływane w konstruktorze lub LoadCategoriesAsync)
+        private void LoadRecentColors()
+        {
+            var savedColorsJson = _settingsService.RecentCategoryColors ?? "[]"; // Wymaga dodania pola w ISettingsService
+
+            // Fallback (awaryjna lista, jeśli nic nie ma)
+            if (savedColorsJson == "[]")
+            {
+                var defaultColors = new[] { "#2196F3", "#4CAF50", "#F44336", "#FF9800", "#9C27B0" };
+                foreach (var c in defaultColors) RecentColors.Add(c);
+                return;
+            }
+
+            try
+            {
+                var colors = JsonSerializer.Deserialize<List<string>>(savedColorsJson);
+                if (colors != null)
+                {
+                    RecentColors.Clear();
+                    foreach (var c in colors) RecentColors.Add(c);
+                }
+            }
+            catch { /* Ignorujemy błędy parsowania */ }
+        }
+
+        // 2. Logika zapisywania nowego koloru do palety
+        private void SaveColorToRecents(string hexColor)
+        {
+            if (RecentColors.Contains(hexColor))
+            {
+                // Przesuwamy na początek listy (MRU - Most Recently Used)
+                RecentColors.Remove(hexColor);
+            }
+
+            RecentColors.Insert(0, hexColor);
+
+            // Ograniczamy paletę do max 10 ostatnich kolorów
+            if (RecentColors.Count > 10)
+            {
+                RecentColors.RemoveAt(10);
+            }
+
+            _settingsService.RecentCategoryColors = JsonSerializer.Serialize(RecentColors.ToList());
+        }
+
+        //=============== END Color Picker =====================
 
         // NOWOŚĆ: Ta metoda odpala się automatycznie, gdy wchodzimy na stronę z parametrami
         // 1. ZMIANA: Odbieramy tylko ID i ładujemy obiekt z bazy
@@ -104,10 +201,14 @@ namespace ExpenseTracker.ViewModels
             }
             else
             {
+                ClearErrors();
+
                 IsEditing = false;
                 _categoryBeingEdited = null;
                 CategoryName = string.Empty;
-                SelectedColor = AvailableColors.FirstOrDefault() ?? "#2196F3";
+                //SelectedColor = "#HEX"; //AvailableColors.FirstOrDefault() ?? "#2196F3";
+                // MAGIA: Jeśli jesteśmy w podkategoriach, dziedziczymy kolor z CurrentParentCategory!
+                SelectedColor = CurrentParentCategory?.ColorHex ?? RecentColors.FirstOrDefault() ?? "#2196F3";
                 IsFormVisible = true;
             }
         }
@@ -115,13 +216,29 @@ namespace ExpenseTracker.ViewModels
         [RelayCommand]
         private async Task SaveCategoryAsync()
         {
-            if (string.IsNullOrWhiteSpace(CategoryName)) return;
+            ClearErrors();
 
+            // 1. Walidacja
+            var validationResult = await _validator.ValidateAsync(this);
+
+            if (!validationResult.IsValid)
+            {
+                // 2. Mapowanie błędu do UI
+                var error = validationResult.Errors.FirstOrDefault(e => e.PropertyName == nameof(CategoryName));
+                if (error != null)
+                {
+                    CategoryNameError = error.ErrorMessage;
+                }
+                return; // Zatrzymujemy zapis
+            }
+
+            SaveColorToRecents(SelectedColor); // Zapisujemy kolor na paletę
+
+            // 3. Zapis (Twój dotychczasowy kod)
             if (IsEditing && _categoryBeingEdited != null)
             {
                 _categoryBeingEdited.Name = CategoryName;
                 _categoryBeingEdited.ColorHex = SelectedColor;
-                // Przy edycji nie ruszamy ParentId
                 await _databaseService.SaveCategoryAsync(_categoryBeingEdited);
             }
             else
@@ -129,7 +246,6 @@ namespace ExpenseTracker.ViewModels
                 var newCategory = new Category
                 {
                     Name = CategoryName,
-                    // Magia: Jeśli jesteśmy na podstronie, automatycznie przypinamy ParentId!
                     ParentId = CurrentParentCategory?.Id,
                     ColorHex = SelectedColor,
                     DisplayOrder = Categories.Count
@@ -144,6 +260,8 @@ namespace ExpenseTracker.ViewModels
         [RelayCommand]
         private void EditCategory(Category categoryToEdit)
         {
+            ClearErrors();
+
             IsFormVisible = true;
             IsEditing = true;
             _categoryBeingEdited = categoryToEdit;
@@ -158,8 +276,9 @@ namespace ExpenseTracker.ViewModels
             IsEditing = false;
             _categoryBeingEdited = null;
             CategoryName = string.Empty;
-            SelectedColor = AvailableColors.FirstOrDefault() ?? "#2196F3";
+            SelectedColor = "#HEX"; //AvailableColors.FirstOrDefault() ?? "#2196F3";
             IsFormVisible = false;
+            ClearErrors();
         }
 
         [RelayCommand]
@@ -172,6 +291,29 @@ namespace ExpenseTracker.ViewModels
         [RelayCommand]
         private async Task DeleteCategoryAsync(Category categoryToDelete)
         {
+            // 1. Sprawdzamy w bazie, czy kategoria ma podkategorie
+            var allCategories = await _databaseService.GetCategoriesAsync(includeArchived: false);
+            bool hasSubcategories = allCategories.Any(c => c.ParentId == categoryToDelete.Id);
+
+            if (hasSubcategories)
+            {
+                // 2. Twarde potwierdzenie (Zabezpieczenie UX przed misclickiem)
+                bool confirm = await Shell.Current.DisplayAlertAsync(
+                    AppResources.WarningTitle ?? "Uwaga",
+                    AppResources.DeleteCatCascadeWarningMsg ?? "Ta kategoria posiada podkategorie...",
+                    AppResources.YesBtn ?? "Tak",
+                    AppResources.CancelBtn ?? "Anuluj");
+
+                if (!confirm)
+                {
+                    // Użytkownik zrezygnował - wychodzimy z trybu usuwania dla tego elementu
+                    var item = Categories.FirstOrDefault(c => c.Category.Id == categoryToDelete.Id);
+                    if (item != null) item.IsDeleteMode = false;
+                    return;
+                }
+            }
+
+            // 3. Użytkownik potwierdził lub kategoria nie ma dzieci - odpalamy Soft Delete z kaskadą
             await _databaseService.DeleteCategoryAsync(categoryToDelete);
             await LoadCategoriesAsync();
         }
@@ -278,6 +420,7 @@ namespace ExpenseTracker.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(MinusRotation))]
+        [NotifyPropertyChangedFor(nameof(ShowDeleteWarning))] // NOWOŚĆ: Odświeża ostrzeżenie przy zmianie trybu
         public partial bool IsDeleteMode { get; set; }
 
         [ObservableProperty]
@@ -290,6 +433,7 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DisplayName))]
         [NotifyPropertyChangedFor(nameof(HasSubcategories))]
+        [NotifyPropertyChangedFor(nameof(ShowDeleteWarning))] // NOWOŚĆ: Odświeża ostrzeżenie przy zmianie trybu
         public partial int SubcategoriesCount { get; set; }
 
         // NOWOŚĆ: Trzyma nazwy podkategorii po przecinku
@@ -298,6 +442,8 @@ namespace ExpenseTracker.ViewModels
 
         // Magia: Zwraca Prawdę, jeśli kategoria ma dzieci (użyjemy do ukrywania napisu)
         public bool HasSubcategories => SubcategoriesCount > 0;
+
+        public bool ShowDeleteWarning => IsDeleteMode && HasSubcategories;
 
         // Magia: Jeśli są dzieci, dokleja " (ilość)" do nazwy!
         public string DisplayName => SubcategoriesCount > 0 ? $"{Category.Name} ({SubcategoriesCount})" : Category.Name;

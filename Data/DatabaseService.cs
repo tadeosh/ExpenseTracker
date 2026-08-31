@@ -42,6 +42,11 @@ namespace ExpenseTracker.Data
             await _database.CreateTableAsync<Project>();
             await _database.CreateTableAsync<Transaction>();
             await _database.CreateTableAsync<ExchangeRate>();
+
+            // 2. NOWOŚĆ: Migracja starych danych
+            // Zamienia wartości NULL w nowej kolumnie na 0 (false), przywracając je na ekrany
+            await _database.ExecuteAsync("UPDATE Category SET IsArchived = 0 WHERE IsArchived IS NULL");
+            await _database.ExecuteAsync("UPDATE Project SET IsArchived = 0 WHERE IsArchived IS NULL");
         }
 
         // ==========================================
@@ -234,10 +239,18 @@ namespace ExpenseTracker.Data
         // OPERACJE DLA KATEGORII (CATEGORIES)
         // ==========================================
 
-        public async Task<List<Category>> GetCategoriesAsync()
+        public async Task<List<Category>> GetCategoriesAsync(bool includeArchived = false)
         {
             await InitAsync();
-            return await _database.Table<Category>().ToListAsync();
+            var query = _database.Table<Category>();
+
+            // Filtrujemy tylko aktywne, chyba że ktoś wyraźnie zażąda zarchiwizowanych
+            if (!includeArchived)
+            {
+                query = query.Where(c => !c.IsArchived);
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<int> SaveCategoryAsync(Category category)
@@ -250,17 +263,37 @@ namespace ExpenseTracker.Data
         public async Task<int> DeleteCategoryAsync(Category category)
         {
             await InitAsync();
-            return await _database.DeleteAsync(category);
+
+            // 1. Oznaczamy główną kategorię jako usuniętą
+            category.IsArchived = true;
+            int result = await _database.UpdateAsync(category);
+
+            // 2. Kaskadowe ukrywanie podkategorii (Integralność UX)
+            var subCategories = await _database.Table<Category>().Where(c => c.ParentId == category.Id).ToListAsync();
+            foreach (var sub in subCategories)
+            {
+                sub.IsArchived = true;
+                await _database.UpdateAsync(sub);
+            }
+
+            return result;
         }
 
         // ==========================================
         // OPERACJE DLA PROJEKTÓW (PROJECTS)
         // ==========================================
 
-        public async Task<List<Project>> GetProjectsAsync()
+        public async Task<List<Project>> GetProjectsAsync(bool includeArchived = false)
         {
             await InitAsync();
-            return await _database.Table<Project>().ToListAsync();
+            var query = _database.Table<Project>();
+
+            if (!includeArchived)
+            {
+                query = query.Where(p => !p.IsArchived);
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<int> SaveProjectAsync(Project project)
@@ -273,7 +306,8 @@ namespace ExpenseTracker.Data
         public async Task<int> DeleteProjectAsync(Project project)
         {
             await InitAsync();
-            return await _database.DeleteAsync(project);
+            project.IsArchived = true;
+            return await _database.UpdateAsync(project);
         }
 
         //===================================================

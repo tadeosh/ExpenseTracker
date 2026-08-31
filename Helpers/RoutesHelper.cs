@@ -8,5 +8,5 @@ public static class RoutesHelper
     public const string FavoriteCurrenciesPage = "FavoriteCurrenciesPage";
     public const string TransactionsPage = "TransactionsPage";
     public const string AddTransactionPage = "AddTransactionPage";
-    public const string AccountTransactionsRoute = "TransactionsPage";
+    public const string AccountTransactionsRoute = "AccountTransactionsPage";
 }

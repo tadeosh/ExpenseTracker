@@ -23,6 +23,12 @@ namespace ExpenseTracker.Services
             set => Preferences.Default.Set(nameof(AppTheme), value);
         }
 
+        public string RecentCategoryColors
+        {
+            get => Preferences.Default.Get(nameof(RecentCategoryColors), string.Empty);
+            set => Preferences.Default.Set(nameof(RecentCategoryColors), value);
+        }
+
         public void ClearBusinessSettings()
         {
             // Czyścimy tylko ustawienia biznesowe, zostawiając motyw i język, 

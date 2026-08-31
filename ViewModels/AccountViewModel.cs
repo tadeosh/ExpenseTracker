@@ -4,14 +4,18 @@ using ExpenseTracker.Data;
 using ExpenseTracker.Helpers;
 using ExpenseTracker.Models;
 using ExpenseTracker.Resources.Strings; // NOWOŚĆ: Referencja do tłumaczeń
-using System.Collections.ObjectModel;
 using ExpenseTracker.Services.Interfaces;
+using FluentValidation;
+using System.Collections.ObjectModel;
+using System.Globalization;
 
 namespace ExpenseTracker.ViewModels
 {
     public partial class AccountsViewModel : ObservableObject
     {
         private readonly IDatabaseService _databaseService;
+        private readonly IValidator<AccountsViewModel> _validator;
+        private readonly ISettingsService _settingsService; // ZMIANA: Wstrzykujemy serwis ustawień
 
         public ObservableCollection<Account> Accounts { get; } = new();
 
@@ -26,33 +30,51 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial string AccountBalance { get; set; } = string.Empty;
 
-        public AccountsViewModel(IDatabaseService databaseService)
+        // NOWOŚĆ: Pola do wyświetlania błędów w UI
+        [ObservableProperty] public partial string? AccountNameError { get; set; }
+        [ObservableProperty] public partial string? AccountCurrencyError { get; set; }
+        [ObservableProperty] public partial string? AccountBalanceError { get; set; }
+
+        public AccountsViewModel(IDatabaseService databaseService,IValidator<AccountsViewModel> validator,ISettingsService settingsService)
         {
             _databaseService = databaseService;
-
-            //  LoadAccountsAsync();
+            _validator = validator;
+            _settingsService = settingsService;
         }
+
+        private void ClearErrors()
+        {
+            AccountNameError = AccountCurrencyError = AccountBalanceError = null;
+        }
+
+
 
         [RelayCommand]
         private async Task AddAccountAsync()
         {
-            // 1. Wyciąganie kodu
-            string? cleanCurrencyCode = Helpers.CurrencyHelper.ExtractCode(AccountCurrency);
+            ClearErrors();
 
-            // 2. Walidacja tekstowa Z KOMUNIKATEM (ZMIANA NA AppResources)
-            if (string.IsNullOrWhiteSpace(AccountName) || string.IsNullOrWhiteSpace(cleanCurrencyCode))
+            // 1. Walidacja FluentValidation
+            var validationResult = await _validator.ValidateAsync(this);
+
+            if (!validationResult.IsValid)
             {
-                await Shell.Current.DisplayAlertAsync(AppResources.ErrorTitle, AppResources.AccountValidationMissingData, AppResources.OkBtn);
-                return;
+                // 2. Mapowanie błędów do widoku (UI)
+                foreach (var error in validationResult.Errors)
+                {
+                    switch (error.PropertyName)
+                    {
+                        case nameof(AccountName): AccountNameError = error.ErrorMessage; break;
+                        case nameof(AccountCurrency): AccountCurrencyError = error.ErrorMessage; break;
+                        case nameof(AccountBalance): AccountBalanceError = error.ErrorMessage; break;
+                    }
+                }
+                return; // Przerywamy zapis, interfejs pokaże czerwone etykiety
             }
 
-            // 3. Kuloodporne parsowanie kwoty (zamienia przecinki na kropki i radzi sobie z każdą kulturą)
-            string normalizedBalance = AccountBalance.Replace(",", ".");
-            if (!decimal.TryParse(normalizedBalance, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal initialBalance))
-            {
-                await Shell.Current.DisplayAlertAsync(AppResources.ErrorTitle, AppResources.AccountValidationInvalidAmount, AppResources.OkBtn);
-                return;
-            }
+            // 3. Ekstrakcja i parsowanie z gwarancją sukcesu
+            string? cleanCurrencyCode = CurrencyHelper.ExtractCode(AccountCurrency);
+            decimal initialBalance = decimal.Parse(AccountBalance.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture);
 
             var newAccount = new Account
             {
@@ -61,25 +83,22 @@ namespace ExpenseTracker.ViewModels
                 InitialBalance = initialBalance
             };
 
-            // 4. Zapis do bazy i na listę
+            // 4. Zapis do bazy
             await _databaseService.SaveAccountAsync(newAccount);
 
-            // 5. BEZPIECZNA aktualizacja interfejsu (Wymuszenie Głównego Wątku)
-            MainThread.BeginInvokeOnMainThread(async () =>
+            // 5. Aktualizacja UI w głównym wątku
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                // Dodajemy na listę
                 Accounts.Add(newAccount);
 
-                // 5. Czyszczenie formularza i informacja o sukcesie
                 AccountName = string.Empty;
                 AccountBalance = string.Empty;
 
-                // NAPRAWA: Bezpośrednio ustawiamy domyślną walutę, zapobiegając nieskończonej pętli z Pickerem
-                string defaultCode = Preferences.Default.Get("DefaultCurrency", "PLN");
+                // ZMIANA: Używamy wstrzykniętego serwisu, omijając Preferences.Default
+                string defaultCode = _settingsService.DefaultCurrency;
                 AccountCurrency = CurrencyHelper.FormatDisplay(defaultCode);
 
-                // Informacja o sukcesie gotowa i przetłumaczona, jeśli kiedykolwiek jej użyjesz
-                // await Shell.Current.DisplayAlertAsync(AppResources.SuccessTitle, AppResources.AccountAddedSuccess, AppResources.OkBtn);
+                ClearErrors();
             });
         }
 

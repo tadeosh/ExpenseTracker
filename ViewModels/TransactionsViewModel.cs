@@ -72,8 +72,8 @@ namespace ExpenseTracker.ViewModels
 
                 // 1. Ładowanie bazowych list słownikowych TYLKO RAZ
                 var accounts = await _databaseService.GetAccountsAsync();
-                var categories = await _databaseService.GetCategoriesAsync();
-                var projects = await _databaseService.GetProjectsAsync();
+                var categories = await _databaseService.GetCategoriesAsync(includeArchived: true);
+                var projects = await _databaseService.GetProjectsAsync(includeArchived: true);
 
                 _categoryDict = categories.ToDictionary(x => x.Id, x => x.Name);
                 _projectDict = projects.ToDictionary(x => x.Id, x => x.Name);
