@@ -134,7 +134,7 @@ namespace ExpenseTracker.ViewModels
             var categories = await _databaseService.GetCategoriesAsync(includeArchived: true);
             var categoryDictionary = categories.ToDictionary(c => c.Id, c => c.Name);
 
-            var projects = await _databaseService.GetProjectsAsync();
+            var projects = await _databaseService.GetProjectsAsync(includeArchived: true);
             var projectDictionary = projects.ToDictionary(p => p.Id, p => p.Name);
 
             var transactions = await _databaseService.GetRecentTransactionsAsync(30);

@@ -307,7 +307,17 @@ namespace ExpenseTracker.Data
         {
             await InitAsync();
             project.IsArchived = true;
-            return await _database.UpdateAsync(project);
+            int result = await _database.UpdateAsync(project);
+
+            // Kaskadowe ukrywanie podprojektów
+            var subProjects = await _database.Table<Project>().Where(p => p.ParentId == project.Id).ToListAsync();
+            foreach (var sub in subProjects)
+            {
+                sub.IsArchived = true;
+                await _database.UpdateAsync(sub);
+            }
+
+            return result;
         }
 
         //===================================================

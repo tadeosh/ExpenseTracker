@@ -24,11 +24,14 @@ namespace ExpenseTracker.ViewModels
         public partial int? PreselectedProjectId { get; set; }
 
         public ObservableCollection<Account> Accounts { get; } = new();
-        public ObservableCollection<Project> Projects { get; } = new();
+        //public ObservableCollection<Project> Projects { get; } = new();
+        public ObservableCollection<ProjectDisplayItem> MainProjects { get; } = new();
+        public ObservableCollection<ProjectDisplayItem> SubProjects { get; } = new();
         public ObservableCollection<CategoryDisplayItem> MainCategories { get; } = new();
         public ObservableCollection<CategoryDisplayItem> SubCategories { get; } = new();
 
         private List<Category> _allCategories = new();
+        private List<Project> _allProjects = new();
         private decimal? _lastFetchedRate = null;
 
         [ObservableProperty]
@@ -39,6 +42,13 @@ namespace ExpenseTracker.ViewModels
 
         [ObservableProperty]
         public partial string SelectedCategoryColorHex { get; set; } = "Transparent";
+
+        [ObservableProperty]
+        public partial bool IsProjectDropdownOpen { get; set; } = false;
+
+        [ObservableProperty]
+        public partial string SelectedProjectName { get; set; } = AppResources.ProjectLabel ?? "Projekt (Opcjonalnie)";
+
 
         [ObservableProperty]
         public partial string AmountText { get; set; } = string.Empty;
@@ -166,7 +176,9 @@ namespace ExpenseTracker.ViewModels
                 });
             });
         }
-
+        //==============================================================================
+        // ================ Ładowanie danych z bazy ====================================
+        //==============================================================================
         public async Task LoadDataAsync()
         {
             int? savedAccountId = SelectedAccount?.Id;
@@ -178,14 +190,24 @@ namespace ExpenseTracker.ViewModels
             Accounts.Clear();
             foreach (var acc in accountsFromDb) Accounts.Add(acc);
 
-            var projectsFromDb = await _databaseService.GetProjectsAsync();
-            Projects.Clear();
-            foreach (var proj in projectsFromDb) Projects.Add(proj);
+            _allProjects = await _databaseService.GetProjectsAsync(includeArchived: false);
+            var mainProjs = _allProjects.Where(p => p.ParentId == null).OrderBy(p => p.DisplayOrder).ToList();
+
+            MainProjects.Clear();
+            // Dodajemy opcję czyszczenia pola (Id = 0)
+            MainProjects.Add(new ProjectDisplayItem { Project = new Project { Id = 0, Name = AppResources.CategoryNone ?? "Brak" } });
+
+            foreach (var proj in mainProjs)
+            {
+                var subCount = _allProjects.Count(p => p.ParentId == proj.Id);
+                MainProjects.Add(new ProjectDisplayItem { Project = proj, SubprojectsCount = subCount });
+            }
 
             _allCategories = await _databaseService.GetCategoriesAsync();
             var mainCats = _allCategories.Where(c => c.ParentId == null).OrderBy(c => c.DisplayOrder).ToList();
 
             MainCategories.Clear();
+            MainCategories.Add(new CategoryDisplayItem { Category = new Category { Id = 0, Name = AppResources.CategoryNone ?? "Brak" } });
             foreach (var cat in mainCats)
             {
                 var subCount = _allCategories.Count(c => c.ParentId == cat.Id);
@@ -196,8 +218,8 @@ namespace ExpenseTracker.ViewModels
             if (savedAccountId.HasValue) SelectedAccount = Accounts.FirstOrDefault(a => a.Id == savedAccountId.Value);
             else if (PreselectedAccountId.HasValue) SelectedAccount = Accounts.FirstOrDefault(a => a.Id == PreselectedAccountId.Value);
 
-            if (savedProjectId.HasValue) SelectedProject = Projects.FirstOrDefault(p => p.Id == savedProjectId.Value);
-            else if (PreselectedProjectId.HasValue) SelectedProject = Projects.FirstOrDefault(p => p.Id == PreselectedProjectId.Value);
+            if (savedProjectId.HasValue) SelectedProject = _allProjects.FirstOrDefault(p => p.Id == savedProjectId.Value);
+            else if (PreselectedProjectId.HasValue) SelectedProject = _allProjects.FirstOrDefault(p => p.Id == PreselectedProjectId.Value);
 
             if (savedCategoryId.HasValue) SelectedCategory = _allCategories.FirstOrDefault(c => c.Id == savedCategoryId.Value);
             else if (PreselectedCategoryId.HasValue) SelectedCategory = _allCategories.FirstOrDefault(c => c.Id == PreselectedCategoryId.Value);
@@ -210,6 +232,9 @@ namespace ExpenseTracker.ViewModels
                 SelectedCategoryColorHex = SelectedCategory.ColorHex;
             }
         }
+        //==============================================================================
+        // ================== Koniec ładowania =========================================
+        //==============================================================================
 
         [RelayCommand]
         private void ToggleCategoryDropdown()
@@ -257,80 +282,59 @@ namespace ExpenseTracker.ViewModels
             SubCategories.Clear();
         }
 
-        //[RelayCommand]
-        //private async Task SaveTransactionAsync()
-        //{
-        //    // --- WALIDACJA ---
-        //    string normalizedAmount = AmountText.Replace(',', '.');
-        //    if (!decimal.TryParse(normalizedAmount, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal amount) || amount <= 0)
-        //    {
-        //        await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.AmountInvalidMsg ?? "Wprowadź prawidłową kwotę większą od zera.", AppResources.OkBtn ?? "OK");
-        //        return;
-        //    }
+        // to samo dla projektów
+        [RelayCommand]
+        private void ToggleProjectDropdown()
+        {
+            IsProjectDropdownOpen = !IsProjectDropdownOpen;
+            if (!IsProjectDropdownOpen)
+            {
+                SubProjects.Clear();
+            }
+        }
 
-        //    if (SelectedAccount == null)
-        //    {
-        //        await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.AccountRequiredMsg ?? "Wybierz konto.", AppResources.OkBtn ?? "OK");
-        //        return;
-        //    }
+        [RelayCommand]
+        private void MainProjectTapped(ProjectDisplayItem? item)
+        {
+            if (item == null) return;
 
-        //    TransactionType type = SelectedTypeIndex switch
-        //    {
-        //        1 => TransactionType.Income,
-        //        2 => TransactionType.Transfer,
-        //        _ => TransactionType.Expense
-        //    };
+            if (item.Project.Id == 0)
+            {
+                SelectedProject = null;
+                SelectedProjectName = AppResources.ProjectLabel ?? "Projekt (Opcjonalnie)";
+                IsProjectDropdownOpen = false;
+                return;
+            }
 
-        //    decimal? exchangeRate = null;
-        //    if (type == TransactionType.Transfer)
-        //    {
-        //        if (DestinationAccount == null || SelectedAccount.Id == DestinationAccount.Id)
-        //        {
-        //            await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.TransferAccountInvalidMsg ?? "Wybierz prawidłowe konto docelowe (inne niż źródłowe).", AppResources.OkBtn ?? "OK");
-        //            return;
-        //        }
+            SubProjects.Clear();
+            var subs = _allProjects.Where(p => p.ParentId == item.Project.Id).OrderBy(p => p.DisplayOrder).ToList();
 
-        //        if (IsCurrencyConversion)
-        //        {
-        //            string normalizedRate = ExchangeRateText.Replace(',', '.');
-        //            if (!decimal.TryParse(normalizedRate, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal parsedRate) || parsedRate <= 0)
-        //            {
-        //                await Shell.Current.DisplayAlertAsync(AppResources.WarningTitle ?? "Uwaga", AppResources.ExchangeRateInvalidMsg ?? "Wprowadź prawidłowy kurs waluty.", AppResources.OkBtn ?? "OK");
-        //                return;
-        //            }
-        //            exchangeRate = parsedRate;
+            if (subs.Any())
+            {
+                SubProjects.Add(new ProjectDisplayItem { Project = item.Project });
+                foreach (var sub in subs) SubProjects.Add(new ProjectDisplayItem { Project = sub });
+            }
+            else
+            {
+                ConfirmProjectSelection(item.Project);
+            }
+        }
 
-        //            if (_lastFetchedRate == null || _lastFetchedRate.Value != parsedRate)
-        //            {
-        //                var newLearnedRate = new ExchangeRate
-        //                {
-        //                    SourceCurrency = SelectedAccount.Currency,
-        //                    TargetCurrency = DestinationAccount.Currency,
-        //                    Rate = parsedRate,
-        //                    Date = SelectedDate
-        //                };
-        //                await _databaseService.SaveExchangeRateAsync(newLearnedRate);
-        //            }
-        //        }
-        //    }
+        [RelayCommand]
+        private void SubProjectTapped(ProjectDisplayItem? item)
+        {
+            if (item == null) return;
+            ConfirmProjectSelection(item.Project);
+        }
 
-        //    // --- ZAPIS ---
-        //    var transaction = new Transaction
-        //    {
-        //        Amount = amount,
-        //        Date = SelectedDate,
-        //        Description = DescriptionText,
-        //        Type = type,
-        //        AccountId = SelectedAccount.Id,
-        //        CategoryId = SelectedCategory?.Id,
-        //        ProjectId = SelectedProject?.Id,
-        //        DestinationAccountId = type == TransactionType.Transfer ? DestinationAccount?.Id : null,
-        //        ExchangeRate = exchangeRate
-        //    };
-
-        //    await _databaseService.SaveTransactionAsync(transaction);
-        //    await CloseFormSafeAsync();
-        //}
+        private void ConfirmProjectSelection(Project project)
+        {
+            SelectedProject = project;
+            SelectedProjectName = project.Name;
+            IsProjectDropdownOpen = false;
+            SubProjects.Clear();
+        }
+        // end prjekty
 
         [RelayCommand]
         private async Task SaveTransactionAsync()

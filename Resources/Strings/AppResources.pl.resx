@@ -471,7 +471,16 @@
   <data name="DeleteCatCascadeInlineWarning" xml:space="preserve">
     <value>Uwaga: Podkategorie również zostaną usunięte!</value>
   </data>
+  <data name="DeleteProjCascadeInlineWarning" xml:space="preserve">
+    <value>Uwaga: Podprojekty również zostaną usunięte!</value>
+  </data>
   <data name="DeleteCatCascadeWarningMsg" xml:space="preserve">
     <value>Ta kategoria posiada podkategorie. Jej usunięcie spowoduje również zarchiwizowanie wszystkich podkategorii. Czy kontynuować?</value>
+  </data>
+  <data name="DeleteProjCascadeWarningMsg" xml:space="preserve">
+    <value>Ten projekt posiada podprojekty. Jego usunięcie spowoduje również zarchiwizowanie wszystkich podprojektów. Czy kontynuować?</value>
+  </data>
+  <data name="ProjectValidationMissingData" xml:space="preserve">
+    <value>Wprowadź nazwę projektu.</value>
   </data>
 </root>

@@ -306,34 +306,98 @@
                 </Border>
             </VerticalStackLayout>
 
-            <VerticalStackLayout Spacing="2">
-                <Grid ColumnDefinitions="Auto, *" Margin="0,0,0,0" ColumnSpacing="10">
+            <VerticalStackLayout Spacing="2" ZIndex="9">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                     <Path Grid.Column="0" Data="M 12 5 v 14 M 5 12 h 14" Fill="Transparent" Stroke="{DynamicResource PrimaryColor}" StrokeThickness="2" StrokeLineCap="Round" WidthRequest="18" HeightRequest="18" VerticalOptions="Center">
                         <Path.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding GoToProjectsCommand}" />
                         </Path.GestureRecognizers>
                     </Path>
 
-                    <Grid Grid.Column="1" Margin="5,0,0,0">
-                        <Picker Title="{x:Static strings:AppResources.ProjectLabel}"
-                                TitleColor="{DynamicResource AppTextColor}"
-                                ItemsSource="{Binding Projects}"
-                                SelectedItem="{Binding SelectedProject}"
-                                ItemDisplayBinding="{Binding Name}"
-                                BackgroundColor="Transparent"
-                                TextColor="{DynamicResource WarningMsgColor}"
-                                FontAttributes="Bold">
-                            <Picker.Triggers>
-                                <!-- Gdy obiekt to null, wracamy do zwykłego tekstu -->
-                                <DataTrigger TargetType="Picker" Binding="{Binding SelectedItem, Source={RelativeSource Self}}" Value="{x:Null}">
-                                    <Setter Property="TextColor" Value="{DynamicResource AppTextColor}" />
-                                    <Setter Property="FontAttributes" Value="None" />
-                                </DataTrigger>
-                            </Picker.Triggers>
-                        </Picker>
-                        <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
-                    </Grid>
+                    <Border Grid.Column="1" StrokeThickness="0" BackgroundColor="Transparent" Margin="5,0,0,0">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ToggleProjectDropdownCommand}" />
+                        </Border.GestureRecognizers>
+
+                        <Grid Padding="3,10" ColumnDefinitions="*, Auto" ColumnSpacing="10">
+
+                            <!-- Etykieta wybranego projektu -->
+                            <Label Grid.Column="0" Text="{Binding SelectedProjectName}" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding SelectedProject}" Value="{x:Null}">
+                                        <Setter Property="Opacity" Value="0.8" />
+                                        <Setter Property="FontAttributes" Value="None" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding SelectedProject}" Value="{Binding SelectedProject}">
+                                        <Setter Property="TextColor" Value="{DynamicResource WarningMsgColor}" />
+                                        <Setter Property="Opacity" Value="1.0" />
+                                        <Setter Property="FontAttributes" Value="Bold" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+
+                            <Label Grid.Column="1" Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,10,0" />
+                            <BoxView Grid.ColumnSpan="2" HeightRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.3" VerticalOptions="End" Margin="-5,5,-5,-10"/>
+                        </Grid>
+                    </Border>
                 </Grid>
+
+                <!-- ROZWIJANE MENU (Hierarchiczne) -->
+                <Border IsVisible="{Binding IsProjectDropdownOpen}" 
+                        BackgroundColor="{DynamicResource SectionBackgroundColor}" 
+                        StrokeShape="RoundRectangle 8"
+                        Stroke="{DynamicResource PrimaryColor}" 
+                        StrokeThickness="1" 
+                        Margin="0,5,0,0" 
+                        HeightRequest="250">
+                    <Grid ColumnDefinitions="*, *">
+
+                        <!-- Lista Projektów Głównych -->
+                        <CollectionView Grid.Column="0" ItemsSource="{Binding MainProjects}" SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="viewmodels:ProjectDisplayItem">
+                                    <Grid Padding="10" ColumnSpacing="8" BackgroundColor="Transparent">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer 
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AddTransactionViewModel}}, Path=MainProjectTappedCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Label Grid.Column="0" Text="{Binding DisplayName}" FontSize="14" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+
+                                        <!-- Strzałka informująca o podprojektach -->
+                                        <Path Grid.Column="1" Data="M 9 18 L 15 12 L 9 6" Fill="Transparent" Stroke="{DynamicResource AppTextColor}" StrokeThickness="1.5" StrokeLineCap="Round" StrokeLineJoin="Round" VerticalOptions="Center" Opacity="0.3" IsVisible="{Binding HasSubprojects}" WidthRequest="12" HeightRequest="12"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <BoxView Grid.Column="0" HorizontalOptions="End" WidthRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.1" />
+
+                        <!-- Lista Podprojektów -->
+                        <CollectionView Grid.Column="1" ItemsSource="{Binding SubProjects}" SelectionMode="None">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="viewmodels:ProjectDisplayItem">
+                                    <Grid Padding="10" BackgroundColor="Transparent">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer 
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AddTransactionViewModel}}, Path=SubProjectTappedCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
+
+                                        <Label Text="{Binding Project.Name}" FontSize="14" TextColor="{DynamicResource AppTextColor}" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                    </Grid>
+                </Border>
             </VerticalStackLayout>
 
             <Entry Placeholder="{x:Static strings:AppResources.DescriptionLabel}" 

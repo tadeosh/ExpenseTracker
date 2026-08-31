@@ -471,7 +471,16 @@
   <data name="DeleteCatCascadeInlineWarning" xml:space="preserve">
     <value>Achtung: Unterkategorien werden ebenfalls gelöscht!</value>
   </data>
+  <data name="DeleteProjCascadeInlineWarning" xml:space="preserve">
+    <value>Achtung: Unterprojekte werden ebenfalls gelöscht!</value>
+  </data>
   <data name="DeleteCatCascadeWarningMsg" xml:space="preserve">
     <value>Diese Kategorie enthält Unterkategorien. Beim Löschen werden auch alle archiviert. Möchten Sie fortfahren?</value>
+  </data>
+  <data name="DeleteProjCascadeWarningMsg" xml:space="preserve">
+    <value>Dieses projekt enthält Unterprojekte. Beim Löschen werden auch alle archiviert. Möchten Sie fortfahren?</value>
+  </data>
+  <data name="ProjectValidationMissingData" xml:space="preserve">
+    <value>Projektname eingeben.</value>
   </data>
 </root>

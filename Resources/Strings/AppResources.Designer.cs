@@ -538,6 +538,24 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Warning: Subprojects will also be deleted!.
+        /// </summary>
+        internal static string DeleteProjCascadeInlineWarning {
+            get {
+                return ResourceManager.GetString("DeleteProjCascadeInlineWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu This project has subprojects. Deleting it will also archive all of them. Are you sure you want to continue?.
+        /// </summary>
+        internal static string DeleteProjCascadeWarningMsg {
+            get {
+                return ResourceManager.GetString("DeleteProjCascadeWarningMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Description.
         /// </summary>
         internal static string DescriptionLabel {
@@ -849,6 +867,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string ProjectsTitle {
             get {
                 return ResourceManager.GetString("ProjectsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Enter project name..
+        /// </summary>
+        internal static string ProjectValidationMissingData {
+            get {
+                return ResourceManager.GetString("ProjectValidationMissingData", resourceCulture);
             }
         }
         

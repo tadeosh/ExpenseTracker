@@ -487,8 +487,20 @@
     <value>Warning: Subcategories will also be deleted!</value>
     <comment>CatogoriesViewModel</comment>
   </data>
+  <data name="DeleteProjCascadeInlineWarning" xml:space="preserve">
+    <value>Warning: Subprojects will also be deleted!</value>
+    <comment>ProjectsViewModel</comment>
+  </data>
   <data name="DeleteCatCascadeWarningMsg" xml:space="preserve">
     <value>This category has subcategories. Deleting it will also archive all of them. Are you sure you want to continue?</value>
     <comment>CategoriesViewModel</comment>
+  </data>
+  <data name="DeleteProjCascadeWarningMsg" xml:space="preserve">
+    <value>This project has subprojects. Deleting it will also archive all of them. Are you sure you want to continue?</value>
+    <comment>ProjectsViewModel</comment>
+  </data>
+  <data name="ProjectValidationMissingData" xml:space="preserve">
+    <value>Enter project name.</value>
+    <comment>ProjectsValidator</comment>
   </data>
 </root>
