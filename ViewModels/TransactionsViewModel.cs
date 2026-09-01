@@ -46,12 +46,7 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty] public partial string AccountSortIcon { get; set; } = "";
 
         [ObservableProperty]
-        public partial bool IsGlobalView { get; set; }
-
-        // CACHE DLA SŁOWNIKÓW (Ogromny zysk wydajnościowy)
-        private Dictionary<int, string> _categoryDict = new();
-        private Dictionary<int, string> _projectDict = new();
-        private Dictionary<int, string> _accountDict = new();
+        public partial bool IsGlobalView { get; set; }      
 
         public TransactionsViewModel(IDatabaseService databaseService)
         {
@@ -75,14 +70,19 @@ namespace ExpenseTracker.ViewModels
                 var categories = await _databaseService.GetCategoriesAsync(includeArchived: true);
                 var projects = await _databaseService.GetProjectsAsync(includeArchived: true);
 
-                _categoryDict = categories.ToDictionary(x => x.Id, x => x.Name);
-                _projectDict = projects.ToDictionary(x => x.Id, x => x.Name);
-                _accountDict = accounts.ToDictionary(x => x.Id, x => x.Name);
-
-                if (_parsedAccountId.HasValue && _accountDict.TryGetValue(_parsedAccountId.Value, out var accName))
-                    AccountName = $"{AppResources.TransactionsPageTitle}: {accName}";
+                // ZMIANA: Usunięto generowanie słowników! 
+                // Pobieramy nazwę konta bezpośrednio z pobranej listy za pomocą LINQ
+                if (_parsedAccountId.HasValue)
+                {
+                    var account = accounts.FirstOrDefault(a => a.Id == _parsedAccountId.Value);
+                    AccountName = account != null
+                        ? $"{AppResources.TransactionsPageTitle}: {account.Name}"
+                        : AppResources.AllTransactionsTitle ?? "Wszystkie transakcje";
+                }
                 else
+                {
                     AccountName = AppResources.AllTransactionsTitle ?? "Wszystkie transakcje";
+                }
 
                 AvailableCategories.Clear();
                 AvailableProjects.Clear();
@@ -102,18 +102,60 @@ namespace ExpenseTracker.ViewModels
         }
 
         // --- NASŁUCHIWACZE ZMIAN ---
-        // Bezpieczny wzorzec async void używany w odpowiedzi na zdarzenia properties
-        partial void OnSearchTextChanged(string value) => FireFilterUpdate();
-        partial void OnMinAmountTextChanged(string value) => FireFilterUpdate();
-        partial void OnMaxAmountTextChanged(string value) => FireFilterUpdate();
+
+        // NOWOŚĆ: Token do zarządzania cyklem życia asynchronicznych opóźnień
+        private CancellationTokenSource? _debounceCts;
+
+        // 1. Pola tekstowe - wywołują opóźniony (Debounced) filtr
+        partial void OnSearchTextChanged(string value) => DebounceFilterUpdate();
+        partial void OnMinAmountTextChanged(string value) => DebounceFilterUpdate();
+        partial void OnMaxAmountTextChanged(string value) => DebounceFilterUpdate();
+
+        // 2. Kontrolki wyboru (Pickery/Sortowanie) - wywołują filtr natychmiast (lepszy UX)
         partial void OnSelectedCategoryChanged(Category? value) => FireFilterUpdate();
         partial void OnSelectedProjectChanged(Project? value) => FireFilterUpdate();
         partial void OnSelectedAccountChanged(Account? value) => FireFilterUpdate();
+
+        // NOWOŚĆ: Wzorzec Debounce dla wpisywania tekstu
+        private async void DebounceFilterUpdate()
+        {
+            try
+            {
+                // Anuluj poprzednie odliczanie, jeśli użytkownik wpisał kolejny znak przed upływem 300ms
+                _debounceCts?.Cancel();
+                _debounceCts?.Dispose();
+
+                // Utwórz nowy token dla bieżącego znaku
+                _debounceCts = new CancellationTokenSource();
+                var token = _debounceCts.Token;
+
+                // Czekamy 300ms (optymalny czas na zrobienie pauzy podczas pisania)
+                await Task.Delay(300, token);
+
+                // Jeśli po 300ms token nie został anulowany (użytkownik przestał pisać), odpalamy bazę
+                if (!token.IsCancellationRequested)
+                {
+                    await FetchAndApplyFiltersAsync();
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // Całkowicie ignorujemy ten wyjątek - to naturalne zachowanie przy anulowaniu Task.Delay
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Błąd podczas debouncingu: {ex.Message}");
+            }
+        }
 
         private async void FireFilterUpdate()
         {
             try
             {
+                // Jeśli wymuszamy natychmiastowe odświeżenie (np. kliknięcie w picker),
+                // anulujemy też ewentualne wiszące zapytania tekstowe.
+                _debounceCts?.Cancel();
+
                 await FetchAndApplyFiltersAsync();
             }
             catch (Exception ex)
@@ -180,67 +222,44 @@ namespace ExpenseTracker.ViewModels
         // --- GŁÓWNY SILNIK DANYCH ---
         private async Task FetchAndApplyFiltersAsync()
         {
-            // 1. Parsujemy liczby
-            decimal? min = null;
-            if (decimal.TryParse(MinAmountText?.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal parsedMin))
-                min = parsedMin;
+            decimal? min = decimal.TryParse(MinAmountText?.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal pMin) ? pMin : null;
+            decimal? max = decimal.TryParse(MaxAmountText?.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal pMax) ? pMax : null;
 
-            decimal? max = null;
-            if (decimal.TryParse(MaxAmountText?.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal parsedMax))
-                max = parsedMax;
-
-            // Wyznaczamy ID konta (lokalne z Pickera lub nadrzędne z URL)
             int? targetAccountId = SelectedAccount?.Id ?? _parsedAccountId;
 
-            // 2. ODDECH DLA RAMU: Pobieramy tylko to, co spełnia sztywne warunki
-            var rawFilteredDbData = await _databaseService.GetFilteredTransactionsAsync(
+            // Cały ciężar operacji (Sortowanie, JOIN, Filtrowanie tekstu) przejmuje SQLite!
+            var rawData = await _databaseService.GetTransactionsWithDetailsAsync(
                 targetAccountId,
                 SelectedCategory?.Id,
                 SelectedProject?.Id,
                 min,
-                max);
+                max,
+                SearchText,
+                _currentSortColumn,
+                _isAscending);
 
-            // 3. Mapujemy obiekty i wyszukujemy tekstem w pamięci RAM
-            var query = rawFilteredDbData.Select(t => new TransactionDisplayItem
+            // Błyskawiczne mapowanie z DTO do modelu widoku
+            var displayItems = rawData.Select(dto => new TransactionDisplayItem
             {
-                Transaction = t,
-                CategoryName = _categoryDict.TryGetValue(t.CategoryId ?? 0, out var catName) ? catName : "-",
-                // NAPRAWIONY BŁĄD Z PROJECT DICT:
-                ProjectName = _projectDict.TryGetValue(t.ProjectId ?? 0, out var projName) ? projName : "-",
-                Description = t.Description ?? string.Empty,
-                AccountName = _accountDict.TryGetValue(t.AccountId, out var accName) ? accName : "-",
+                Transaction = new Transaction
+                {
+                    Id = dto.Id,
+                    Amount = dto.Amount,
+                    Date = dto.Date,
+                    Type = (TransactionType)dto.Type,
+                    AccountId = dto.AccountId
+                },
+                CategoryName = dto.CategoryName,
+                ProjectName = dto.ProjectName,
+                AccountName = dto.AccountName,
+                Description = dto.Description,
                 ShowAccount = IsGlobalView
-            }).AsEnumerable();
+            }).ToList();
 
-            // Szybkie wyszukiwanie tekstowe
-            if (!string.IsNullOrWhiteSpace(SearchText))
-            {
-                var lowerSearch = SearchText.ToLower();
-                query = query.Where(t =>
-                    t.Description.ToLower().Contains(lowerSearch) ||
-                    t.CategoryName.ToLower().Contains(lowerSearch) ||
-                    t.ProjectName.ToLower().Contains(lowerSearch));
-            }
-
-            // 4. Sortowanie w pamięci RAM
-            query = _currentSortColumn switch
-            {
-                "Date" => _isAscending ? query.OrderBy(t => t.Transaction.Date) : query.OrderByDescending(t => t.Transaction.Date),
-                "Account" => _isAscending ? query.OrderBy(t => t.AccountName) : query.OrderByDescending(t => t.AccountName),
-                "Category" => _isAscending ? query.OrderBy(t => t.CategoryName) : query.OrderByDescending(t => t.CategoryName),
-                "Description" => _isAscending ? query.OrderBy(t => t.Description) : query.OrderByDescending(t => t.Description),
-                "Project" => _isAscending ? query.OrderBy(t => t.ProjectName) : query.OrderByDescending(t => t.ProjectName),
-                "Amount" => _isAscending ? query.OrderBy(t => t.Transaction.Amount) : query.OrderByDescending(t => t.Transaction.Amount),
-                _ => query
-            };
-
-            var finalResults = query.ToList();
-
-            // 5. Bezpieczna aktualizacja interfejsu w głównym wątku (MainThread)
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 Transactions.Clear();
-                foreach (var item in finalResults)
+                foreach (var item in displayItems)
                 {
                     Transactions.Add(item);
                 }
@@ -257,5 +276,7 @@ namespace ExpenseTracker.ViewModels
         public Color AmountColor => Transaction.Type == TransactionType.Expense ? Color.FromArgb("#E53935") : Color.FromArgb("#4CAF50");
         public string AccountName { get; set; } = string.Empty;
         public bool ShowAccount { get; set; }
+        // NOWOŚĆ: Logiczna wartość ujemna/dodatnia na potrzeby prawidłowego sortowania
+        public decimal SignedAmount => Transaction.Type == TransactionType.Expense ? -Transaction.Amount : Transaction.Amount;
     }
 }

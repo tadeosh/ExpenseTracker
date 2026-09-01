@@ -227,6 +227,66 @@ namespace ExpenseTracker.Data
             return await query.ToListAsync();
         }
 
+        public async Task<List<TransactionDetailDto>> GetTransactionsWithDetailsAsync(
+            int? accountId, int? categoryId, int? projectId,
+            decimal? minAmount, decimal? maxAmount,
+            string? searchText, string sortColumn, bool isAscending)
+        {
+            await InitAsync();
+
+            int expenseTypeValue = (int)TransactionType.Expense;
+
+            // 1. Szkielet zapytania z JOINami i logiką matematyczną
+            var sql = $@"
+                SELECT 
+                    t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId,
+                    IFNULL(c.Name, '-') AS CategoryName,
+                    IFNULL(p.Name, '-') AS ProjectName,
+                    IFNULL(a.Name, '-') AS AccountName,
+                    CASE WHEN t.Type = {expenseTypeValue} THEN -t.Amount ELSE t.Amount END AS SignedAmount
+                FROM ""Transaction"" t
+                LEFT JOIN Category c ON t.CategoryId = c.Id
+                LEFT JOIN Project p ON t.ProjectId = p.Id
+                LEFT JOIN Account a ON t.AccountId = a.Id
+                WHERE 1=1 ";
+
+            var args = new List<object>();
+
+            // 2. Filtrowanie (Bezpieczne parametryzowanie zabezpiecza przed SQL Injection)
+            if (accountId.HasValue) { sql += " AND t.AccountId = ? "; args.Add(accountId.Value); }
+            if (categoryId.HasValue) { sql += " AND t.CategoryId = ? "; args.Add(categoryId.Value); }
+            if (projectId.HasValue) { sql += " AND t.ProjectId = ? "; args.Add(projectId.Value); }
+            if (minAmount.HasValue) { sql += " AND t.Amount >= ? "; args.Add(minAmount.Value); }
+            if (maxAmount.HasValue) { sql += " AND t.Amount <= ? "; args.Add(maxAmount.Value); }
+
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                sql += " AND (t.Description LIKE ? OR c.Name LIKE ? OR p.Name LIKE ?) ";
+                var likeParam = $"%{searchText}%";
+                args.Add(likeParam);
+                args.Add(likeParam);
+                args.Add(likeParam);
+            }
+
+            // 3. Sortowanie wspierane indeksem (NOCASE dla stabilnego sortowania tekstów)
+            // ZMIANA 1: COLLATE NOCASE znajduje się PRZED słowem ASC/DESC
+            // ZMIANA 2: Używamy aliasów SQL (CategoryName, ProjectName), by zachować spójność z IFNULL
+            string direction = isAscending ? "ASC" : "DESC";
+            sql += sortColumn switch
+            {
+                "Date" => $" ORDER BY t.Date {direction}, t.Id {direction} ",
+                "Account" => $" ORDER BY AccountName COLLATE NOCASE {direction} ",
+                "Category" => $" ORDER BY CategoryName COLLATE NOCASE {direction} ",
+                "Description" => $" ORDER BY t.Description COLLATE NOCASE {direction} ",
+                "Project" => $" ORDER BY ProjectName COLLATE NOCASE {direction} ",
+                "Amount" => $" ORDER BY SignedAmount {direction} ",
+                _ => $" ORDER BY t.Date DESC, t.Id DESC "
+            };
+
+            // Wywołanie silnika SQLite
+            return await _database.QueryAsync<TransactionDetailDto>(sql, args.ToArray());
+        }
+
         // =================== Klasa pomocnicza =============================
         // Klasa używana wyłącznie wewnętrznie do rzutowania wyników zapytań agregujących SQL
         public class BalanceResult
