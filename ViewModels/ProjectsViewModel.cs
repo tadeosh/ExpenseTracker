@@ -58,7 +58,12 @@ namespace ExpenseTracker.ViewModels
         [RelayCommand]
         private async Task OpenSubprojectsAsync(ProjectDisplayItem? item)
         {
-            if (item == null) return;
+            // NOWOŚĆ: Guard Clause - Ograniczenie do 1 poziomu zagnieżdżenia.
+            if (item == null || item.Project.ParentId != null)
+            {
+                try { HapticFeedback.Default.Perform(HapticFeedbackType.Click); } catch { }
+                return;
+            }
 
             var navParams = new Dictionary<string, object>
             {
@@ -107,6 +112,12 @@ namespace ExpenseTracker.ViewModels
             {
                 var error = validationResult.Errors.FirstOrDefault(e => e.PropertyName == nameof(ProjectName));
                 if (error != null) ProjectNameError = error.ErrorMessage;
+                return;
+            }
+
+            // NOWOŚĆ: Hard Limit na zapis
+            if (!IsEditing && CurrentParentProject != null && CurrentParentProject.ParentId != null)
+            {
                 return;
             }
 
@@ -294,6 +305,8 @@ namespace ExpenseTracker.ViewModels
         public partial string SubprojectsText { get; set; } = string.Empty;
 
         public bool HasSubprojects => SubprojectsCount > 0;
+        // Zwraca Prawdę tylko dla głównych projektów (poziom 1)
+        public bool IsMainProject => Project.ParentId == null;
         public bool ShowDeleteWarning => IsDeleteMode && HasSubprojects;
         public string DisplayName => SubprojectsCount > 0 ? $"{Project.Name} ({SubprojectsCount})" : Project.Name;
         public double MinusRotation => IsDeleteMode ? 90 : 0;

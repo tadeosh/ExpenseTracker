@@ -182,7 +182,15 @@ namespace ExpenseTracker.ViewModels
         [RelayCommand]
         private async Task OpenSubcategoriesAsync(CategoryDisplayItem item)
         {
-            if (item == null) return;
+            // NOWOŚĆ: Guard Clause - Ograniczenie do 1 poziomu zagnieżdżenia.
+            // Jeśli kategoria ma już ParentId, oznacza to, że sama jest podkategorią.
+            // Blokujemy wejście głębiej (nie odpalamy nawigacji).
+            if (item == null || item.Category.ParentId != null)
+            {
+                // Opcjonalnie: delikatna wibracja informująca o braku akcji
+                try { HapticFeedback.Default.Perform(HapticFeedbackType.Click); } catch { }
+                return;
+            }
 
             var navigationParameter = new Dictionary<string, object>
             {
@@ -235,6 +243,14 @@ namespace ExpenseTracker.ViewModels
             SaveColorToRecents(SelectedColor); // Zapisujemy kolor na paletę
 
             // 3. Zapis (Twój dotychczasowy kod)
+
+            // NOWOŚĆ: Hard Limit na zapis (Zabezpieczenie przed uszkodzonym stanem)
+            if (!IsEditing && CurrentParentCategory != null && CurrentParentCategory.ParentId != null)
+            {
+                // Próba dodania dziecka do dziecka - blokujemy
+                return;
+            }
+
             if (IsEditing && _categoryBeingEdited != null)
             {
                 _categoryBeingEdited.Name = CategoryName;
@@ -442,6 +458,9 @@ namespace ExpenseTracker.ViewModels
 
         // Magia: Zwraca Prawdę, jeśli kategoria ma dzieci (użyjemy do ukrywania napisu)
         public bool HasSubcategories => SubcategoriesCount > 0;
+
+        // Zwraca Prawdę tylko dla głównych kategorii (poziom 1)
+        public bool IsMainCategory => Category.ParentId == null;
 
         public bool ShowDeleteWarning => IsDeleteMode && HasSubcategories;
 

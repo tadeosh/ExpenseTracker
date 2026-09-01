@@ -136,42 +136,9 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
-                </VerticalStackLayout>
-                <!--<CollectionView ItemsSource="{Binding AvailableColors}" 
-                         SelectedItem="{Binding SelectedColor, Mode=TwoWay}"
-                         SelectionMode="Single"
-                         HeightRequest="45" HorizontalScrollBarVisibility="Never">
-                    <CollectionView.ItemsLayout>
-                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10" />
-                    </CollectionView.ItemsLayout>
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Border BackgroundColor="{Binding .}" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20" StrokeThickness="0">
-                                <Border.Stroke>
-                                    <SolidColorBrush Color="{DynamicResource AppTextColor}"/>
-                                </Border.Stroke>
-
-                                <VisualStateManager.VisualStateGroups>
-                                    <VisualStateGroup Name="CommonStates">
-                                        <VisualState Name="Normal">
-                                            <VisualState.Setters>
-                                                <Setter Property="StrokeThickness" Value="0" />
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                        <VisualState Name="Selected">
-                                            <VisualState.Setters>
-                                                <Setter Property="StrokeThickness" Value="3" />
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                    </VisualStateGroup>
-                                </VisualStateManager.VisualStateGroups>
-
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>-->
+                </VerticalStackLayout>   
             </VerticalStackLayout>
-
+            <!-- Przyciski -->
             <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
                 <Button Grid.Column="0" Text="{x:Static strings:AppResources.AddCategoryBtn}" Command="{Binding SaveCategoryCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="White">
                     <Button.Triggers>
@@ -185,7 +152,7 @@
                 <Button Grid.Column="1" Text="{x:Static strings:AppResources.CancelBtn}" Command="{Binding CancelEditCommand}" BackgroundColor="Transparent" TextColor="{DynamicResource AppTextColor}" />
             </Grid>
         </VerticalStackLayout>
-
+        <!-- WYŚWIETLAMNIE KATEGORII -->
         <CollectionView ItemsSource="{Binding Categories}" Margin="20" VerticalOptions="Fill">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
@@ -268,7 +235,7 @@
 
                                 </VerticalStackLayout>
 
-                                <Path Grid.Column="2" Data="M 9 18 L 15 12 L 9 6" Fill="Transparent" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" VerticalOptions="Center" Opacity="0.3">
+                                <Path Grid.Column="2" Data="M 9 18 L 15 12 L 9 6" Fill="Transparent" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" VerticalOptions="Center" Opacity="0.3" IsVisible="{Binding IsMainCategory}">
                                     <Path.Stroke>
                                         <SolidColorBrush Color="{DynamicResource AppTextColor}" />
                                     </Path.Stroke>

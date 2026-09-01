@@ -113,7 +113,7 @@
                                 </VerticalStackLayout>
 
                                 <!-- NOWOŚĆ: Mała strzałeczka z prawej strony nazwy -->
-                                <Path Grid.Column="1" Data="M 9 18 L 15 12 L 9 6" Fill="Transparent" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" VerticalOptions="Center" Opacity="0.3" IsVisible="{Binding HasSubprojects}">
+                                <Path Grid.Column="1" Data="M 9 18 L 15 12 L 9 6" Fill="Transparent" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" VerticalOptions="Center" Opacity="0.3" IsVisible="{Binding IsMainProject}">
                                     <Path.Stroke>
                                         <SolidColorBrush Color="{DynamicResource AppTextColor}" />
                                     </Path.Stroke>
