@@ -483,4 +483,10 @@
   <data name="ProjectValidationMissingData" xml:space="preserve">
     <value>Projektname eingeben.</value>
   </data>
+  <data name="CurrentMonthExpensesLabel" xml:space="preserve">
+    <value>Ausgaben diesen Monat:</value>
+  </data>
+  <data name="ErrorLoadingData" xml:space="preserve">
+    <value>Fehler beim Laden:</value>
+  </data>
 </root>

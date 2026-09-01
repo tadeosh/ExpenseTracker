@@ -22,6 +22,10 @@ namespace ExpenseTracker.Services.Interfaces
                 string? searchText, string sortColumn, bool isAscending);
         Task<List<TransactionDetailDto>> GetRecentTransactionsWithDetailsAsync(int limit = 30);
 
+        // Raporty
+
+        Task<List<CategoryExpenseSummaryDto>> GetCurrentMonthExpensesAsync(); //HomePage
+
         // Kategorie
         Task<List<Category>> GetCategoriesAsync(bool includeArchived = false);
         Task<int> SaveCategoryAsync(Category category);

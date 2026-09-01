@@ -475,6 +475,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Expenses this month:.
+        /// </summary>
+        internal static string CurrentMonthExpensesLabel {
+            get {
+                return ResourceManager.GetString("CurrentMonthExpensesLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Danger zone.
         /// </summary>
         internal static string DangerZone {
@@ -615,6 +624,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string Enum_Transfer {
             get {
                 return ResourceManager.GetString("Enum_Transfer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Error loading dashboard:.
+        /// </summary>
+        internal static string ErrorLoadingData {
+            get {
+                return ResourceManager.GetString("ErrorLoadingData", resourceCulture);
             }
         }
         

@@ -238,16 +238,16 @@ namespace ExpenseTracker.Data
                 // 5. Sumujemy Transfery przychodzące na dane konto (+) z uwzględnieniem kursu (ExchangeRate)
                 // Logika matematyczna (1 / ExchangeRate) jest wykonywana w locie przez silnik SQLite!
                 var transfersInQuery = @"
-            SELECT DestinationAccountId as AccountId, 
-                   SUM(
-                       CASE 
-                           WHEN ExchangeRate IS NOT NULL AND ExchangeRate > 0 THEN Amount * (1.0 / ExchangeRate)
-                           ELSE Amount 
-                       END
-                   ) as Total 
-            FROM ""Transaction"" 
-            WHERE Type = ? AND DestinationAccountId IS NOT NULL 
-            GROUP BY DestinationAccountId";
+                    SELECT DestinationAccountId as AccountId, 
+                           SUM(
+                               CASE 
+                                   WHEN ExchangeRate IS NOT NULL AND ExchangeRate > 0 THEN Amount * (1.0 / ExchangeRate)
+                                   ELSE Amount 
+                               END
+                           ) as Total 
+                    FROM ""Transaction"" 
+                    WHERE Type = ? AND DestinationAccountId IS NOT NULL 
+                    GROUP BY DestinationAccountId";
 
                 var transfersIn = await _database.QueryAsync<BalanceResult>(transfersInQuery, (int)TransactionType.Transfer);
 
@@ -401,6 +401,33 @@ namespace ExpenseTracker.Data
         {
             public int AccountId { get; set; }
             public decimal Total { get; set; }
+        }
+
+        // ====================================================================
+        //       OPERACJE DLA WYKRESÓW I RAPORTÓW (STATISTICS)
+        // ====================================================================
+
+        public async Task<List<CategoryExpenseSummaryDto>> GetCurrentMonthExpensesAsync()
+        {
+            await InitAsync();
+
+            var startDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            var nextMonth = startDate.AddMonths(1);
+
+            // Wyciągamy surowe dane. Waluty i tłumaczenia obsłuży logika biznesowa C#
+            var sql = @"
+                SELECT 
+                    t.Amount, 
+                    t.Date,
+                    IFNULL(c.Name, '-') AS CategoryName,
+                    IFNULL(c.ColorHex, '#9E9E9E') AS ColorHex,
+                    a.Currency AS AccountCurrency
+                FROM ""Transaction"" t
+                LEFT JOIN Category c ON t.CategoryId = c.Id
+                LEFT JOIN Account a ON t.AccountId = a.Id
+                WHERE t.Type = 0 AND t.Date >= ? AND t.Date < ?";
+
+            return await _database.QueryAsync<CategoryExpenseSummaryDto>(sql, startDate, nextMonth);
         }
 
         // ==========================================

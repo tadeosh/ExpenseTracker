@@ -2,11 +2,14 @@
 using ExpenseTracker.Data;
 using ExpenseTracker.Services;
 using ExpenseTracker.Services.Interfaces;
+using ExpenseTracker.Validators;
 using ExpenseTracker.ViewModels;
 using ExpenseTracker.Views;
-using Microsoft.Extensions.Logging;
 using FluentValidation;
-using ExpenseTracker.Validators;
+using LiveChartsCore.SkiaSharpView.Maui;
+using Microsoft.Extensions.Logging;
+using SkiaSharp.Views.Maui.Controls.Hosting;
+
 
 namespace ExpenseTracker
 {
@@ -17,6 +20,8 @@ namespace ExpenseTracker
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseSkiaSharp()
+                .UseLiveCharts() // NOWOŚĆ: Inicjalizacja silnika graficznego
                 .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {

@@ -503,4 +503,12 @@
     <value>Enter project name.</value>
     <comment>ProjectsValidator</comment>
   </data>
+  <data name="CurrentMonthExpensesLabel" xml:space="preserve">
+    <value>Expenses this month:</value>
+    <comment>HomePage</comment>
+  </data>
+  <data name="ErrorLoadingData" xml:space="preserve">
+    <value>Error loading dashboard:</value>
+    <comment>HomeViewModel</comment>
+  </data>
 </root>

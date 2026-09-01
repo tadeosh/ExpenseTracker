@@ -4,6 +4,7 @@
              xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
              xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
              xmlns:models="clr-namespace:ExpenseTracker.Models"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              x:Class="ExpenseTracker.Views.HomePage"
              x:Name="MyHomePage"
              Title="{x:Static strings:AppResources.HomePageTitle}"
@@ -11,7 +12,7 @@
 
     <Grid>
 
-        <Grid RowDefinitions="Auto, Auto, Auto, *" Margin="20,20,20,0">
+        <Grid RowDefinitions="Auto, Auto, Auto, Auto, *" Margin="20,20,20,0">
 
             <Label Grid.Row="0" Text="{x:Static strings:AppResources.TotalBalanceLabel}" FontSize="20" FontAttributes="Bold" Margin="0,0,0,10" TextColor="{DynamicResource AppTextColor}"/>
 
@@ -75,7 +76,44 @@
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="3" RowDefinitions="Auto, Auto, *" Margin="0,20,0,0">
+            <!-- SEKACJA WYKRESU BIEŻĄCEGO MIESIĄCA -->
+            <Border Grid.Row="3" Margin="0,20,0,0" Padding="15" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                <Grid RowDefinitions="Auto, 180" ColumnDefinitions="*">
+                    <Label Grid.Row="0" Text="{x:Static strings:AppResources.CurrentMonthExpensesLabel}" FontAttributes="Bold" FontSize="16" TextColor="{DynamicResource AppTextColor}" Margin="0,0,0,10"/>
+
+                    <!-- ZMIANA: Usunięto IsVisible. Wykres jest zawsze w drzewie UI. Dodano HeightRequest="180" -->
+                    <lvc:PieChart Grid.Row="1" 
+                                  Series="{Binding ExpenseSeries}" 
+                                  LegendPosition="Right" 
+                                  BackgroundColor="Transparent" 
+                                  HorizontalOptions="Fill" 
+                                  VerticalOptions="Fill" 
+                                  HeightRequest="180" />
+
+                    <!-- ZMIANA: Etykieta salda w środku donuta -->
+                    <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center" Margin="0,0,80,0" InputTransparent="True" IsVisible="{Binding HasExpensesThisMonth}">
+                        <Label Text="{Binding CurrentMonthTotalDisplay}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalTextAlignment="Center"/>
+                    </VerticalStackLayout>
+
+                    <!-- ZMIANA: Pusty stan nakłada się na obszar wykresu. Znika, gdy HasExpensesThisMonth = True -->
+                    <Label Grid.Row="1" 
+                           Text="{x:Static strings:AppResources.NoTransactionsLabel}" 
+                           FontSize="14" 
+                           TextColor="{DynamicResource AppTextColor}" 
+                           Opacity="0.5" 
+                           HorizontalOptions="Center" 
+                           VerticalOptions="Center">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding HasExpensesThisMonth}" Value="True">
+                                <Setter Property="IsVisible" Value="False" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                </Grid>
+            </Border>
+
+            <!--WYŚWIETLANIE LISTY OSTATNICH TRANSAKCJI Z PODZIAŁEM NA GRUPY (DNI) - POCZĄTEK-->
+            <Grid Grid.Row="4" RowDefinitions="Auto, Auto, *" Margin="0,20,0,0">
 
                 <Label Grid.Row="0" Text="{x:Static strings:AppResources.RecentTransactionsLabel}" FontSize="20" FontAttributes="Bold" Margin="0,0,0,15" TextColor="{DynamicResource AppTextColor}"/>
 

@@ -6,6 +6,10 @@ using ExpenseTracker.Resources.Strings;
 using System.Collections.ObjectModel;
 using ExpenseTracker.Helpers;
 using ExpenseTracker.Services.Interfaces;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
+using SkiaSharp;
 
 namespace ExpenseTracker.ViewModels
 {
@@ -33,6 +37,16 @@ namespace ExpenseTracker.ViewModels
         public partial bool HasMissingRates { get; set; } = false;
 
         private string _missingRatesMessage = string.Empty;
+
+        // raport/wykresy
+        [ObservableProperty]
+        public partial ObservableCollection<ISeries> ExpenseSeries { get; set; } = new();
+
+        [ObservableProperty]
+        public partial string CurrentMonthTotalDisplay { get; set; } = string.Empty;
+
+        [ObservableProperty]
+        public partial bool HasExpensesThisMonth { get; set; } = false;
 
         public HomeViewModel(IDatabaseService databaseService, ISettingsService settingsService)
         {
@@ -62,121 +76,206 @@ namespace ExpenseTracker.ViewModels
 
         public async Task LoadDataAsync()
         {
-            // --- 1. BEZPIECZNE ŁADOWANIE KONT ---
-            var accounts = await _databaseService.GetAccountsAsync();
-            var accountDictionary = accounts.ToDictionary(a => a.Id, a => a.Name);
-
-            string defaultCurrency = _settingsService.DefaultCurrency;
-            decimal totalNetWorth = 0;
-
-            List<string> missingRatesList = new();
-            var tempAccounts = new ObservableCollection<AccountBalanceItem>();
-
-            var balances = await _databaseService.GetAllAccountBalancesAsync();
-
-            foreach (var acc in accounts)
+            try
             {
-                // decimal currentBalance = await _databaseService.GetAccountBalanceAsync(acc.Id);
-                var currentBalance = balances.GetValueOrDefault(acc.Id);
+                // --- 1. BEZPIECZNE ŁADOWANIE KONT ---
+                var accounts = await _databaseService.GetAccountsAsync();
+                var accountDictionary = accounts.ToDictionary(a => a.Id, a => a.Name);
 
-                tempAccounts.Add(new AccountBalanceItem
-                {
-                    Id =acc.Id,
-                    Name = acc.Name,
-                    Balance = currentBalance,
-                    Currency = acc.Currency
-                });
+                string defaultCurrency = _settingsService.DefaultCurrency;
+                decimal totalNetWorth = 0;
 
-                if (acc.Currency == defaultCurrency)
-                {
-                    totalNetWorth += currentBalance;
-                }
-                else
-                {
-                    var rateFromDb = await _databaseService.GetApplicableExchangeRateAsync(acc.Currency, defaultCurrency, DateTime.Today);
+                List<string> missingRatesList = new();
+                var tempAccounts = new ObservableCollection<AccountBalanceItem>();
 
-                    decimal exchangeRate = 1m;
-                    if (rateFromDb.HasValue && rateFromDb.Value > 0)
+                var balances = await _databaseService.GetAllAccountBalancesAsync();
+
+                foreach (var acc in accounts)
+                {
+                    // decimal currentBalance = await _databaseService.GetAccountBalanceAsync(acc.Id);
+                    var currentBalance = balances.GetValueOrDefault(acc.Id);
+
+                    tempAccounts.Add(new AccountBalanceItem
                     {
-                        exchangeRate = rateFromDb.Value;
+                        Id = acc.Id,
+                        Name = acc.Name,
+                        Balance = currentBalance,
+                        Currency = acc.Currency
+                    });
+
+                    if (acc.Currency == defaultCurrency)
+                    {
+                        totalNetWorth += currentBalance;
                     }
                     else
                     {
-                        missingRatesList.Add($"{acc.Currency} ➔ {defaultCurrency}");
+                        var rateFromDb = await _databaseService.GetApplicableExchangeRateAsync(acc.Currency, defaultCurrency, DateTime.Today);
+
+                        decimal exchangeRate = 1m;
+                        if (rateFromDb.HasValue && rateFromDb.Value > 0)
+                        {
+                            exchangeRate = rateFromDb.Value;
+                        }
+                        else
+                        {
+                            missingRatesList.Add($"{acc.Currency} ➔ {defaultCurrency}");
+                        }
+
+                        totalNetWorth += currentBalance * (1m / exchangeRate);
+                    }
+                }
+                AccountsBalances = tempAccounts;
+
+                // --- ZMIANA: Tłumaczenia z AppResources ---
+                if (missingRatesList.Any())
+                {
+                    HasMissingRates = true;
+                    var uniqueRates = missingRatesList.Distinct();
+
+                    // Zlepiamy dynamicznie przetłumaczony komunikat
+                    _missingRatesMessage = $"{AppResources.MissingRatesMsgPart1}\n\n"
+                                           + string.Join("\n", uniqueRates)
+                                           + $"\n\n{AppResources.MissingRatesMsgPart2}";
+                }
+                else
+                {
+                    HasMissingRates = false;
+                    _missingRatesMessage = string.Empty;
+                }
+
+                TotalNetWorthDisplay = $"{totalNetWorth:N2} {defaultCurrency}";
+
+                // --- 2. BEZPIECZNE ŁADOWANIE TRANSAKCJI ---
+                var transactions = await _databaseService.GetRecentTransactionsWithDetailsAsync(30);
+
+                var groupedData = transactions
+                    .GroupBy(t => t.Date.Date)
+                    .Select(g =>
+                    {
+                        decimal dailyIncome = g.Where(x => x.Type == (int)TransactionType.Income).Sum(x => x.Amount);
+                        decimal dailyExpense = g.Where(x => x.Type == (int)TransactionType.Expense).Sum(x => x.Amount);
+
+                        var items = g.Select(t =>
+                        {
+                            // Inteligentne mapowanie znaku oparte o stronę transakcji (wypływ/wpływ)
+                            string prefix = t.SignedAmount > 0 ? "+ " : (t.SignedAmount < 0 ? "- " : "");
+
+                            return new RecentTransactionItem
+                            {
+                                CategoryName = t.CategoryName == "-" ? AppResources.CategoryNone : t.CategoryName,
+                                SubcategoryName = "",
+                                Description = t.Description,
+                                AccountDisplay = t.AccountName,
+                                ProjectName = t.ProjectName == "-" ? "" : t.ProjectName,
+                                SubprojectName = "",
+                                // Używamy Math.Abs by nie dublować minusa w interfejsie
+                                AmountDisplay = $"{prefix}{Math.Abs(t.SignedAmount):N2}",
+                                Type = (TransactionType)t.Type
+                            };
+                        });
+
+                        return new TransactionGroup(g.Key, items)
+                        {
+                            DateDisplay = g.Key.ToString("dd.MM.yyyy"),
+                            DayOfWeekDisplay = g.Key.ToString("ddd"),
+                            TotalIncomeDisplay = dailyIncome > 0 ? $"+ {dailyIncome:N2}" : "",
+                            TotalExpenseDisplay = dailyExpense > 0 ? $"- {dailyExpense:N2}" : ""
+                        };
+                    })
+                    .ToList(); // OrderByDescending pominięto, bo zrobiliśmy to w SQL!
+
+                var tempGroups = new ObservableCollection<TransactionGroup>();
+                foreach (var group in groupedData)
+                {
+                    tempGroups.Add(group);
+                }
+
+                GroupedTransactions = tempGroups;
+                HasNoTransactions = GroupedTransactions.Count == 0;
+                HasTransactions = GroupedTransactions.Count > 0;
+
+                // wyświetlanie wykresu:
+                var monthExpenses = await _databaseService.GetCurrentMonthExpensesAsync();
+                var categorySums = new Dictionary<string, (decimal Total, string Color)>();
+
+                foreach (var expense in monthExpenses)
+                {
+                    // 1. Logika przewalutowania
+                    decimal convertedAmount = expense.Amount;
+                    if (expense.AccountCurrency != defaultCurrency)
+                    {
+                        var rateFromDb = await _databaseService.GetApplicableExchangeRateAsync(expense.AccountCurrency, defaultCurrency, expense.Date);
+                        decimal exchangeRate = (rateFromDb.HasValue && rateFromDb.Value > 0) ? rateFromDb.Value : 1m;
+                        convertedAmount = expense.Amount * (1m / exchangeRate);
                     }
 
-                    totalNetWorth += currentBalance * (1m / exchangeRate);
+                    // 2. Logika tłumaczenia "Brak Kategorii"
+                    string catName = expense.CategoryName == "-" ? AppResources.CategoryNone : expense.CategoryName;
+
+                    // 3. Grupowanie C# (szybkie działanie na Dictionary)
+                    if (categorySums.ContainsKey(catName))
+                    {
+                        var current = categorySums[catName];
+                        categorySums[catName] = (current.Total + convertedAmount, current.Color);
+                    }
+                    else
+                    {
+                        categorySums[catName] = (convertedAmount, expense.ColorHex);
+                    }
                 }
-            }
-            AccountsBalances = tempAccounts;
 
-            // --- ZMIANA: Tłumaczenia z AppResources ---
-            if (missingRatesList.Any())
-            {
-                HasMissingRates = true;
-                var uniqueRates = missingRatesList.Distinct();
+                // 4. Sortowanie i wybór top 5 wydatków
+                var topCategories = categorySums
+                    .Select(kvp => new { Name = kvp.Key, Total = kvp.Value.Total, Color = kvp.Value.Color })
+                    .OrderByDescending(x => x.Total)
+                    .Take(5)
+                    .ToList();
 
-                // Zlepiamy dynamicznie przetłumaczony komunikat
-                _missingRatesMessage = $"{AppResources.MissingRatesMsgPart1}\n\n"
-                                       + string.Join("\n", uniqueRates)
-                                       + $"\n\n{AppResources.MissingRatesMsgPart2}";
-            }
-            else
-            {
-                HasMissingRates = false;
-                _missingRatesMessage = string.Empty;
-            }
+                var tempSeries = new ObservableCollection<ISeries>();
+                decimal monthChartTotal = 0;
 
-            TotalNetWorthDisplay = $"{totalNetWorth:N2} {defaultCurrency}";
-
-            // --- 2. BEZPIECZNE ŁADOWANIE TRANSAKCJI ---
-            var transactions = await _databaseService.GetRecentTransactionsWithDetailsAsync(30);
-
-            var groupedData = transactions
-                .GroupBy(t => t.Date.Date)
-                .Select(g =>
+                foreach (var item in topCategories)
                 {
-                    decimal dailyIncome = g.Where(x => x.Type == (int)TransactionType.Income).Sum(x => x.Amount);
-                    decimal dailyExpense = g.Where(x => x.Type == (int)TransactionType.Expense).Sum(x => x.Amount);
+                    monthChartTotal += item.Total;
 
-                    var items = g.Select(t =>
+                    // 1. BEZPIECZNE PARSOWANIE KOLORU: Jeśli w bazie jest błąd lub brak, ustaw twardy szary (Gray)
+                    if (!SKColor.TryParse(item.Color, out var parsedColor))
                     {
-                        // Inteligentne mapowanie znaku oparte o stronę transakcji (wypływ/wpływ)
-                        string prefix = t.SignedAmount > 0 ? "+ " : (t.SignedAmount < 0 ? "- " : "");
+                        parsedColor = SKColors.Gray;
+                    }
 
-                        return new RecentTransactionItem
-                        {
-                            CategoryName = t.CategoryName == "-" ? AppResources.CategoryNone : t.CategoryName,
-                            SubcategoryName = "",
-                            Description = t.Description,
-                            AccountDisplay = t.AccountName,
-                            ProjectName = t.ProjectName == "-" ? "" : t.ProjectName,
-                            SubprojectName = "",
-                            // Używamy Math.Abs by nie dublować minusa w interfejsie
-                            AmountDisplay = $"{prefix}{Math.Abs(t.SignedAmount):N2}",
-                            Type = (TransactionType)t.Type
-                        };
+                    tempSeries.Add(new PieSeries<decimal>
+                    {
+                        Values = new decimal[] { item.Total },
+                        Name = item.Name, // Tutaj trafia już przetłumaczony "Brak kategorii" z logiki C#
+                        Fill = new SolidColorPaint(parsedColor),
+                        InnerRadius = 50,
+                        MaxRadialColumnWidth = 50,
+                        ToolTipLabelFormatter = point => $"{point.Context.Series.Name}: {point.Model:N2} {defaultCurrency}"
                     });
+                }
 
-                    return new TransactionGroup(g.Key, items)
+                // KLUCZOWA ZMIANA: Zlecenie aktualizacji UI do głównego wątku
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    // Czyścimy obecną kolekcję, zachowując powiązanie z widokiem (zapobiega crashom SkiaSharp)
+                    ExpenseSeries.Clear();
+
+                    foreach (var series in tempSeries)
                     {
-                        DateDisplay = g.Key.ToString("dd.MM.yyyy"),
-                        DayOfWeekDisplay = g.Key.ToString("ddd"),
-                        TotalIncomeDisplay = dailyIncome > 0 ? $"+ {dailyIncome:N2}" : "",
-                        TotalExpenseDisplay = dailyExpense > 0 ? $"- {dailyExpense:N2}" : ""
-                    };
-                })
-                .ToList(); // OrderByDescending pominięto, bo zrobiliśmy to w SQL!
+                        ExpenseSeries.Add(series);
+                    }
 
-            var tempGroups = new ObservableCollection<TransactionGroup>();
-            foreach (var group in groupedData)
-            {
-                tempGroups.Add(group);
+                    CurrentMonthTotalDisplay = $"{monthChartTotal:N2}\n{defaultCurrency}";
+                    HasExpensesThisMonth = ExpenseSeries.Count > 0;
+                });
             }
-
-            GroupedTransactions = tempGroups;
-            HasNoTransactions = GroupedTransactions.Count == 0;
-            HasTransactions = GroupedTransactions.Count > 0;
+            catch (Exception ex)
+            {
+                // Logowanie błędu do konsoli lub pliku logów
+                Console.WriteLine($"Error loading data: {ex.Message}");
+                await Shell.Current.DisplayAlertAsync(AppResources.ErrorTitle, AppResources.ErrorLoadingData, AppResources.UnderstoodBtn);
+            }
         }
 
         [RelayCommand]
