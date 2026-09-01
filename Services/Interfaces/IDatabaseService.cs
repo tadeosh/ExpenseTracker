@@ -20,6 +20,7 @@ namespace ExpenseTracker.Services.Interfaces
                 int? accountId, int? categoryId, int? projectId,
                 decimal? minAmount, decimal? maxAmount,
                 string? searchText, string sortColumn, bool isAscending);
+        Task<List<TransactionDetailDto>> GetRecentTransactionsWithDetailsAsync(int limit = 30);
 
         // Kategorie
         Task<List<Category>> GetCategoriesAsync(bool includeArchived = false);

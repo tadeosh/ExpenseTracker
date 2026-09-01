@@ -18,5 +18,8 @@ namespace ExpenseTracker.Models
 
         // Wyliczane dynamicznie przez SQL
         public decimal SignedAmount { get; set; }
+
+        // NOWOŚĆ: Flaga informująca, czy jest to perspektywa wpływu (dla transferów)
+        public bool IsTransferIn { get; set; }
     }
 }

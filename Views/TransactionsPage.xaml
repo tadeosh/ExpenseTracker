@@ -128,7 +128,7 @@
 
                         <Label Grid.Row="0" Grid.Column="1" Text="{Binding Description}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
 
-                        <Label Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" Text="{Binding Transaction.Amount, StringFormat='{0:N2}'}" FontSize="16" FontAttributes="Bold" TextColor="{Binding AmountColor}" VerticalOptions="Center" HorizontalOptions="End" />
+                        <Label Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" Text="{Binding AmountDisplay, StringFormat='{0:N2}'}" FontSize="16" FontAttributes="Bold" TextColor="{Binding AmountColor}" VerticalOptions="Center" HorizontalOptions="End" />
 
                         <!-- WIERZ 2: Szczegóły pomocnicze (Data, Konto, Projekt) -->
                         <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="4" VerticalOptions="Center">

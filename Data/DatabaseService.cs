@@ -121,6 +121,73 @@ namespace ExpenseTracker.Data
                                   .ToListAsync();
         }
 
+        //= pobieranie  ostatnich transakcji z pełnymi danymi (JOIN z kategorią, projektem i kontem)
+        public async Task<List<TransactionDetailDto>> GetRecentTransactionsWithDetailsAsync(int limit = 30)
+        {
+            await InitAsync();
+
+            var sql = @"
+                WITH Perspectives AS (
+                    -- 1. Zwykłe Przychody (1) i Wydatki (0)
+                    SELECT 
+                        t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId,
+                        c.Name AS CategoryName, p.Name AS ProjectName, a.Name AS AccountName,
+                        CASE WHEN t.Type = 0 THEN -t.Amount ELSE t.Amount END AS SignedAmount,
+                        0 AS IsTransferIn
+                    FROM ""Transaction"" t
+                    LEFT JOIN Category c ON t.CategoryId = c.Id
+                    LEFT JOIN Project p ON t.ProjectId = p.Id
+                    LEFT JOIN Account a ON t.AccountId = a.Id
+                    WHERE t.Type IN (0, 1)
+
+                    UNION ALL
+
+                    -- 2. Transfery WYCHODZĄCE (Perspektywa Konta Źródłowego)
+                    SELECT 
+                        t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId,
+                        c.Name AS CategoryName, p.Name AS ProjectName, a.Name AS AccountName,
+                        -t.Amount AS SignedAmount,
+                        0 AS IsTransferIn
+                    FROM ""Transaction"" t
+                    LEFT JOIN Category c ON t.CategoryId = c.Id
+                    LEFT JOIN Project p ON t.ProjectId = p.Id
+                    LEFT JOIN Account a ON t.AccountId = a.Id
+                    WHERE t.Type = 2
+
+                    UNION ALL
+
+                    -- 3. Transfery PRZYCHODZĄCE (Perspektywa Konta Docelowego + Kurs)
+                    SELECT 
+                        t.Id, 
+                        CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
+                             THEN (t.Amount * (1.0 / t.ExchangeRate)) 
+                             ELSE t.Amount END AS Amount,
+                        t.Date, t.Description, t.Type, t.DestinationAccountId AS AccountId,
+                        c.Name AS CategoryName, p.Name AS ProjectName, aDest.Name AS AccountName,
+                        CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
+                             THEN (t.Amount * (1.0 / t.ExchangeRate)) 
+                             ELSE t.Amount END AS SignedAmount,
+                        1 AS IsTransferIn
+                    FROM ""Transaction"" t
+                    LEFT JOIN Category c ON t.CategoryId = c.Id
+                    LEFT JOIN Project p ON t.ProjectId = p.Id
+                    LEFT JOIN Account aDest ON t.DestinationAccountId = aDest.Id
+                    WHERE t.Type = 2 AND t.DestinationAccountId IS NOT NULL
+                )
+                SELECT 
+                    Id, Amount, Date, Description, Type, AccountId,
+                    IFNULL(CategoryName, '-') AS CategoryName,
+                    IFNULL(ProjectName, '-') AS ProjectName,
+                    IFNULL(AccountName, '-') AS AccountName,
+                    SignedAmount,
+                    IsTransferIn
+                FROM Perspectives
+                ORDER BY Date DESC, Id DESC
+                LIMIT ?";
+
+            return await _database.QueryAsync<TransactionDetailDto>(sql, limit);
+        }
+
         public async Task<Dictionary<int, decimal>> GetAllAccountBalancesAsync()
         {
             await InitAsync();
@@ -234,56 +301,97 @@ namespace ExpenseTracker.Data
         {
             await InitAsync();
 
-            int expenseTypeValue = (int)TransactionType.Expense;
+            // Używamy CTE (WITH), aby wygenerować uniwersalne perspektywy z bazy
+            var sql = @"
+                WITH Perspectives AS (
+                    -- 1. Zwykłe Przychody (1) i Wydatki (0)
+                    SELECT 
+                        t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId, t.CategoryId, t.ProjectId,
+                        c.Name AS CategoryName, p.Name AS ProjectName, a.Name AS AccountName,
+                        CASE WHEN t.Type = 0 THEN -t.Amount ELSE t.Amount END AS SignedAmount,
+                        t.AccountId AS FilterAccountId,
+                        0 AS IsTransferIn
+                    FROM ""Transaction"" t
+                    LEFT JOIN Category c ON t.CategoryId = c.Id
+                    LEFT JOIN Project p ON t.ProjectId = p.Id
+                    LEFT JOIN Account a ON t.AccountId = a.Id
+                    WHERE t.Type IN (0, 1)
 
-            // 1. Szkielet zapytania z JOINami i logiką matematyczną
-            var sql = $@"
+                    UNION ALL
+
+                    -- 2. Transfery WYCHODZĄCE (Perspektywa Konta Źródłowego)
+                    SELECT 
+                        t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId, t.CategoryId, t.ProjectId,
+                        c.Name AS CategoryName, p.Name AS ProjectName, a.Name AS AccountName,
+                        -t.Amount AS SignedAmount,
+                        t.AccountId AS FilterAccountId,
+                        0 AS IsTransferIn
+                    FROM ""Transaction"" t
+                    LEFT JOIN Category c ON t.CategoryId = c.Id
+                    LEFT JOIN Project p ON t.ProjectId = p.Id
+                    LEFT JOIN Account a ON t.AccountId = a.Id
+                    WHERE t.Type = 2
+
+                    UNION ALL
+
+                    -- 3. Transfery PRZYCHODZĄCE (Perspektywa Konta Docelowego + Kurs)
+                    SELECT 
+                        t.Id, 
+                        CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
+                             THEN (t.Amount * (1.0 / t.ExchangeRate)) 
+                             ELSE t.Amount END AS Amount,
+                        t.Date, t.Description, t.Type, t.DestinationAccountId AS AccountId, t.CategoryId, t.ProjectId,
+                        c.Name AS CategoryName, p.Name AS ProjectName, aDest.Name AS AccountName,
+                        CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
+                             THEN (t.Amount * (1.0 / t.ExchangeRate)) 
+                             ELSE t.Amount END AS SignedAmount,
+                        t.DestinationAccountId AS FilterAccountId,
+                        1 AS IsTransferIn
+                    FROM ""Transaction"" t
+                    LEFT JOIN Category c ON t.CategoryId = c.Id
+                    LEFT JOIN Project p ON t.ProjectId = p.Id
+                    LEFT JOIN Account aDest ON t.DestinationAccountId = aDest.Id
+                    WHERE t.Type = 2 AND t.DestinationAccountId IS NOT NULL
+                )
                 SELECT 
-                    t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId,
-                    IFNULL(c.Name, '-') AS CategoryName,
-                    IFNULL(p.Name, '-') AS ProjectName,
-                    IFNULL(a.Name, '-') AS AccountName,
-                    CASE WHEN t.Type = {expenseTypeValue} THEN -t.Amount ELSE t.Amount END AS SignedAmount
-                FROM ""Transaction"" t
-                LEFT JOIN Category c ON t.CategoryId = c.Id
-                LEFT JOIN Project p ON t.ProjectId = p.Id
-                LEFT JOIN Account a ON t.AccountId = a.Id
+                    Id, Amount, Date, Description, Type, AccountId,
+                    IFNULL(CategoryName, '-') AS CategoryName,
+                    IFNULL(ProjectName, '-') AS ProjectName,
+                    IFNULL(AccountName, '-') AS AccountName,
+                    SignedAmount,
+                    IsTransferIn
+                FROM Perspectives
                 WHERE 1=1 ";
 
             var args = new List<object>();
 
-            // 2. Filtrowanie (Bezpieczne parametryzowanie zabezpiecza przed SQL Injection)
-            if (accountId.HasValue) { sql += " AND t.AccountId = ? "; args.Add(accountId.Value); }
-            if (categoryId.HasValue) { sql += " AND t.CategoryId = ? "; args.Add(categoryId.Value); }
-            if (projectId.HasValue) { sql += " AND t.ProjectId = ? "; args.Add(projectId.Value); }
-            if (minAmount.HasValue) { sql += " AND t.Amount >= ? "; args.Add(minAmount.Value); }
-            if (maxAmount.HasValue) { sql += " AND t.Amount <= ? "; args.Add(maxAmount.Value); }
+            // Używamy wygenerowanej kolumny 'FilterAccountId', aby filtrować tylko właściwą perspektywę!
+            if (accountId.HasValue) { sql += " AND FilterAccountId = ? "; args.Add(accountId.Value); }
+
+            if (categoryId.HasValue) { sql += " AND CategoryId = ? "; args.Add(categoryId.Value); }
+            if (projectId.HasValue) { sql += " AND ProjectId = ? "; args.Add(projectId.Value); }
+            if (minAmount.HasValue) { sql += " AND Amount >= ? "; args.Add(minAmount.Value); }
+            if (maxAmount.HasValue) { sql += " AND Amount <= ? "; args.Add(maxAmount.Value); }
 
             if (!string.IsNullOrWhiteSpace(searchText))
             {
-                sql += " AND (t.Description LIKE ? OR c.Name LIKE ? OR p.Name LIKE ?) ";
+                sql += " AND (Description LIKE ? OR CategoryName LIKE ? OR ProjectName LIKE ?) ";
                 var likeParam = $"%{searchText}%";
-                args.Add(likeParam);
-                args.Add(likeParam);
-                args.Add(likeParam);
+                args.AddRange(new object[] { likeParam, likeParam, likeParam });
             }
 
-            // 3. Sortowanie wspierane indeksem (NOCASE dla stabilnego sortowania tekstów)
-            // ZMIANA 1: COLLATE NOCASE znajduje się PRZED słowem ASC/DESC
-            // ZMIANA 2: Używamy aliasów SQL (CategoryName, ProjectName), by zachować spójność z IFNULL
             string direction = isAscending ? "ASC" : "DESC";
             sql += sortColumn switch
             {
-                "Date" => $" ORDER BY t.Date {direction}, t.Id {direction} ",
+                "Date" => $" ORDER BY Date {direction}, Id {direction} ",
                 "Account" => $" ORDER BY AccountName COLLATE NOCASE {direction} ",
                 "Category" => $" ORDER BY CategoryName COLLATE NOCASE {direction} ",
-                "Description" => $" ORDER BY t.Description COLLATE NOCASE {direction} ",
+                "Description" => $" ORDER BY Description COLLATE NOCASE {direction} ",
                 "Project" => $" ORDER BY ProjectName COLLATE NOCASE {direction} ",
                 "Amount" => $" ORDER BY SignedAmount {direction} ",
-                _ => $" ORDER BY t.Date DESC, t.Id DESC "
+                _ => $" ORDER BY Date DESC, Id DESC "
             };
 
-            // Wywołanie silnika SQLite
             return await _database.QueryAsync<TransactionDetailDto>(sql, args.ToArray());
         }
 

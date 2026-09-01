@@ -253,7 +253,9 @@ namespace ExpenseTracker.ViewModels
                 ProjectName = dto.ProjectName,
                 AccountName = dto.AccountName,
                 Description = dto.Description,
-                ShowAccount = IsGlobalView
+                ShowAccount = IsGlobalView,
+                SignedAmount = dto.SignedAmount,
+                IsTransferIn = dto.IsTransferIn
             }).ToList();
 
             MainThread.BeginInvokeOnMainThread(() =>
@@ -273,10 +275,32 @@ namespace ExpenseTracker.ViewModels
         public string CategoryName { get; set; } = string.Empty;
         public string ProjectName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public Color AmountColor => Transaction.Type == TransactionType.Expense ? Color.FromArgb("#E53935") : Color.FromArgb("#4CAF50");
+        //public Color AmountColor => Transaction.Type == TransactionType.Expense ? Color.FromArgb("#E53935") : Color.FromArgb("#4CAF50");
         public string AccountName { get; set; } = string.Empty;
         public bool ShowAccount { get; set; }
         // NOWOŚĆ: Logiczna wartość ujemna/dodatnia na potrzeby prawidłowego sortowania
-        public decimal SignedAmount => Transaction.Type == TransactionType.Expense ? -Transaction.Amount : Transaction.Amount;
+        //public decimal SignedAmount => Transaction.Type == TransactionType.Expense ? -Transaction.Amount : Transaction.Amount;
+        // Zasilane bezpośrednio z bazy
+        public decimal SignedAmount { get; set; }
+        public bool IsTransferIn { get; set; }
+
+        public Color AmountColor => Transaction.Type switch
+        {
+            TransactionType.Expense => Color.FromArgb("#E53935"),
+            TransactionType.Income => Color.FromArgb("#4CAF50"),
+            TransactionType.Transfer => Color.FromArgb("#1E88E5"), // Niebieski dla wszystkich transferów
+            _ => Colors.Gray
+        };
+
+        // NOWOŚĆ: Precyzyjne sterowanie znakiem kwoty dla interfejsu
+        public string AmountDisplay
+        {
+            get
+            {
+                string prefix = SignedAmount > 0 ? "+ " : (SignedAmount < 0 ? "- " : "");
+                // Używamy Math.Abs by nie dublować minusa
+                return $"{prefix}{Math.Abs(SignedAmount):N2}";
+            }
+        }
     }
 }

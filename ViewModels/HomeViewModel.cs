@@ -66,7 +66,6 @@ namespace ExpenseTracker.ViewModels
             var accounts = await _databaseService.GetAccountsAsync();
             var accountDictionary = accounts.ToDictionary(a => a.Id, a => a.Name);
 
-            //string defaultCurrency = Preferences.Default.Get("DefaultCurrency", "PLN");
             string defaultCurrency = _settingsService.DefaultCurrency;
             decimal totalNetWorth = 0;
 
@@ -131,49 +130,31 @@ namespace ExpenseTracker.ViewModels
             TotalNetWorthDisplay = $"{totalNetWorth:N2} {defaultCurrency}";
 
             // --- 2. BEZPIECZNE ŁADOWANIE TRANSAKCJI ---
-            var categories = await _databaseService.GetCategoriesAsync(includeArchived: true);
-            var categoryDictionary = categories.ToDictionary(c => c.Id, c => c.Name);
-
-            var projects = await _databaseService.GetProjectsAsync(includeArchived: true);
-            var projectDictionary = projects.ToDictionary(p => p.Id, p => p.Name);
-
-            var transactions = await _databaseService.GetRecentTransactionsAsync(30);
+            var transactions = await _databaseService.GetRecentTransactionsWithDetailsAsync(30);
 
             var groupedData = transactions
                 .GroupBy(t => t.Date.Date)
                 .Select(g =>
                 {
-                    decimal dailyIncome = g.Where(x => x.Type == TransactionType.Income).Sum(x => x.Amount);
-                    decimal dailyExpense = g.Where(x => x.Type == TransactionType.Expense).Sum(x => x.Amount);
+                    decimal dailyIncome = g.Where(x => x.Type == (int)TransactionType.Income).Sum(x => x.Amount);
+                    decimal dailyExpense = g.Where(x => x.Type == (int)TransactionType.Expense).Sum(x => x.Amount);
 
                     var items = g.Select(t =>
                     {
-                        Color amountColor = t.Type switch
-                        {
-                            TransactionType.Income => Color.FromArgb("#4CAF50"),
-                            TransactionType.Expense => Color.FromArgb("#E53935"),
-                            _ => Color.FromArgb("#1E88E5")
-                        };
-                        string amountPrefix = t.Type == TransactionType.Income ? "+ " : (t.Type == TransactionType.Expense ? "- " : "");
-
-                        string accName = accountDictionary.ContainsKey(t.AccountId) ? accountDictionary[t.AccountId] : "?";
-                        if (t.Type == TransactionType.Transfer && t.DestinationAccountId.HasValue)
-                        {
-                            string destName = accountDictionary.ContainsKey(t.DestinationAccountId.Value) ? accountDictionary[t.DestinationAccountId.Value] : "?";
-                            accName = $"{accName} ➔ {destName}";
-                        }
+                        // Inteligentne mapowanie znaku oparte o stronę transakcji (wypływ/wpływ)
+                        string prefix = t.SignedAmount > 0 ? "+ " : (t.SignedAmount < 0 ? "- " : "");
 
                         return new RecentTransactionItem
                         {
-                            // --- ZMIANA: Tłumaczenie dla braku kategorii ---
-                            CategoryName = t.CategoryId.HasValue && categoryDictionary.ContainsKey(t.CategoryId.Value) ? categoryDictionary[t.CategoryId.Value] : AppResources.CategoryNone,
+                            CategoryName = t.CategoryName == "-" ? AppResources.CategoryNone : t.CategoryName,
                             SubcategoryName = "",
                             Description = t.Description,
-                            AccountDisplay = accName,
-                            ProjectName = t.ProjectId.HasValue && projectDictionary.ContainsKey(t.ProjectId.Value) ? projectDictionary[t.ProjectId.Value] : "",
+                            AccountDisplay = t.AccountName,
+                            ProjectName = t.ProjectName == "-" ? "" : t.ProjectName,
                             SubprojectName = "",
-                            AmountDisplay = $"{amountPrefix}{t.Amount:N2}",
-                            AmountColor = amountColor
+                            // Używamy Math.Abs by nie dublować minusa w interfejsie
+                            AmountDisplay = $"{prefix}{Math.Abs(t.SignedAmount):N2}",
+                            Type = (TransactionType)t.Type
                         };
                     });
 
@@ -185,8 +166,7 @@ namespace ExpenseTracker.ViewModels
                         TotalExpenseDisplay = dailyExpense > 0 ? $"- {dailyExpense:N2}" : ""
                     };
                 })
-                .OrderByDescending(g => g.Date)
-                .ToList();
+                .ToList(); // OrderByDescending pominięto, bo zrobiliśmy to w SQL!
 
             var tempGroups = new ObservableCollection<TransactionGroup>();
             foreach (var group in groupedData)
@@ -235,7 +215,9 @@ namespace ExpenseTracker.ViewModels
         public string SubprojectName { get; set; } = string.Empty;
 
         public string AmountDisplay { get; set; } = string.Empty;
-        public Color AmountColor { get; set; } = Colors.Gray;
+        //public Color AmountColor { get; set; } = Colors.Gray;
+        // ZMIANA: Zamiast sztywnego 'Color', przekazujemy Enum do decyzji interfejsu
+        public TransactionType Type { get; set; }
     }
 
     public class TransactionGroup : ObservableCollection<RecentTransactionItem>
