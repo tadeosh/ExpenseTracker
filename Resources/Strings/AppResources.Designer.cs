@@ -522,6 +522,15 @@ namespace ExpenseTracker.Resources.Strings {
         /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Delete.
         /// </summary>
+        internal static string Delete {
+            get {
+                return ResourceManager.GetString("Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Delete.
+        /// </summary>
         internal static string DeleteBtn {
             get {
                 return ResourceManager.GetString("DeleteBtn", resourceCulture);
@@ -543,6 +552,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string DeleteCatCascadeWarningMsg {
             get {
                 return ResourceManager.GetString("DeleteCatCascadeWarningMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Are you sure you want to delete?.
+        /// </summary>
+        internal static string DeleteConfirmationText {
+            get {
+                return ResourceManager.GetString("DeleteConfirmationText", resourceCulture);
             }
         }
         
@@ -594,6 +612,15 @@ namespace ExpenseTracker.Resources.Strings {
         /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Edit.
         /// </summary>
+        internal static string Edit {
+            get {
+                return ResourceManager.GetString("Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Edit.
+        /// </summary>
         internal static string EditBtn {
             get {
                 return ResourceManager.GetString("EditBtn", resourceCulture);
@@ -624,6 +651,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string Enum_Transfer {
             get {
                 return ResourceManager.GetString("Enum_Transfer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu An error has occured..
+        /// </summary>
+        internal static string ErrorGeneral {
+            get {
+                return ResourceManager.GetString("ErrorGeneral", resourceCulture);
             }
         }
         
@@ -862,7 +898,7 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
-        /// Wyszukuje zlokalizowany ciąg podobny do ciągu  Other categories.
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu  Others.
         /// </summary>
         internal static string OtherCategories {
             get {

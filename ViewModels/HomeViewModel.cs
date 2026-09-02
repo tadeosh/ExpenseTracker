@@ -47,6 +47,10 @@ namespace ExpenseTracker.ViewModels
 
         [ObservableProperty]
         public partial bool HasExpensesThisMonth { get; set; } = false;
+        // Sterowanie wizualne legendą (szary tekst omija domyślną, ciężką czerń)
+        public SolidColorPaint LegendTextPaint { get; } = new SolidColorPaint(SKColors.DimGray);
+        [ObservableProperty]
+        public partial ObservableCollection<ExpenseLegendItem> ExpenseLegend { get; set; } = new();
 
         public HomeViewModel(IDatabaseService databaseService, ISettingsService settingsService)
         {
@@ -230,8 +234,8 @@ namespace ExpenseTracker.ViewModels
                     .OrderByDescending(x => x.Total)
                     .ToList();
 
-                var displayCategories = allSortedCategories.Take(5).ToList();
-                var remainingCategories = allSortedCategories.Skip(5).ToList();
+                var displayCategories = allSortedCategories.Take(4).ToList();
+                var remainingCategories = allSortedCategories.Skip(4).ToList();
 
                 // Jeśli mamy więcej niż 5 kategorii, zbijamy resztę w jedną
                 if (remainingCategories.Any())
@@ -246,17 +250,24 @@ namespace ExpenseTracker.ViewModels
                 }
 
                 var tempSeries = new ObservableCollection<ISeries>();
+                var tempLegend = new List<ExpenseLegendItem>(); // NOWOŚĆ
                 decimal monthChartTotal = 0;
 
                 foreach (var item in displayCategories)
                 {
-                    // Teraz monthChartTotal zliczy dokładnie 100% wydatków miesiąca!
                     monthChartTotal += item.Total;
 
-                    // 1. BEZPIECZNE PARSOWANIE KOLORU: Jeśli w bazie jest błąd lub brak, ustaw twardy szary (Gray)
+                    // 1. Ochrona SkiaSharp (Wykres)
                     if (!SKColor.TryParse(item.Color, out var parsedColor))
                     {
                         parsedColor = SKColors.Gray;
+                    }
+
+                    // 2. Ochrona MAUI (Legenda XAML)
+                    Color dotColor = Colors.Gray;
+                    if (Color.TryParse(item.Color, out var parsedMauiColor))
+                    {
+                        dotColor = parsedMauiColor;
                     }
 
                     tempSeries.Add(new PieSeries<decimal>
@@ -264,22 +275,27 @@ namespace ExpenseTracker.ViewModels
                         Values = new decimal[] { item.Total },
                         Name = item.Name,
                         Fill = new SolidColorPaint(parsedColor),
-                        InnerRadius = 50,
+                        InnerRadius = 40, // Twoja nowa wartość
                         MaxRadialColumnWidth = 50,
-                        ToolTipLabelFormatter = point => $"{point.Context.Series.Name}: {point.Model:N2} {defaultCurrency}"
+                        // ToolTipLabelFormatter = point => $"{point.Context.Series.Name}: {point.Model:N2} {defaultCurrency}" //tooltip
+                    });
+
+                    // Zasilamy natywną legendę
+                    tempLegend.Add(new ExpenseLegendItem
+                    {
+                        Name = item.Name,
+                        AmountDisplay = $"{item.Total:N2} {defaultCurrency}",
+                        DotColor = dotColor
                     });
                 }
 
-                // KLUCZOWA ZMIANA: Zlecenie aktualizacji UI do głównego wątku
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    // Czyścimy obecną kolekcję, zachowując powiązanie z widokiem (zapobiega crashom SkiaSharp)
                     ExpenseSeries.Clear();
+                    ExpenseLegend.Clear(); // Czyścimy starą legendę
 
-                    foreach (var series in tempSeries)
-                    {
-                        ExpenseSeries.Add(series);
-                    }
+                    foreach (var series in tempSeries) ExpenseSeries.Add(series);
+                    foreach (var leg in tempLegend) ExpenseLegend.Add(leg); // Dodajemy nową
 
                     CurrentMonthTotalDisplay = $"{monthChartTotal:N2}\n{defaultCurrency}";
                     HasExpensesThisMonth = ExpenseSeries.Count > 0;
@@ -309,6 +325,13 @@ namespace ExpenseTracker.ViewModels
               
     }
 
+    //Pomocnicza klasa do legendy wykresu
+    public class ExpenseLegendItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public string AmountDisplay { get; set; } = string.Empty;
+        public Color DotColor { get; set; } = Colors.Gray;
+    }
     public class AccountBalanceItem
     {
         public int Id { get; set; }

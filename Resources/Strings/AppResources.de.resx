@@ -399,6 +399,9 @@
   <data name="DeleteBtn" xml:space="preserve">
     <value>Löschen</value>
   </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
   <data name="SetupTitle" xml:space="preserve">
     <value>🛡️ Sicherheit</value>
   </data>
@@ -490,6 +493,15 @@
     <value>Fehler beim Laden:</value>
   </data>
   <data name="OtherCategories" xml:space="preserve">
-    <value>Andere Kategorien</value>
+    <value>Andere</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Ändern</value>
+  </data>
+  <data name="DeleteConfirmationText" xml:space="preserve">
+    <value>Sind Sie sicher, dass Sie es löschen möchten?</value>
+  </data>
+  <data name="ErrorGeneral" xml:space="preserve">
+    <value>Ein Fehler ist aufgetreten.</value>
   </data>
 </root>

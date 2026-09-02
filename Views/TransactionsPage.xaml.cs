@@ -21,4 +21,18 @@ public partial class TransactionsPage : ContentPage
             await vm.LoadDataAsync();
         }
     }
+
+    private SwipeView? _currentlyOpenSwipeView;
+
+    private void OnSwipeStarted(object? sender, SwipeStartedEventArgs e)
+    {
+        // Jeśli otwieramy nowy wiersz, a stary jest otwarty - zamknij stary
+        if (_currentlyOpenSwipeView != null && _currentlyOpenSwipeView != sender)
+        {
+            _currentlyOpenSwipeView.Close();
+        }
+
+        // Zapisz referencję do nowo otwieranego wiersza
+        _currentlyOpenSwipeView = sender as SwipeView;
+    }
 }

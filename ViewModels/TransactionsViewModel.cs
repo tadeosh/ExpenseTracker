@@ -1,10 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ExpenseTracker.Helpers;
 using ExpenseTracker.Models;
 using ExpenseTracker.Resources.Strings;
-using System.Collections.ObjectModel;
 using ExpenseTracker.Services.Interfaces;
+using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Diagnostics;
 
 namespace ExpenseTracker.ViewModels
 {
@@ -266,6 +268,57 @@ namespace ExpenseTracker.ViewModels
                     Transactions.Add(item);
                 }
             });
+        }
+
+        // ========= CRUD ========================
+        [RelayCommand]
+        private async Task EditTransactionAsync(TransactionDisplayItem item)
+        {
+            if (item == null || item.Transaction == null)
+                return;
+
+            var navParams = new Dictionary<string, object>
+    {
+        // Przekazujemy ID transakcji jako string, tak jak radzi MAUI Shell Navigation
+        { "TransactionId", item.Transaction.Id.ToString() }
+    };
+
+            // Nawigacja do formularza w trybie edycji (oczekujemy, że AddTransactionPage potrafi obsłużyć ten parametr)
+            await Shell.Current.GoToAsync(RoutesHelper.AddTransactionPage, navParams);
+        }
+
+        [RelayCommand]
+        private async Task DeleteTransactionAsync(TransactionDisplayItem item)
+        {
+            if (item == null || item.Transaction == null)
+                return;
+
+            // Zabezpieczenie przed przypadkowym usunięciem (Clean UX)
+            bool isConfirmed = await Shell.Current.DisplayAlertAsync(
+                AppResources.WarningTitle,
+                AppResources.DeleteConfirmationText,
+                AppResources.YesBtn,
+                AppResources.CancelBtn);
+
+            if (!isConfirmed)
+                return;
+
+            try
+            {
+                // 1. Usunięcie z bazy danych przy użyciu obiektu Transaction z interfejsu
+                await _databaseService.DeleteTransactionAsync(item.Transaction);
+
+                // 2. Natychmiastowe odświeżenie interfejsu (usunięcie z pamięci ObservableCollection)
+                Transactions.Remove(item);
+
+                // OPCJONALNIE: Wywołanie metody aktualizującej podsumowania finansowe na górze strony (jeśli takowe posiadasz)
+                // await UpdateSummariesAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[CRITICAL] Błąd podczas usuwania transakcji: {ex.Message}");
+                await Shell.Current.DisplayAlertAsync(AppResources.ErrorTitle, AppResources.ErrorGeneral, AppResources.UnderstoodBtn);
+            }
         }
     }
 

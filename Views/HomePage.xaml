@@ -78,25 +78,48 @@
 
             <!-- SEKCJA WYKRESU BIEŻĄCEGO MIESIĄCA -->
             <Border Grid.Row="3" Margin="0,20,0,0" Padding="15" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
-                <Grid RowDefinitions="Auto, 180" ColumnDefinitions="*">
-                    <Label Grid.Row="0" Text="{x:Static strings:AppResources.CurrentMonthExpensesLabel}" FontAttributes="Bold" FontSize="16" TextColor="{DynamicResource AppTextColor}" Margin="0,0,0,10"/>
+                <Grid RowDefinitions="Auto, 160" ColumnDefinitions="Auto, *">
 
-                    <!-- ZMIANA: Usunięto IsVisible. Wykres jest zawsze w drzewie UI. Dodano HeightRequest="180" -->
-                    <lvc:PieChart Grid.Row="1" 
-                                  Series="{Binding ExpenseSeries}" 
-                                  LegendPosition="Right" 
-                                  BackgroundColor="Transparent" 
-                                  HorizontalOptions="Fill" 
-                                  VerticalOptions="Fill" 
-                                  HeightRequest="160" />
+                    <!-- Nagłówek rozciągnięty na obie kolumny -->
+                    <Label Grid.Row="0" Grid.ColumnSpan="2" Text="{x:Static strings:AppResources.CurrentMonthExpensesLabel}" FontAttributes="Bold" FontSize="16" TextColor="{DynamicResource AppTextColor}" Margin="0,0,0,10"/>
 
-                    <!-- ZMIANA: Etykieta salda w środku donuta -->
-                    <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center" Margin="0,0,80,0" InputTransparent="True" IsVisible="{Binding HasExpensesThisMonth}">
-                        <Label Text="{Binding CurrentMonthTotalDisplay}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalTextAlignment="Center"/>
+                    <!-- KOLUMNA 1: Czysty wykres (Kwadrat 180x180) + Wyśrodkowany tekst -->
+                    <Grid Grid.Row="1" Grid.Column="0" WidthRequest="160" HeightRequest="160">
+
+                        <!-- ZMIANA: LegendPosition="Hidden" - wyłączamy wbudowaną legendę SkiaSharp -->
+                        <lvc:PieChart Series="{Binding ExpenseSeries}" 
+                                      LegendPosition="Hidden" 
+                                      TooltipPosition="Hidden"
+                                      BackgroundColor="Transparent" />
+
+                        <!-- ZMIANA: Usunięto sztuczny Margines. Tekst centruje się teraz samoczynnie w kwadracie -->
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" InputTransparent="True" IsVisible="{Binding HasExpensesThisMonth}">
+                            <Label Text="{Binding CurrentMonthTotalDisplay}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalTextAlignment="Center"/>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- KOLUMNA 2: Natywna legenda MAUI renderowana obok wykresu -->
+                    <VerticalStackLayout Grid.Row="1" Grid.Column="1" VerticalOptions="Center" Margin="15,0,0,0" Spacing="10"
+                                         BindableLayout.ItemsSource="{Binding ExpenseLegend}" 
+                                         IsVisible="{Binding HasExpensesThisMonth}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodels:ExpenseLegendItem">
+                                <Grid ColumnDefinitions="Auto,Auto, *" RowDefinitions="Auto, Auto" ColumnSpacing="8">
+                                    <!-- Kolorowa kropka kategorii -->
+                                    <Ellipse Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" WidthRequest="10" HeightRequest="10" Fill="{Binding DotColor}" VerticalOptions="Center"/>
+
+                                    <!-- Nazwa (zawija się jeśli jest za długa) -->
+                                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding Name}" FontSize="11" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
+
+                                    <!-- Kwota pod kategorią -->
+                                    <Label Grid.Row="0" Grid.Column="2" Text="{Binding AmountDisplay}" FontSize="10" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" />
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
                     </VerticalStackLayout>
 
-                    <!-- ZMIANA: Pusty stan nakłada się na obszar wykresu. Znika, gdy HasExpensesThisMonth = True -->
-                    <Label Grid.Row="1" 
+                    <!-- Pusty stan nakłada się na całą siatkę -->
+                    <Label Grid.Row="1" Grid.ColumnSpan="2"
                            Text="{x:Static strings:AppResources.NoTransactionsLabel}" 
                            FontSize="14" 
                            TextColor="{DynamicResource AppTextColor}" 

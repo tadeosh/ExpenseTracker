@@ -11,6 +11,7 @@ namespace ExpenseTracker.Services.Interfaces
         Task<Dictionary<int, decimal>> GetAllAccountBalancesAsync();
 
         // Transakcje
+        Task<Transaction?> GetTransactionAsync(int transactionId);
         Task<List<Transaction>> GetTransactionsAsync();
         Task<int> SaveTransactionAsync(Transaction transaction);
         Task<int> DeleteTransactionAsync(Transaction transaction);

@@ -22,6 +22,8 @@ namespace ExpenseTracker.ViewModels
 
         [ObservableProperty]
         public partial int? PreselectedProjectId { get; set; }
+        [ObservableProperty]
+        public partial int? TransactionId { get; set; }
 
         public ObservableCollection<Account> Accounts { get; } = new();
         //public ObservableCollection<Project> Projects { get; } = new();
@@ -123,6 +125,14 @@ namespace ExpenseTracker.ViewModels
             {
                 PreselectedProjectId = projectId;
             }
+            // NOWOŚĆ: Odbiór ID transakcji do edycji
+            if (query.TryGetValue("TransactionId", out var transIdObj) && transIdObj is string transIdStr)
+            {
+                if (int.TryParse(transIdStr, out int transId))
+                {
+                    TransactionId = transId;
+                }
+            }
         }
         // ================ koniec implementacji interfejsu ====================================
 
@@ -181,10 +191,37 @@ namespace ExpenseTracker.ViewModels
         //==============================================================================
         public async Task LoadDataAsync()
         {
-            int? savedAccountId = SelectedAccount?.Id;
+            // Domyślne wartości z pre-selekcji (dla nowej transakcji)
+            int? savedAccountId = SelectedAccount?.Id ?? PreselectedAccountId;
             int? savedDestAccountId = DestinationAccount?.Id;
-            int? savedProjectId = SelectedProject?.Id;
-            int? savedCategoryId = SelectedCategory?.Id;
+            int? savedProjectId = SelectedProject?.Id ?? PreselectedProjectId;
+            int? savedCategoryId = SelectedCategory?.Id ?? PreselectedCategoryId;
+
+            // --- LOGIKA EDYCJI TRANSAKCJI ---
+            if (TransactionId.HasValue)
+            {
+                var existingTx = await _databaseService.GetTransactionAsync(TransactionId.Value);
+                if (existingTx != null)
+                {
+                    // Przepisanie danych tekstowych i numerycznych
+                    AmountText = existingTx.Amount.ToString("0.##", CultureInfo.InvariantCulture);
+                    SelectedDate = existingTx.Date;
+                    DescriptionText = existingTx.Description;
+                    SelectedTypeIndex = (int)existingTx.Type;
+
+                    // Przypisanie ID do późniejszego wyciągnięcia pełnych obiektów ze słowników
+                    savedAccountId = existingTx.AccountId;
+                    savedDestAccountId = existingTx.DestinationAccountId;
+                    savedCategoryId = existingTx.CategoryId;
+                    savedProjectId = existingTx.ProjectId;
+
+                    if (existingTx.ExchangeRate.HasValue)
+                    {
+                        ExchangeRateText = existingTx.ExchangeRate.Value.ToString("0.####", CultureInfo.InvariantCulture);
+                        _lastFetchedRate = existingTx.ExchangeRate.Value;
+                    }
+                }
+            }
 
             var accountsFromDb = await _databaseService.GetAccountsAsync();
             Accounts.Clear();
@@ -392,6 +429,7 @@ namespace ExpenseTracker.ViewModels
 
             var transaction = new Transaction
             {
+                Id = TransactionId ?? 0, // Jeśli null, wstaw 0 (INSERT). Jeśli ma wartość, zaktualizuje rekord (UPDATE)
                 Amount = amount,
                 Date = SelectedDate,
                 Description = DescriptionText,
@@ -438,6 +476,7 @@ namespace ExpenseTracker.ViewModels
             PreselectedAccountId = null;
             PreselectedCategoryId = null;
             PreselectedProjectId = null;
+            TransactionId = null;
         }
 
         [RelayCommand]

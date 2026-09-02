@@ -85,6 +85,12 @@ namespace ExpenseTracker.Data
         // OPERACJE DLA TRANSAKCJI (TRANSACTIONS)
         // ==========================================
 
+        public async Task<Transaction?> GetTransactionAsync(int id)
+        {
+            await InitAsync();
+            return await _database.Table<Transaction>().FirstOrDefaultAsync(t => t.Id == id);
+        }
+
         public async Task<List<Transaction>> GetTransactionsAsync()
         {
             await InitAsync();

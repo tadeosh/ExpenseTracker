@@ -161,6 +161,7 @@
   </data>
   <data name="DataSettingsLabel" xml:space="preserve">
     <value>Data Management</value>
+    <comment>Settings</comment>
   </data>
   <data name="DateLabel" xml:space="preserve">
     <value>Date</value>
@@ -377,6 +378,7 @@
   </data>
   <data name="DangerZone" xml:space="preserve">
     <value>Danger zone</value>
+    <comment>Settings</comment>
   </data>
   <data name="WipeDataBtn" xml:space="preserve">
     <value>Wipe application data</value>
@@ -397,6 +399,10 @@
     <value>Edit</value>
   </data>
   <data name="DeleteBtn" xml:space="preserve">
+    <value>Delete</value>
+    <comment>TransactionsPage</comment>
+  </data>
+  <data name="Delete" xml:space="preserve">
     <value>Delete</value>
   </data>
   <data name="SetupTitle" xml:space="preserve">
@@ -512,7 +518,18 @@
     <comment>HomeViewModel</comment>
   </data>
   <data name="OtherCategories" xml:space="preserve">
-    <value> Other categories</value>
+    <value> Others</value>
     <comment>HomeView</comment>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Edit</value>
+    <comment>TransactionsPage</comment>
+  </data>
+  <data name="DeleteConfirmationText" xml:space="preserve">
+    <value>Are you sure you want to delete?</value>
+    <comment>TansactionsViewModel</comment>
+  </data>
+  <data name="ErrorGeneral" xml:space="preserve">
+    <value>An error has occured.</value>
   </data>
 </root>
