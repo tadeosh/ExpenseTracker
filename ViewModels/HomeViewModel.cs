@@ -150,7 +150,7 @@ namespace ExpenseTracker.ViewModels
                 TotalNetWorthDisplay = $"{totalNetWorth:N2} {defaultCurrency}";
 
                 // --- 2. BEZPIECZNE ŁADOWANIE TRANSAKCJI ---
-                var transactions = await _databaseService.GetRecentTransactionsWithDetailsAsync(30);
+                var transactions = await _databaseService.GetRecentTransactionsWithDetailsAsync(10);
 
                 var groupedData = transactions
                     .GroupBy(t => t.Date.Date)
@@ -160,21 +160,26 @@ namespace ExpenseTracker.ViewModels
                         decimal dailyExpense = g.Where(x => x.Type == (int)TransactionType.Expense).Sum(x => x.Amount);
 
                         var items = g.Select(t =>
-                        {
-                            // Inteligentne mapowanie znaku oparte o stronę transakcji (wypływ/wpływ)
-                            string prefix = t.SignedAmount > 0 ? "+ " : (t.SignedAmount < 0 ? "- " : "");
-
-                            return new RecentTransactionItem
+                        {                            
+                            return new TransactionDisplayItem
                             {
+                                // Pełen obiekt bazy (potrzebny do Edycji/Usuwania)
+                                Transaction = new Transaction
+                                {
+                                    Id = t.Id,
+                                    Amount = t.Amount,
+                                    Date = t.Date,
+                                    Type = (TransactionType)t.Type,
+                                    AccountId = t.AccountId
+                                },
                                 CategoryName = t.CategoryName == "-" ? AppResources.CategoryNone : t.CategoryName,
-                                SubcategoryName = "",
                                 Description = t.Description,
-                                AccountDisplay = t.AccountName,
+                                AccountName = t.AccountName,
+                                ShowAccount = true, // Zawsze pokazujemy konto na pulpicie
                                 ProjectName = t.ProjectName == "-" ? "" : t.ProjectName,
-                                SubprojectName = "",
-                                // Używamy Math.Abs by nie dublować minusa w interfejsie
-                                AmountDisplay = $"{prefix}{Math.Abs(t.SignedAmount):N2}",
-                                Type = (TransactionType)t.Type
+                                SignedAmount = t.SignedAmount,
+                                IsTransferIn = t.IsTransferIn,
+                                Currency = t.AccountCurrency ?? ""
                             };
                         });
 
@@ -322,7 +327,48 @@ namespace ExpenseTracker.ViewModels
             // --- ZMIANA: Tłumaczenia okienka z błędem ---
             await Shell.Current.DisplayAlertAsync(AppResources.MissingRatesTitle, _missingRatesMessage, AppResources.UnderstoodBtn);
         }
-              
+
+        //=============================CRUD=========================
+        [RelayCommand]
+        private async Task EditTransactionAsync(TransactionDisplayItem item)
+        {
+            if (item?.Transaction == null) return;
+            var navParams = new Dictionary<string, object> { { "TransactionId", item.Transaction.Id.ToString() } };
+            await Shell.Current.GoToAsync(RoutesHelper.AddTransactionPage, navParams);
+        }
+
+        [RelayCommand]
+        private async Task DeleteTransactionAsync(TransactionDisplayItem item)
+        {
+            if (item?.Transaction == null) return;
+
+            bool isConfirmed = await Shell.Current.DisplayAlertAsync(
+                AppResources.WarningTitle, AppResources.DeleteConfirmationText, AppResources.YesBtn, AppResources.CancelBtn);
+
+            if (!isConfirmed) return;
+
+            try
+            {
+                await _databaseService.DeleteTransactionAsync(item.Transaction);
+
+                // Szukanie i usuwanie transakcji z odpowiedniej grupy na Dashboardzie
+                var group = GroupedTransactions.FirstOrDefault(g => g.Contains(item));
+                if (group != null)
+                {
+                    group.Remove(item);
+                    if (group.Count == 0) GroupedTransactions.Remove(group); // Usunięcie dnia, jeśli pusty
+                    HasTransactions = GroupedTransactions.Any();
+                    HasNoTransactions = !HasTransactions;
+                }
+
+                // Opcjonalnie: Przeładowanie NetWorth
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
     }
 
     //Pomocnicza klasa do legendy wykresu
@@ -340,24 +386,24 @@ namespace ExpenseTracker.ViewModels
         public string Currency { get; set; } = string.Empty;
     }
 
-    public class RecentTransactionItem
-    {
-        public string CategoryName { get; set; } = string.Empty;
-        public string SubcategoryName { get; set; } = string.Empty;
+    //public class RecentTransactionItem
+    //{
+    //    public string CategoryName { get; set; } = string.Empty;
+    //    public string SubcategoryName { get; set; } = string.Empty;
 
-        public string Description { get; set; } = string.Empty;
-        public string AccountDisplay { get; set; } = string.Empty;
+    //    public string Description { get; set; } = string.Empty;
+    //    public string AccountDisplay { get; set; } = string.Empty;
 
-        public string ProjectName { get; set; } = string.Empty;
-        public string SubprojectName { get; set; } = string.Empty;
+    //    public string ProjectName { get; set; } = string.Empty;
+    //    public string SubprojectName { get; set; } = string.Empty;
 
-        public string AmountDisplay { get; set; } = string.Empty;
-        //public Color AmountColor { get; set; } = Colors.Gray;
-        // ZMIANA: Zamiast sztywnego 'Color', przekazujemy Enum do decyzji interfejsu
-        public TransactionType Type { get; set; }
-    }
+    //    public string AmountDisplay { get; set; } = string.Empty;
+    //    //public Color AmountColor { get; set; } = Colors.Gray;
+    //    // ZMIANA: Zamiast sztywnego 'Color', przekazujemy Enum do decyzji interfejsu
+    //    public TransactionType Type { get; set; }
+    //}
 
-    public class TransactionGroup : ObservableCollection<RecentTransactionItem>
+    public class TransactionGroup : ObservableCollection<TransactionDisplayItem>
     {
         public DateTime Date { get; private set; }
         public string DateDisplay { get; set; } = string.Empty;
@@ -366,7 +412,7 @@ namespace ExpenseTracker.ViewModels
         public string TotalIncomeDisplay { get; set; } = string.Empty;
         public string TotalExpenseDisplay { get; set; } = string.Empty;
 
-        public TransactionGroup(DateTime date, IEnumerable<RecentTransactionItem> items) : base(items)
+        public TransactionGroup(DateTime date, IEnumerable<TransactionDisplayItem> items) : base(items)
         {
             Date = date;
         }

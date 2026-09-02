@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:ExpenseTracker.Models"
+             xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
+             x:Class="ExpenseTracker.Views.TransactionRowControl"
+             x:Name="RootControl">
+
+    <SwipeView SwipeStarted="OnSwipeStarted">
+
+        <!-- Opcje Swipe (Zoptymalizowane pod urządzenia dotykowe - Android) -->
+        <SwipeView.RightItems>
+            <SwipeItems Mode="Reveal">
+                <SwipeItemView Command="{Binding EditCommand, Source={x:Reference RootControl}}" CommandParameter="{Binding .}">
+                    <Grid BackgroundColor="#1E88E5" WidthRequest="60">
+                        <Image Source="pencil_line.png" WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Grid>
+                </SwipeItemView>
+
+                <SwipeItemView Command="{Binding DeleteCommand, Source={x:Reference RootControl}}" CommandParameter="{Binding .}">
+                    <Grid BackgroundColor="#E53935" WidthRequest="60">
+                        <Image Source="trash.png" WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </Grid>
+                </SwipeItemView>
+            </SwipeItems>
+        </SwipeView.RightItems>
+
+        <!-- Główny kontener danych wiersza -->
+        <Grid x:DataType="viewmodels:TransactionDisplayItem" Padding="5,12" ColumnDefinitions="2*, 2.5*, Auto" RowDefinitions="Auto, Auto" ColumnSpacing="10" RowSpacing="4" BackgroundColor="{DynamicResource AppBackgroundColor}">
+
+            <!-- NOWOŚĆ: Natywne menu pod prawym przyciskiem myszy (Windows) lub pod długim przytrzymaniem (Android) -->
+            <FlyoutBase.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="{x:Static strings:AppResources.Edit}"
+                                    Command="{Binding EditCommand, Source={x:Reference RootControl}}"
+                                    CommandParameter="{Binding .}">
+                        <MenuFlyoutItem.IconImageSource>
+                            <FileImageSource File="pencil_line.png" />
+                        </MenuFlyoutItem.IconImageSource>
+                    </MenuFlyoutItem>
+
+                    <MenuFlyoutItem Text="{x:Static strings:AppResources.Delete}"
+                                    Command="{Binding DeleteCommand, Source={x:Reference RootControl}}"
+                                    CommandParameter="{Binding .}">
+                        <MenuFlyoutItem.IconImageSource>
+                            <FileImageSource File="trash.png" />
+                        </MenuFlyoutItem.IconImageSource>
+                    </MenuFlyoutItem>
+                </MenuFlyout>
+            </FlyoutBase.ContextFlyout>
+
+            <!-- WIERZ 1: Główne informacje (Kategoria, Opis, Kwota) -->
+            <Label Grid.Row="0" Grid.Column="0" Text="{Binding CategoryName}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
+            <Label Grid.Row="0" Grid.Column="1" Text="{Binding Description}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
+            <Label Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" Text="{Binding AmountDisplay}" FontSize="16" FontAttributes="Bold" TextColor="{Binding AmountColor}" VerticalOptions="Center" HorizontalOptions="End" />
+
+            <!-- WIERZ 2: Szczegóły pomocnicze (Data, Konto, Projekt) -->
+            <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="4" VerticalOptions="Center">
+                <Label Text="{Binding Transaction.Date, StringFormat='{0:dd.MM.yyyy}'}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.6"/>
+                <Label Text="|" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.4" IsVisible="{Binding ShowAccount}"/>
+                <Label Text="{Binding AccountName}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" LineBreakMode="TailTruncation" IsVisible="{Binding ShowAccount}"/>
+            </HorizontalStackLayout>
+
+            <Label Grid.Row="1" Grid.Column="1" Text="{Binding ProjectName}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+
+            <BoxView Grid.Row="1" Grid.ColumnSpan="3" HeightRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.1" VerticalOptions="End" Margin="0,15,0,-12"/>
+        </Grid>
+    </SwipeView>
+</ContentView>

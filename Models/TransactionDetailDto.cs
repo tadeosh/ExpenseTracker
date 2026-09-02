@@ -21,5 +21,6 @@ namespace ExpenseTracker.Models
 
         // NOWOŚĆ: Flaga informująca, czy jest to perspektywa wpływu (dla transferów)
         public bool IsTransferIn { get; set; }
+        public string? AccountCurrency { get; set; }
     }
 }

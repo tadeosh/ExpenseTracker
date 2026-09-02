@@ -3,7 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
              xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:views="clr-namespace:ExpenseTracker.Views"
              x:Class="ExpenseTracker.Views.TransactionsPage"
+             x:Name="MyTransactionsPage"
              Title="{Binding AccountName}"
              BackgroundColor="{DynamicResource AppBackgroundColor}">
 
@@ -120,13 +122,13 @@
         <CollectionView Grid.Row="3" ItemsSource="{Binding Transactions}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="viewmodels:TransactionDisplayItem">
-                    <SwipeView SwipeStarted="OnSwipeStarted">
+                    <!--<SwipeView SwipeStarted="OnSwipeStarted">
 
-                        <!-- Opcje pojawiające się po przesunięciu palcem w lewo -->
+                        --><!-- Opcje pojawiające się po przesunięciu palcem w lewo --><!--
                         <SwipeView.RightItems>
                             <SwipeItems Mode="Reveal">
 
-                                <!-- EDYCJA -->
+                                --><!-- EDYCJA --><!--
                                 <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TransactionsViewModel}}, Path=EditTransactionCommand}" 
                        CommandParameter="{Binding .}">
                                     <Grid BackgroundColor="#1E88E5" WidthRequest="55">
@@ -134,7 +136,7 @@
                                     </Grid>
                                 </SwipeItemView>
 
-                                <!-- USUWANIE -->
+                                --><!-- USUWANIE --><!--
                                 <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TransactionsViewModel}}, Path=DeleteTransactionCommand}" 
                        CommandParameter="{Binding .}">
                                     <Grid BackgroundColor="#E53935" WidthRequest="55">
@@ -145,18 +147,18 @@
                             </SwipeItems>
                         </SwipeView.RightItems>
 
-                        <!-- Twój oryginalny układ -->
+                        --><!-- Twój oryginalny układ --><!--
                         <Grid Padding="5,12" ColumnDefinitions="2*, 2.5*, Auto" RowDefinitions="Auto, Auto" ColumnSpacing="10" RowSpacing="4" BackgroundColor="{DynamicResource AppBackgroundColor}">
 
-                            <!-- WIERZ 1: Główne informacje (Kategoria, Opis, Kwota) -->
+                            --><!-- WIERZ 1: Główne informacje (Kategoria, Opis, Kwota) --><!--
                             <Label Grid.Row="0" Grid.Column="0" Text="{Binding CategoryName}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
 
                             <Label Grid.Row="0" Grid.Column="1" Text="{Binding Description}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
 
-                            <!-- Używamy wygenerowanego wcześniej AmountDisplay (usuwamy StringFormat, bo ViewModel już formatuje kwotę) -->
+                            --><!-- Używamy wygenerowanego wcześniej AmountDisplay (usuwamy StringFormat, bo ViewModel już formatuje kwotę) --><!--
                             <Label Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" Text="{Binding AmountDisplay}" FontSize="16" FontAttributes="Bold" TextColor="{Binding AmountColor}" VerticalOptions="Center" HorizontalOptions="End" />
 
-                            <!-- WIERZ 2: Szczegóły pomocnicze (Data, Konto, Projekt) -->
+                            --><!-- WIERZ 2: Szczegóły pomocnicze (Data, Konto, Projekt) --><!--
                             <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="4" VerticalOptions="Center">
                                 <Label Text="{Binding Transaction.Date, StringFormat='{0:dd.MM.yyyy}'}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.6"/>
 
@@ -166,11 +168,14 @@
 
                             <Label Grid.Row="1" Grid.Column="1" Text="{Binding ProjectName}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" LineBreakMode="TailTruncation" VerticalOptions="Center" />
 
-                            <!-- Linia oddzielająca -->
+                            --><!-- Linia oddzielająca --><!--
                             <BoxView Grid.Row="1" Grid.ColumnSpan="3" HeightRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.1" VerticalOptions="End" Margin="0,15,0,-12"/>
                         </Grid>
 
-                    </SwipeView>
+                    </SwipeView>-->
+                    <views:TransactionRowControl 
+                        EditCommand="{Binding BindingContext.EditTransactionCommand, Source={x:Reference MyTransactionsPage}}"
+                        DeleteCommand="{Binding BindingContext.DeleteTransactionCommand, Source={x:Reference MyTransactionsPage}}" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

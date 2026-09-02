@@ -257,7 +257,8 @@ namespace ExpenseTracker.ViewModels
                 Description = dto.Description,
                 ShowAccount = IsGlobalView,
                 SignedAmount = dto.SignedAmount,
-                IsTransferIn = dto.IsTransferIn
+                IsTransferIn = dto.IsTransferIn,
+                Currency = dto.AccountCurrency ?? "" // NOWOŚĆ
             }).ToList();
 
             MainThread.BeginInvokeOnMainThread(() =>
@@ -345,6 +346,8 @@ namespace ExpenseTracker.ViewModels
             _ => Colors.Gray
         };
 
+        public string Currency { get; set; } = string.Empty;
+
         // NOWOŚĆ: Precyzyjne sterowanie znakiem kwoty dla interfejsu
         public string AmountDisplay
         {
@@ -352,7 +355,7 @@ namespace ExpenseTracker.ViewModels
             {
                 string prefix = SignedAmount > 0 ? "+ " : (SignedAmount < 0 ? "- " : "");
                 // Używamy Math.Abs by nie dublować minusa
-                return $"{prefix}{Math.Abs(SignedAmount):N2}";
+                return $"{prefix}{Math.Abs(SignedAmount):N2} {Currency}"; //z walutą
             }
         }
     }

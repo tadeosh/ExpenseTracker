@@ -134,59 +134,63 @@ namespace ExpenseTracker.Data
 
             var sql = @"
                 WITH Perspectives AS (
-                    -- 1. Zwykłe Przychody (1) i Wydatki (0)
-                    SELECT 
-                        t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId,
-                        c.Name AS CategoryName, p.Name AS ProjectName, a.Name AS AccountName,
-                        CASE WHEN t.Type = 0 THEN -t.Amount ELSE t.Amount END AS SignedAmount,
-                        0 AS IsTransferIn
-                    FROM ""Transaction"" t
-                    LEFT JOIN Category c ON t.CategoryId = c.Id
-                    LEFT JOIN Project p ON t.ProjectId = p.Id
-                    LEFT JOIN Account a ON t.AccountId = a.Id
-                    WHERE t.Type IN (0, 1)
-
-                    UNION ALL
-
-                    -- 2. Transfery WYCHODZĄCE (Perspektywa Konta Źródłowego)
-                    SELECT 
-                        t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId,
-                        c.Name AS CategoryName, p.Name AS ProjectName, a.Name AS AccountName,
-                        -t.Amount AS SignedAmount,
-                        0 AS IsTransferIn
-                    FROM ""Transaction"" t
-                    LEFT JOIN Category c ON t.CategoryId = c.Id
-                    LEFT JOIN Project p ON t.ProjectId = p.Id
-                    LEFT JOIN Account a ON t.AccountId = a.Id
-                    WHERE t.Type = 2
-
-                    UNION ALL
-
-                    -- 3. Transfery PRZYCHODZĄCE (Perspektywa Konta Docelowego + Kurs)
-                    SELECT 
-                        t.Id, 
-                        CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
-                             THEN (t.Amount * (1.0 / t.ExchangeRate)) 
-                             ELSE t.Amount END AS Amount,
-                        t.Date, t.Description, t.Type, t.DestinationAccountId AS AccountId,
-                        c.Name AS CategoryName, p.Name AS ProjectName, aDest.Name AS AccountName,
-                        CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
-                             THEN (t.Amount * (1.0 / t.ExchangeRate)) 
-                             ELSE t.Amount END AS SignedAmount,
-                        1 AS IsTransferIn
-                    FROM ""Transaction"" t
-                    LEFT JOIN Category c ON t.CategoryId = c.Id
-                    LEFT JOIN Project p ON t.ProjectId = p.Id
-                    LEFT JOIN Account aDest ON t.DestinationAccountId = aDest.Id
-                    WHERE t.Type = 2 AND t.DestinationAccountId IS NOT NULL
-                )
+                -- 1. Zwykłe Przychody (1) i Wydatki (0)
                 SELECT 
-                    Id, Amount, Date, Description, Type, AccountId,
-                    IFNULL(CategoryName, '-') AS CategoryName,
-                    IFNULL(ProjectName, '-') AS ProjectName,
-                    IFNULL(AccountName, '-') AS AccountName,
-                    SignedAmount,
-                    IsTransferIn
+                    t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId,
+                    c.Name AS CategoryName, p.Name AS ProjectName, a.Name AS AccountName,
+                    CASE WHEN t.Type = 0 THEN -t.Amount ELSE t.Amount END AS SignedAmount,
+                    0 AS IsTransferIn,
+                    a.Currency AS AccountCurrency -- NOWOŚĆ
+                FROM ""Transaction"" t
+                LEFT JOIN Category c ON t.CategoryId = c.Id
+                LEFT JOIN Project p ON t.ProjectId = p.Id
+                LEFT JOIN Account a ON t.AccountId = a.Id
+                WHERE t.Type IN (0, 1)
+
+                UNION ALL
+
+                -- 2. Transfery WYCHODZĄCE (Perspektywa Konta Źródłowego)
+                SELECT 
+                    t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId,
+                    c.Name AS CategoryName, p.Name AS ProjectName, a.Name AS AccountName,
+                    -t.Amount AS SignedAmount,
+                    0 AS IsTransferIn,
+                    a.Currency AS AccountCurrency -- NOWOŚĆ
+                FROM ""Transaction"" t
+                LEFT JOIN Category c ON t.CategoryId = c.Id
+                LEFT JOIN Project p ON t.ProjectId = p.Id
+                LEFT JOIN Account a ON t.AccountId = a.Id
+                WHERE t.Type = 2
+
+                UNION ALL
+
+                -- 3. Transfery PRZYCHODZĄCE (Perspektywa Konta Docelowego + Kurs)
+                SELECT 
+                    t.Id, 
+                    CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
+                         THEN (t.Amount * (1.0 / t.ExchangeRate)) 
+                         ELSE t.Amount END AS Amount,
+                    t.Date, t.Description, t.Type, t.DestinationAccountId AS AccountId,
+                    c.Name AS CategoryName, p.Name AS ProjectName, aDest.Name AS AccountName,
+                    CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
+                         THEN (t.Amount * (1.0 / t.ExchangeRate)) 
+                         ELSE t.Amount END AS SignedAmount,
+                    1 AS IsTransferIn,
+                    aDest.Currency AS AccountCurrency -- NOWOŚĆ
+                FROM ""Transaction"" t
+                LEFT JOIN Category c ON t.CategoryId = c.Id
+                LEFT JOIN Project p ON t.ProjectId = p.Id
+                LEFT JOIN Account aDest ON t.DestinationAccountId = aDest.Id
+                WHERE t.Type = 2 AND t.DestinationAccountId IS NOT NULL
+            )
+            SELECT 
+                Id, Amount, Date, Description, Type, AccountId,
+                IFNULL(CategoryName, '-') AS CategoryName,
+                IFNULL(ProjectName, '-') AS ProjectName,
+                IFNULL(AccountName, '-') AS AccountName,
+                SignedAmount,
+                IsTransferIn,
+                AccountCurrency -- NOWOŚĆ W GŁÓWNYM SELECT
                 FROM Perspectives
                 ORDER BY Date DESC, Id DESC
                 LIMIT ?";
@@ -301,79 +305,81 @@ namespace ExpenseTracker.Data
         }
 
         public async Task<List<TransactionDetailDto>> GetTransactionsWithDetailsAsync(
-            int? accountId, int? categoryId, int? projectId,
-            decimal? minAmount, decimal? maxAmount,
-            string? searchText, string sortColumn, bool isAscending)
+    int? accountId, int? categoryId, int? projectId,
+    decimal? minAmount, decimal? maxAmount,
+    string? searchText, string sortColumn, bool isAscending)
         {
             await InitAsync();
 
-            // Używamy CTE (WITH), aby wygenerować uniwersalne perspektywy z bazy
             var sql = @"
-                WITH Perspectives AS (
-                    -- 1. Zwykłe Przychody (1) i Wydatki (0)
-                    SELECT 
-                        t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId, t.CategoryId, t.ProjectId,
-                        c.Name AS CategoryName, p.Name AS ProjectName, a.Name AS AccountName,
-                        CASE WHEN t.Type = 0 THEN -t.Amount ELSE t.Amount END AS SignedAmount,
-                        t.AccountId AS FilterAccountId,
-                        0 AS IsTransferIn
-                    FROM ""Transaction"" t
-                    LEFT JOIN Category c ON t.CategoryId = c.Id
-                    LEFT JOIN Project p ON t.ProjectId = p.Id
-                    LEFT JOIN Account a ON t.AccountId = a.Id
-                    WHERE t.Type IN (0, 1)
+        WITH Perspectives AS (
+            -- 1. Zwykłe Przychody (1) i Wydatki (0)
+            SELECT 
+                t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId, 
+                t.CategoryId, t.ProjectId, t.AccountId AS FilterAccountId,
+                c.Name AS CategoryName, p.Name AS ProjectName, a.Name AS AccountName,
+                CASE WHEN t.Type = 0 THEN -t.Amount ELSE t.Amount END AS SignedAmount,
+                0 AS IsTransferIn,
+                a.Currency AS AccountCurrency
+            FROM ""Transaction"" t
+            LEFT JOIN Category c ON t.CategoryId = c.Id
+            LEFT JOIN Project p ON t.ProjectId = p.Id
+            LEFT JOIN Account a ON t.AccountId = a.Id
+            WHERE t.Type IN (0, 1)
 
-                    UNION ALL
+            UNION ALL
 
-                    -- 2. Transfery WYCHODZĄCE (Perspektywa Konta Źródłowego)
-                    SELECT 
-                        t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId, t.CategoryId, t.ProjectId,
-                        c.Name AS CategoryName, p.Name AS ProjectName, a.Name AS AccountName,
-                        -t.Amount AS SignedAmount,
-                        t.AccountId AS FilterAccountId,
-                        0 AS IsTransferIn
-                    FROM ""Transaction"" t
-                    LEFT JOIN Category c ON t.CategoryId = c.Id
-                    LEFT JOIN Project p ON t.ProjectId = p.Id
-                    LEFT JOIN Account a ON t.AccountId = a.Id
-                    WHERE t.Type = 2
+            -- 2. Transfery WYCHODZĄCE (Perspektywa Konta Źródłowego)
+            SELECT 
+                t.Id, t.Amount, t.Date, t.Description, t.Type, t.AccountId, 
+                t.CategoryId, t.ProjectId, t.AccountId AS FilterAccountId,
+                c.Name AS CategoryName, p.Name AS ProjectName, a.Name AS AccountName,
+                -t.Amount AS SignedAmount,
+                0 AS IsTransferIn,
+                a.Currency AS AccountCurrency
+            FROM ""Transaction"" t
+            LEFT JOIN Category c ON t.CategoryId = c.Id
+            LEFT JOIN Project p ON t.ProjectId = p.Id
+            LEFT JOIN Account a ON t.AccountId = a.Id
+            WHERE t.Type = 2
 
-                    UNION ALL
+            UNION ALL
 
-                    -- 3. Transfery PRZYCHODZĄCE (Perspektywa Konta Docelowego + Kurs)
-                    SELECT 
-                        t.Id, 
-                        CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
-                             THEN (t.Amount * (1.0 / t.ExchangeRate)) 
-                             ELSE t.Amount END AS Amount,
-                        t.Date, t.Description, t.Type, t.DestinationAccountId AS AccountId, t.CategoryId, t.ProjectId,
-                        c.Name AS CategoryName, p.Name AS ProjectName, aDest.Name AS AccountName,
-                        CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
-                             THEN (t.Amount * (1.0 / t.ExchangeRate)) 
-                             ELSE t.Amount END AS SignedAmount,
-                        t.DestinationAccountId AS FilterAccountId,
-                        1 AS IsTransferIn
-                    FROM ""Transaction"" t
-                    LEFT JOIN Category c ON t.CategoryId = c.Id
-                    LEFT JOIN Project p ON t.ProjectId = p.Id
-                    LEFT JOIN Account aDest ON t.DestinationAccountId = aDest.Id
-                    WHERE t.Type = 2 AND t.DestinationAccountId IS NOT NULL
-                )
-                SELECT 
-                    Id, Amount, Date, Description, Type, AccountId,
-                    IFNULL(CategoryName, '-') AS CategoryName,
-                    IFNULL(ProjectName, '-') AS ProjectName,
-                    IFNULL(AccountName, '-') AS AccountName,
-                    SignedAmount,
-                    IsTransferIn
-                FROM Perspectives
-                WHERE 1=1 ";
+            -- 3. Transfery PRZYCHODZĄCE (Perspektywa Konta Docelowego + Kurs)
+            SELECT 
+                t.Id, 
+                CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
+                     THEN (t.Amount * (1.0 / t.ExchangeRate)) 
+                     ELSE t.Amount END AS Amount,
+                t.Date, t.Description, t.Type, t.DestinationAccountId AS AccountId, 
+                t.CategoryId, t.ProjectId, t.DestinationAccountId AS FilterAccountId,
+                c.Name AS CategoryName, p.Name AS ProjectName, aDest.Name AS AccountName,
+                CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
+                     THEN (t.Amount * (1.0 / t.ExchangeRate)) 
+                     ELSE t.Amount END AS SignedAmount,
+                1 AS IsTransferIn,
+                aDest.Currency AS AccountCurrency
+            FROM ""Transaction"" t
+            LEFT JOIN Category c ON t.CategoryId = c.Id
+            LEFT JOIN Project p ON t.ProjectId = p.Id
+            LEFT JOIN Account aDest ON t.DestinationAccountId = aDest.Id
+            WHERE t.Type = 2 AND t.DestinationAccountId IS NOT NULL
+        )
+        SELECT 
+            Id, Amount, Date, Description, Type, AccountId,
+            IFNULL(CategoryName, '-') AS CategoryName,
+            IFNULL(ProjectName, '-') AS ProjectName,
+            IFNULL(AccountName, '-') AS AccountName,
+            SignedAmount,
+            IsTransferIn,
+            AccountCurrency
+        FROM Perspectives
+        WHERE 1=1 ";
 
             var args = new List<object>();
 
-            // Używamy wygenerowanej kolumny 'FilterAccountId', aby filtrować tylko właściwą perspektywę!
+            // Doklejanie filtrów (teraz kolumny FilterAccountId, CategoryId i ProjectId znów istnieją w CTE!)
             if (accountId.HasValue) { sql += " AND FilterAccountId = ? "; args.Add(accountId.Value); }
-
             if (categoryId.HasValue) { sql += " AND CategoryId = ? "; args.Add(categoryId.Value); }
             if (projectId.HasValue) { sql += " AND ProjectId = ? "; args.Add(projectId.Value); }
             if (minAmount.HasValue) { sql += " AND Amount >= ? "; args.Add(minAmount.Value); }
