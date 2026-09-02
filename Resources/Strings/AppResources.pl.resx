@@ -214,7 +214,7 @@
     <value>Brak transakcji ...</value>
   </data>
   <data name="ProjectLabel" xml:space="preserve">
-    <value>Project (opcjonalny)</value>
+    <value>Projekt (opcjonalny)</value>
   </data>
   <data name="ProjectNameLabel" xml:space="preserve">
     <value>Nazwa projektu</value>
@@ -488,5 +488,8 @@
   </data>
   <data name="ErrorLoadingData" xml:space="preserve">
     <value>Błąd przy wczytywaniu:</value>
+  </data>
+  <data name="OtherCategories" xml:space="preserve">
+    <value>Pozostałe kategorie</value>
   </data>
 </root>

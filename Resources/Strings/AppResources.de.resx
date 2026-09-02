@@ -489,4 +489,7 @@
   <data name="ErrorLoadingData" xml:space="preserve">
     <value>Fehler beim Laden:</value>
   </data>
+  <data name="OtherCategories" xml:space="preserve">
+    <value>Andere Kategorien</value>
+  </data>
 </root>

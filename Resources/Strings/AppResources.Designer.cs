@@ -862,6 +862,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu  Other categories.
+        /// </summary>
+        internal static string OtherCategories {
+            get {
+                return ResourceManager.GetString("OtherCategories", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Project (Optional).
         /// </summary>
         internal static string ProjectLabel {

@@ -511,4 +511,8 @@
     <value>Error loading dashboard:</value>
     <comment>HomeViewModel</comment>
   </data>
+  <data name="OtherCategories" xml:space="preserve">
+    <value> Other categories</value>
+    <comment>HomeView</comment>
+  </data>
 </root>

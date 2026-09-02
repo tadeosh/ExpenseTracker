@@ -76,7 +76,7 @@
                 </Grid>
             </Border>
 
-            <!-- SEKACJA WYKRESU BIEŻĄCEGO MIESIĄCA -->
+            <!-- SEKCJA WYKRESU BIEŻĄCEGO MIESIĄCA -->
             <Border Grid.Row="3" Margin="0,20,0,0" Padding="15" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
                 <Grid RowDefinitions="Auto, 180" ColumnDefinitions="*">
                     <Label Grid.Row="0" Text="{x:Static strings:AppResources.CurrentMonthExpensesLabel}" FontAttributes="Bold" FontSize="16" TextColor="{DynamicResource AppTextColor}" Margin="0,0,0,10"/>
@@ -88,7 +88,7 @@
                                   BackgroundColor="Transparent" 
                                   HorizontalOptions="Fill" 
                                   VerticalOptions="Fill" 
-                                  HeightRequest="180" />
+                                  HeightRequest="160" />
 
                     <!-- ZMIANA: Etykieta salda w środku donuta -->
                     <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center" Margin="0,0,80,0" InputTransparent="True" IsVisible="{Binding HasExpensesThisMonth}">

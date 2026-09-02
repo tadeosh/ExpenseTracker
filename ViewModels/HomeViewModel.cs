@@ -194,7 +194,7 @@ namespace ExpenseTracker.ViewModels
                 HasNoTransactions = GroupedTransactions.Count == 0;
                 HasTransactions = GroupedTransactions.Count > 0;
 
-                // wyświetlanie wykresu:
+                // WYKRES ----------------------
                 var monthExpenses = await _databaseService.GetCurrentMonthExpensesAsync();
                 var categorySums = new Dictionary<string, (decimal Total, string Color)>();
 
@@ -224,18 +224,33 @@ namespace ExpenseTracker.ViewModels
                     }
                 }
 
-                // 4. Sortowanie i wybór top 5 wydatków
-                var topCategories = categorySums
+                // 4. Sortowanie i agregacja "Pozostałe" (Top 5 + Inne)
+                var allSortedCategories = categorySums
                     .Select(kvp => new { Name = kvp.Key, Total = kvp.Value.Total, Color = kvp.Value.Color })
                     .OrderByDescending(x => x.Total)
-                    .Take(5)
                     .ToList();
+
+                var displayCategories = allSortedCategories.Take(5).ToList();
+                var remainingCategories = allSortedCategories.Skip(5).ToList();
+
+                // Jeśli mamy więcej niż 5 kategorii, zbijamy resztę w jedną
+                if (remainingCategories.Any())
+                {
+                    decimal otherTotal = remainingCategories.Sum(x => x.Total);
+                    displayCategories.Add(new
+                    {
+                        Name = AppResources.OtherCategories,
+                        Total = otherTotal,
+                        Color = "#B0BEC5" // Subtelny, chłodny szary (Material Blue Grey) dla grupy "Inne"
+                    });
+                }
 
                 var tempSeries = new ObservableCollection<ISeries>();
                 decimal monthChartTotal = 0;
 
-                foreach (var item in topCategories)
+                foreach (var item in displayCategories)
                 {
+                    // Teraz monthChartTotal zliczy dokładnie 100% wydatków miesiąca!
                     monthChartTotal += item.Total;
 
                     // 1. BEZPIECZNE PARSOWANIE KOLORU: Jeśli w bazie jest błąd lub brak, ustaw twardy szary (Gray)
@@ -247,7 +262,7 @@ namespace ExpenseTracker.ViewModels
                     tempSeries.Add(new PieSeries<decimal>
                     {
                         Values = new decimal[] { item.Total },
-                        Name = item.Name, // Tutaj trafia już przetłumaczony "Brak kategorii" z logiki C#
+                        Name = item.Name,
                         Fill = new SolidColorPaint(parsedColor),
                         InnerRadius = 50,
                         MaxRadialColumnWidth = 50,
