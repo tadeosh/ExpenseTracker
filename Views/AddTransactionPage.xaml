@@ -397,6 +397,33 @@
                ReturnType="Done"
                ClearButtonVisibility="WhileEditing" />
 
+            <!-- Przełącznik aktywujący cykliczność -->
+            <Grid ColumnDefinitions="*, Auto" Margin="0,15,0,0">
+                <Label Text="Transakcja cykliczna" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}"/>
+                <Switch Grid.Column="1" IsToggled="{Binding IsRecurring}" />
+            </Grid>
+
+            <!-- Sekcja Konfiguracji Cyklicznej (widoczna tylko gdy Switch jest włączony) -->
+            <VerticalStackLayout IsVisible="{Binding IsRecurring}" Spacing="15" Margin="0,15,0,0" Padding="15" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+
+                <Label Text="Powtarzaj co:" FontSize="12" Opacity="0.7" TextColor="{DynamicResource AppTextColor}"/>
+
+                <Grid ColumnDefinitions="*, 2*" ColumnSpacing="10">
+                    <!-- Pole na Interwał (np. "2") -->
+                    <Entry Grid.Column="0" Text="{Binding RecurrenceIntervalText}" Keyboard="Numeric" HorizontalTextAlignment="Center" />
+
+                    <!-- Pole na Jednostkę (np. "Tygodnie") -->
+                    <Picker Grid.Column="1" ItemsSource="{Binding RecurrenceUnits}" SelectedItem="{Binding SelectedRecurrenceUnit}" />
+                </Grid>
+
+                <Label Text="Data zakończenia (opcjonalnie):" FontSize="12" Opacity="0.7" TextColor="{DynamicResource AppTextColor}"/>
+
+                <Grid ColumnDefinitions="Auto, *">
+                    <CheckBox IsChecked="{Binding HasEndDate}" />
+                    <DatePicker Grid.Column="1" Date="{Binding EndDate}" IsEnabled="{Binding HasEndDate}" IsVisible="{Binding HasEndDate}" />
+                </Grid>
+            </VerticalStackLayout>
+
             <Grid ColumnDefinitions="*, *" ColumnSpacing="15" Margin="0,20,0,0">
                 <Button Grid.Column="0" 
                         Text="{x:Static strings:AppResources.CancelBtn}" 

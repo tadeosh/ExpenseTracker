@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:ExpenseTracker.Models"
+             xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
+             x:DataType="viewmodels:RecurringTransactionsViewModel"
+             x:Class="ExpenseTracker.Views.RecurringTransactionsPage"
+             Title="Transakcje Cykliczne"
+             BackgroundColor="{DynamicResource AppBackgroundColor}">
+
+    <!-- Grid pozwala na nałożenie przycisku (FAB) nad CollectionView -->
+    <Grid>
+        <CollectionView ItemsSource="{Binding Templates}" Margin="15">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:RecurringTransaction">
+                    <SwipeView>
+                        <SwipeView.RightItems>
+                            <SwipeItems Mode="Reveal">
+                                <SwipeItem Text="Edytuj" BackgroundColor="#1E88E5" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.EditTemplateCommand}" CommandParameter="{Binding .}"/>
+                                <SwipeItem Text="Zawieś/Wznów" BackgroundColor="#F9A825" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.ToggleActiveStatusCommand}" CommandParameter="{Binding .}"/>
+                                <SwipeItem Text="Usuń" BackgroundColor="#E53935" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.DeleteTemplateCommand}" CommandParameter="{Binding .}"/>
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+
+                        <Border Padding="15" Margin="0,0,0,10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                            <FlyoutBase.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="Edytuj" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.EditTemplateCommand}" CommandParameter="{Binding .}"/>
+                                    <MenuFlyoutItem Text="Zawieś / Wznów" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.ToggleActiveStatusCommand}" CommandParameter="{Binding .}"/>
+                                    <MenuFlyoutItem Text="Usuń" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.DeleteTemplateCommand}" CommandParameter="{Binding .}"/>
+                                </MenuFlyout>
+                            </FlyoutBase.ContextFlyout>
+
+                            <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
+                                <Label Grid.Row="0" Grid.Column="0" Text="{Binding Description}" FontAttributes="Bold" FontSize="16" TextColor="{DynamicResource AppTextColor}"/>
+                                <Label Grid.Row="0" Grid.Column="1" Text="{Binding Amount, StringFormat='{0:N2}'}" FontAttributes="Bold" FontSize="16" TextColor="{DynamicResource PrimaryColor}"/>
+
+                                <HorizontalStackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="5" Margin="0,5,0,0" Opacity="0.7">
+                                    <Label Text="Kolejna:" FontSize="12" TextColor="{DynamicResource AppTextColor}" />
+                                    <Label Text="{Binding NextDueDate, StringFormat='{0:dd.MM.yyyy}'}" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
+                                    <Label Text="|" FontSize="12" TextColor="{DynamicResource AppTextColor}" />
+                                    <Label Text="{Binding RecurrenceInterval}" FontSize="12" TextColor="{DynamicResource AppTextColor}" />
+                                    <Label Text="{Binding RecurrenceUnit}" FontSize="12" TextColor="{DynamicResource AppTextColor}" />
+                                </HorizontalStackLayout>
+
+                                <!-- Zero-Dependency FIX: Używamy DataTrigger zamiast konwertera -->
+                                <BoxView Grid.RowSpan="2" Grid.ColumnSpan="2" Color="{DynamicResource AppBackgroundColor}" Opacity="0.6" IsVisible="False" InputTransparent="True">
+                                    <BoxView.Triggers>
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding IsActive}" Value="False">
+                                            <Setter Property="IsVisible" Value="True" />
+                                        </DataTrigger>
+                                    </BoxView.Triggers>
+                                </BoxView>
+                            </Grid>
+                        </Border>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Pływający przycisk (FAB) dodawania -->
+        <Button Text="+" 
+                Command="{Binding AddNewCommand}"
+                WidthRequest="56" HeightRequest="56" CornerRadius="28"
+                HorizontalOptions="End" VerticalOptions="End" Margin="20"
+                BackgroundColor="{DynamicResource PrimaryColor}" 
+                TextColor="White" FontSize="28" FontAttributes="Bold">
+            <Button.Shadow>
+                <Shadow Brush="Black" Offset="0,4" Radius="5" Opacity="0.3" />
+            </Button.Shadow>
+        </Button>
+    </Grid>
+</ContentPage>

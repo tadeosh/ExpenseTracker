@@ -23,6 +23,15 @@ namespace ExpenseTracker.Services.Interfaces
                 string? searchText, string sortColumn, bool isAscending);
         Task<List<TransactionDetailDto>> GetRecentTransactionsWithDetailsAsync(int limit = 30);
 
+        //Transakcje Cykliczne
+
+        Task<List<RecurringTransaction>> GetActiveRecurringTransactionsAsync();
+        Task<List<RecurringTransaction>> GetRecurringTransactionsAsync();
+        Task<RecurringTransaction> GetRecurringTransactionAsync(int id);
+        Task<int> DeleteRecurringTransactionAsync(RecurringTransaction recurringTransaction);
+        Task<int> SaveRecurringTransactionAsync(RecurringTransaction recurringTransaction);
+        Task RunInTransactionAsync(Action<SQLite.SQLiteConnection> action);
+
         // Raporty
 
         Task<List<CategoryExpenseSummaryDto>> GetCurrentMonthExpensesAsync(); //HomePage

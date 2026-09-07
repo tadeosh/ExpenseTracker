@@ -562,4 +562,19 @@
     <value>The exchange rate must be a valid number greater than zero.</value>
     <comment>ExchangeRateValidator</comment>
   </data>
+  <data name="ValErrorIntervalRequired" xml:space="preserve">
+    <value>Enter the interval (e.g., 1).</value>
+    <comment>AddTransactionValidator</comment>
+  </data>
+  <data name="ValErrorIntervalInvalid" xml:space="preserve">
+    <value>The interval must be an integer greater than zero (e.g., 1, 2, 3).</value>
+    <comment>AddTransactionValidator</comment>
+  </data>
+  <data name="ValErrorEndDateTooEarly" xml:space="preserve">
+    <value>The end date must be later than the date of the first transaction.</value>
+    <comment>AddTransactionValidator</comment>
+  </data>
+  <data name="RecurringTransactionsTitle" xml:space="preserve">
+    <value>Recurring transactions</value>
+  </data>
 </root>

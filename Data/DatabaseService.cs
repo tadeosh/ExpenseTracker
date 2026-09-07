@@ -42,6 +42,7 @@ namespace ExpenseTracker.Data
             await _database.CreateTableAsync<Project>();
             await _database.CreateTableAsync<Transaction>();
             await _database.CreateTableAsync<ExchangeRate>();
+            await _database.CreateTableAsync<RecurringTransaction>();
 
             // 2. NOWOŚĆ: Migracja starych danych
             // Zamienia wartości NULL w nowej kolumnie na 0 (false), przywracając je na ekrany
@@ -305,9 +306,9 @@ namespace ExpenseTracker.Data
         }
 
         public async Task<List<TransactionDetailDto>> GetTransactionsWithDetailsAsync(
-    int? accountId, int? categoryId, int? projectId,
-    decimal? minAmount, decimal? maxAmount,
-    string? searchText, string sortColumn, bool isAscending)
+            int? accountId, int? categoryId, int? projectId,
+            decimal? minAmount, decimal? maxAmount,
+            string? searchText, string sortColumn, bool isAscending)
         {
             await InitAsync();
 
@@ -413,6 +414,53 @@ namespace ExpenseTracker.Data
         {
             public int AccountId { get; set; }
             public decimal Total { get; set; }
+        }
+
+
+        // ====================================================================
+        // ==========  TRANSAKCJE CYKLICZNE (RECURRING TRANSACTIONS)  =========
+        // ====================================================================
+
+        public async Task<List<RecurringTransaction>> GetActiveRecurringTransactionsAsync()
+        {
+            await InitAsync();
+            return await _database.Table<RecurringTransaction>()
+                                  .Where(rt => rt.IsActive)
+                                  .ToListAsync();
+        }
+
+        public async Task<List<RecurringTransaction>> GetRecurringTransactionsAsync()
+        {
+            await InitAsync();
+            return await _database.Table<RecurringTransaction>().ToListAsync();
+        }
+
+        public async Task<int> DeleteRecurringTransactionAsync(RecurringTransaction recurringTransaction)
+        {
+            await InitAsync();
+            return await _database.DeleteAsync(recurringTransaction);
+        }
+
+        public async Task<int> SaveRecurringTransactionAsync(RecurringTransaction recurringTransaction)
+        {
+            await InitAsync();
+            if (recurringTransaction.Id != 0)
+                return await _database.UpdateAsync(recurringTransaction);
+            else
+                return await _database.InsertAsync(recurringTransaction);
+        }
+
+        public async Task<RecurringTransaction?> GetRecurringTransactionAsync(int id)
+        {
+            await InitAsync();
+            return await _database.Table<RecurringTransaction>().FirstOrDefaultAsync(r => r.Id == id);
+        }
+
+        // Metoda wyciągająca natywną transakcję SQLite do bezpiecznego wstrzykiwania wielu rekordów (Ochrona przed uszkodzeniem bazy)
+        public async Task RunInTransactionAsync(Action<SQLite.SQLiteConnection> action)
+        {
+            await InitAsync();
+            await _database.RunInTransactionAsync(action);
         }
 
         // ====================================================================

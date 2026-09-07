@@ -961,6 +961,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Recurring transactions.
+        /// </summary>
+        internal static string RecurringTransactionsTitle {
+            get {
+                return ResourceManager.GetString("RecurringTransactionsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Save.
         /// </summary>
         internal static string SaveBtn {
@@ -1155,6 +1164,33 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string UnderstoodBtn {
             get {
                 return ResourceManager.GetString("UnderstoodBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The end date must be later than the date of the first transaction..
+        /// </summary>
+        internal static string ValErrorEndDateTooEarly {
+            get {
+                return ResourceManager.GetString("ValErrorEndDateTooEarly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The interval must be an integer greater than zero (e.g., 1, 2, 3)..
+        /// </summary>
+        internal static string ValErrorIntervalInvalid {
+            get {
+                return ResourceManager.GetString("ValErrorIntervalInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Enter the interval (e.g., 1)..
+        /// </summary>
+        internal static string ValErrorIntervalRequired {
+            get {
+                return ResourceManager.GetString("ValErrorIntervalRequired", resourceCulture);
             }
         }
         

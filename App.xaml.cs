@@ -1,4 +1,5 @@
 ﻿using ExpenseTracker.Resources.Strings;
+using ExpenseTracker.Services.Interfaces;
 using ExpenseTracker.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
@@ -30,13 +31,33 @@ namespace ExpenseTracker
             
         }
 
-        protected override Window CreateWindow(IActivationState? activationState)
+        protected override Microsoft.Maui.Controls.Window CreateWindow(IActivationState? activationState)
         {
-            //return new Window(new AppShell());
-            // Zamiast AppShell, ładujemy na start odizolowaną stronę zabezpieczeń.
-            // Dzięki temu AppShell nie zacznie w tle odpytywać zablokowanej bazy danych!
-            return new Window(new SetupPage());
+            // Jawne wskazanie przestrzeni nazw rozwiązuje konflikt kompilatora
+            var window = new Microsoft.Maui.Controls.Window(new SetupPage());
+
+            window.Created += (s, e) =>
+            {
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (activationState?.Context?.Services != null)
+                        {
+                            var engine = activationState.Context.Services.GetRequiredService<IRecurringTransactionEngine>();
+                            await engine.ProcessPendingTransactionsAsync();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[RecurringEngine Error]: {ex.Message}");
+                    }
+                });
+            };
+
+            return window;
         }
+
         public static void ApplyTheme(int themeIndex)
         {
             var mergedDictionaries = Current!.Resources.MergedDictionaries;

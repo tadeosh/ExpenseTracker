@@ -91,6 +91,9 @@
 	  <Compile Update="Views\FavoriteCurrenciesPage.xaml.cs">
 	    <DependentUpon>FavoriteCurrenciesPage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\RecurringTransactionsPage.xaml.cs">
+	    <DependentUpon>RecurringTransactionsPage.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -126,6 +129,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\HomePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\RecurringTransactionsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\ProjectsPage.xaml">

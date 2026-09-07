@@ -9,6 +9,7 @@ using FluentValidation;
 using System.Collections.ObjectModel;
 using System.Globalization;
 
+
 namespace ExpenseTracker.ViewModels
 {    
     public partial class AddTransactionViewModel : ObservableObject, IQueryAttributable
@@ -83,9 +84,38 @@ namespace ExpenseTracker.ViewModels
 
         [ObservableProperty]
         public partial bool IsTransfer { get; set; }
-
         [ObservableProperty]
         public partial bool IsCurrencyConversion { get; set; }
+
+        // sekcja transakcji cyklicznych
+        [ObservableProperty]
+        public partial int? EditingRecurringId { get; set; }
+
+        [ObservableProperty]
+        public partial bool IsRecurring { get; set; }
+
+        // Tekst, aby walidator mógł sprawdzić czy pole nie jest puste
+        [ObservableProperty]
+        public partial string RecurrenceIntervalText { get; set; } = "1";
+        
+        public ObservableCollection<string> RecurrenceUnits { get; } = new()
+        {
+            "Dni",
+            "Tygodnie",
+            "Miesiące",
+            "Lata"
+            // Jeśli używasz AppResources:
+            // AppResources.UnitDays ?? "Dni", itp.
+        };
+
+        [ObservableProperty]
+        public partial string SelectedRecurrenceUnit { get; set; } // Domyślnie "Miesiące"
+
+        [ObservableProperty]
+        public partial bool HasEndDate { get; set; } = false;
+
+        [ObservableProperty]
+        public partial DateTime EndDate { get; set; } = DateTime.Today.AddYears(1);
 
         [ObservableProperty]
         public partial string CurrencyConversionLabel { get; set; } = string.Empty;
@@ -101,6 +131,18 @@ namespace ExpenseTracker.ViewModels
         {
             _databaseService = databaseService;
             _validator = validator;
+
+            SelectedRecurrenceUnit = RecurrenceUnits[2];
+        }
+
+        // Metoda pomocnicza zamieniająca tekst z Pickera na Enum
+        private RecurrenceUnit MapUnit(string selectedUnit)
+        {
+            if (selectedUnit.Contains("Dni", StringComparison.OrdinalIgnoreCase)) return RecurrenceUnit.Days;
+            if (selectedUnit.Contains("Tygodni", StringComparison.OrdinalIgnoreCase)) return RecurrenceUnit.Weeks;
+            if (selectedUnit.Contains("Lat", StringComparison.OrdinalIgnoreCase)) return RecurrenceUnit.Years;
+
+            return RecurrenceUnit.Months;
         }
 
         // Metoda do czyszczenia błędów przed kolejną próbą zapisu
@@ -134,6 +176,16 @@ namespace ExpenseTracker.ViewModels
                 {
                     TransactionId = transId;
                 }
+            }
+            // NOWOŚĆ: Obsługa wywołania z listy transakcji cyklicznych
+            if (query.TryGetValue("IsRecurringDefault", out var isRec) && isRec.ToString() == "True")
+            {
+                IsRecurring = true;
+            }
+
+            if (query.TryGetValue("EditRecurringId", out var recIdObj) && recIdObj is string recIdStr)
+            {
+                if (int.TryParse(recIdStr, out int recId)) EditingRecurringId = recId;
             }
         }
         // ================ koniec implementacji interfejsu ====================================
@@ -221,6 +273,33 @@ namespace ExpenseTracker.ViewModels
                     {
                         ExchangeRateText = existingTx.ExchangeRate.Value.ToString("0.####", CultureInfo.InvariantCulture);
                         _lastFetchedRate = existingTx.ExchangeRate.Value;
+                    }
+                }
+            }
+
+            // --- NOWOŚĆ: LOGIKA EDYCJI TRANSAKCJI CYKLICZNEJ ---
+            if (EditingRecurringId.HasValue)
+            {
+                var existingRec = await _databaseService.GetRecurringTransactionAsync(EditingRecurringId.Value);
+                if (existingRec != null)
+                {
+                    IsRecurring = true;
+                    AmountText = existingRec.Amount.ToString("0.##", CultureInfo.InvariantCulture);
+                    DescriptionText = existingRec.Description;
+                    SelectedTypeIndex = (int)existingRec.Type;
+
+                    savedAccountId = existingRec.AccountId;
+                    savedCategoryId = existingRec.CategoryId;
+                    savedProjectId = existingRec.ProjectId;
+
+                    // Mapowanie specyficzne dla cykli
+                    RecurrenceIntervalText = existingRec.RecurrenceInterval.ToString();
+                    SelectedRecurrenceUnit = RecurrenceUnits.FirstOrDefault(u => MapUnit(u) == existingRec.RecurrenceUnit) ?? RecurrenceUnits[2];
+
+                    if (existingRec.EndDate.HasValue)
+                    {
+                        HasEndDate = true;
+                        EndDate = existingRec.EndDate.Value;
                     }
                 }
             }
@@ -429,21 +508,61 @@ namespace ExpenseTracker.ViewModels
                 }
             }
 
-            var transaction = new Transaction
-            {
-                Id = TransactionId ?? 0, // Jeśli null, wstaw 0 (INSERT). Jeśli ma wartość, zaktualizuje rekord (UPDATE)
-                Amount = amount,
-                Date = SelectedDate,
-                Description = DescriptionText,
-                Type = type,
-                AccountId = SelectedAccount!.Id,
-                CategoryId = SelectedCategory?.Id,
-                ProjectId = SelectedProject?.Id,
-                DestinationAccountId = type == TransactionType.Transfer ? DestinationAccount?.Id : null,
-                ExchangeRate = exchangeRate
-            };
 
-            await _databaseService.SaveTransactionAsync(transaction);
+            if (IsRecurring)
+            {
+                var recurringTemplate = new RecurringTransaction
+                {
+                    // Jeśli edytujemy, przekaż istniejące ID. Jeśli nowy, przekaż 0 (INSERT).
+                    Id = EditingRecurringId ?? 0,
+                    Amount = amount,
+                    Type = type,
+                    Description = DescriptionText,
+                    AccountId = SelectedAccount!.Id,
+                    CategoryId = SelectedCategory?.Id,
+                    ProjectId = SelectedProject?.Id,
+
+                    RecurrenceInterval = int.Parse(RecurrenceIntervalText),
+                    RecurrenceUnit = MapUnit(SelectedRecurrenceUnit),
+                    EndDate = HasEndDate ? EndDate : null,
+                    IsActive = true
+                };
+
+                // Zabezpieczenie NextDueDate
+                if (EditingRecurringId.HasValue)
+                {
+                    var original = await _databaseService.GetRecurringTransactionAsync(EditingRecurringId.Value);
+                    // Zachowujemy oryginalną datę kolejnego wywołania
+                    if (original != null) recurringTemplate.NextDueDate = original.NextDueDate;
+                }
+                else
+                {
+                    // Nowa transakcja - startujemy od daty wybranej w UI
+                    recurringTemplate.NextDueDate = SelectedDate;
+                }
+
+                await _databaseService.SaveRecurringTransactionAsync(recurringTemplate);
+            }
+            else
+            {
+                var transaction = new Transaction
+                {
+                    Id = TransactionId ?? 0, // Jeśli null, wstaw 0 (INSERT). Jeśli ma wartość, zaktualizuje rekord (UPDATE)
+                    Amount = amount,
+                    Date = SelectedDate,
+                    Description = DescriptionText,
+                    Type = type,
+                    AccountId = SelectedAccount!.Id,
+                    CategoryId = SelectedCategory?.Id,
+                    ProjectId = SelectedProject?.Id,
+                    DestinationAccountId = type == TransactionType.Transfer ? DestinationAccount?.Id : null,
+                    ExchangeRate = exchangeRate
+                };
+
+
+                await _databaseService.SaveTransactionAsync(transaction);
+            }
+
             // NOWOŚĆ: Powiadomienie reszty aplikacji o zmianie
             WeakReferenceMessenger.Default.Send(new TransactionsChangedMessage());
             await CloseFormSafeAsync();

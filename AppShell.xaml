@@ -33,21 +33,23 @@
             Route="HomePage" />
     </FlyoutItem>
 
+    <FlyoutItem Title="{x:Static strings:AppResources.AccountsPageTitle}">
+        <ShellContent 
+    ContentTemplate="{DataTemplate views:AccountsPage}" 
+    Route="AccountsPage" />
+    </FlyoutItem>
+
     <FlyoutItem Title="{x:Static strings:AppResources.AllTransactionsTitle}">
         <ShellContent Route="TransactionsPage" ContentTemplate="{DataTemplate views:TransactionsPage}" />
     </FlyoutItem>
 
-    <FlyoutItem Title="{x:Static strings:AppResources.AccountsPageTitle}">
+    <FlyoutItem Title="{x:Static strings:AppResources.RecurringTransactionsTitle}">
         <ShellContent 
-        ContentTemplate="{DataTemplate views:AccountsPage}" 
-        Route="AccountsPage" />
+        ContentTemplate="{DataTemplate views:RecurringTransactionsPage}"
+        Route="RecurringTransactionsPage" />
     </FlyoutItem>
 
-    <!--<FlyoutItem Title="{x:Static strings:AppResources.AddTransactionTitle}">
-        <ShellContent 
-            ContentTemplate="{DataTemplate views:AddTransactionPage}" 
-            Route="AddTransactionPage" />
-    </FlyoutItem> -->
+    
 
     <FlyoutItem Title="{x:Static strings:AppResources.SettingsTitle}">
         <ShellContent 

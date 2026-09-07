@@ -522,4 +522,16 @@
   <data name="ValErrorInvalidRate" xml:space="preserve">
     <value>Der Wechselkurs muss eine gültige Zahl größer als Null sein.</value>
   </data>
+  <data name="ValErrorIntervalRequired" xml:space="preserve">
+    <value>Geben Sie das Intervall ein (z. B. 1).</value>
+  </data>
+  <data name="ValErrorIntervalInvalid" xml:space="preserve">
+    <value>Das Intervall muss eine ganze Zahl größer als Null sein (z. B. 1, 2, 3).</value>
+  </data>
+  <data name="ValErrorEndDateTooEarly" xml:space="preserve">
+    <value>Das Enddatum muss nach dem Datum der ersten Transaktion liegen.</value>
+  </data>
+  <data name="RecurringTransactionsTitle" xml:space="preserve">
+    <value>Wiederkehrende Transaktionen</value>
+  </data>
 </root>

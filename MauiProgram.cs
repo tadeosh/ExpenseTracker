@@ -62,6 +62,9 @@ namespace ExpenseTracker
             builder.Services.AddTransient<Views.TransactionsPage>();
             builder.Services.AddTransient<ViewModels.TransactionsViewModel>();
 
+            builder.Services.AddTransient<RecurringTransactionsViewModel>();
+            builder.Services.AddTransient<RecurringTransactionsPage>();
+
             builder.Services.AddTransient<SettingsViewModel>();
             builder.Services.AddTransient<SettingsPage>();
 
