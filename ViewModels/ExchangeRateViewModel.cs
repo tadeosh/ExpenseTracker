@@ -1,119 +1,192 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ExpenseTracker.Data;
 using ExpenseTracker.Models;
-using System.Collections.ObjectModel;
+using ExpenseTracker.Resources.Strings;
 using ExpenseTracker.Services.Interfaces;
+using FluentValidation;
+using System.Collections.ObjectModel;
+using System.Globalization;
 
 namespace ExpenseTracker.ViewModels
 {
     public partial class ExchangeRatesViewModel : ObservableObject
     {
         private readonly IDatabaseService _databaseService;
+        private readonly IValidator<ExchangeRatesViewModel> _validator;
 
-        [ObservableProperty]
-        public partial ObservableCollection<ExchangeRate> Rates { get; set; } = new();
-
-        // Pola formularza
-        [ObservableProperty]
-        public partial string SelectedSourceCurrency { get; set; } = string.Empty;
-
-        [ObservableProperty]
-        public partial string SelectedTargetCurrency { get; set; } = string.Empty;
-
-        [ObservableProperty]
-        public partial string RateText { get; set; } = string.Empty;
+        // ZMIANA: Używamy naszego nowego Wrappera
+        public ObservableCollection<ExchangeRateDisplayItem> Rates { get; } = new();
 
         public ObservableCollection<string> AvailableCurrencies { get; } = new();
 
-        [ObservableProperty]
-        public partial DateTime SelectedDate { get; set; } = DateTime.Today;
+        // --- STAN FORMULARZA ---
+        [ObservableProperty] public partial bool IsFormVisible { get; set; } = false;
+        [ObservableProperty] public partial bool IsEditing { get; set; } = false;
 
-        public ExchangeRatesViewModel(IDatabaseService databaseService)
+        [ObservableProperty] public partial string SelectedSourceCurrency { get; set; } = string.Empty;
+        [ObservableProperty] public partial string SelectedTargetCurrency { get; set; } = string.Empty;
+        [ObservableProperty] public partial string RateText { get; set; } = string.Empty;
+        [ObservableProperty] public partial DateTime SelectedDate { get; set; } = DateTime.Today;
+
+       
+        [ObservableProperty] public partial string? FormError { get; set; }
+
+        private ExchangeRateDisplayItem? _rateBeingEdited;
+
+        public ExchangeRatesViewModel(IDatabaseService databaseService, IValidator<ExchangeRatesViewModel> validator)
         {
             _databaseService = databaseService;
+            _validator = validator;
         }
 
         public async Task LoadDataAsync()
         {
             var ratesFromDb = await _databaseService.GetExchangeRatesAsync();
 
-            var tempRates = new ObservableCollection<ExchangeRate>();
+            Rates.Clear();
             foreach (var rate in ratesFromDb)
             {
-                tempRates.Add(rate);
+                Rates.Add(new ExchangeRateDisplayItem { ExchangeRate = rate });
             }
-            Rates = tempRates; // Bezpieczna podmiana dla Windowsa
 
-            AvailableCurrencies.Clear();
-            // Używamy nowej, pięknej metody
-            foreach (var c in Helpers.CurrencyHelper.GetSortedCurrencyDisplayList())
-                AvailableCurrencies.Add(c);
+            if (!AvailableCurrencies.Any())
+            {
+                foreach (var c in Helpers.CurrencyHelper.GetSortedCurrencyDisplayList())
+                    AvailableCurrencies.Add(c);
+            }
         }
 
+        // --- ZARZĄDZANIE FORMULARZEM ---
+        private void ClearErrors() => FormError = null;
+
+        [RelayCommand]
+        private void OpenAddForm()
+        {
+            if (IsFormVisible && !IsEditing)
+            {
+                IsFormVisible = false;
+            }
+            else
+            {
+                ClearErrors();
+                IsEditing = false;
+                _rateBeingEdited = null;
+                RateText = string.Empty;
+                SelectedDate = DateTime.Today;
+                IsFormVisible = true;
+            }
+        }
+
+        [RelayCommand]
+        private void EditRate(ExchangeRateDisplayItem itemToEdit)
+        {
+            ClearErrors();
+            IsFormVisible = true;
+            IsEditing = true;
+            _rateBeingEdited = itemToEdit;
+
+            RateText = itemToEdit.ExchangeRate.Rate.ToString("0.####", CultureInfo.InvariantCulture);
+            SelectedDate = itemToEdit.ExchangeRate.Date;
+
+            // Dopasowanie Pickera do istniejących wartości (Wymaga dopasowania kodu waluty do wyświetlanej nazwy)
+            SelectedSourceCurrency = AvailableCurrencies.FirstOrDefault(c => c.Contains(itemToEdit.ExchangeRate.SourceCurrency)) ?? string.Empty;
+            SelectedTargetCurrency = AvailableCurrencies.FirstOrDefault(c => c.Contains(itemToEdit.ExchangeRate.TargetCurrency)) ?? string.Empty;
+        }
+
+        [RelayCommand]
+        private void CancelEdit()
+        {
+            IsEditing = false;
+            _rateBeingEdited = null;
+            RateText = string.Empty;
+            IsFormVisible = false;
+            ClearErrors();
+        }
+
+        // --- ZAPIS ---
         [RelayCommand]
         private async Task SaveRateAsync()
         {
-            // NOWOŚĆ: Dekodujemy piękne nazwy na surowe kody
-            string? sourceCode = Helpers.CurrencyHelper.ExtractCode(SelectedSourceCurrency);
-            string? targetCode = Helpers.CurrencyHelper.ExtractCode(SelectedTargetCurrency);
+            ClearErrors();
 
-            // Jeśli wyciągnięty kod jest null (bo użytkownik kliknął linię oddzielającą "────" lub nic), przerywamy
-            if (string.IsNullOrWhiteSpace(sourceCode) || string.IsNullOrWhiteSpace(targetCode))
-                return;
-
-            // NOWOŚĆ: Normalizujemy znak dziesiętny - zamieniamy przecinki na kropki
-            string normalizedRate = RateText.Replace(',', '.');
-
-            // Parsujemy twardo z użyciem InvariantCulture (które zawsze oczekuje kropki)
-            if (!decimal.TryParse(normalizedRate, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal parsedRate) || parsedRate <= 0)
-                return;
-
-            var newRate = new ExchangeRate
+            var validationResult = await _validator.ValidateAsync(this);
+            if (!validationResult.IsValid)
             {
-                SourceCurrency = sourceCode,
-                TargetCurrency = targetCode,
-                Rate = parsedRate,
-                Date = SelectedDate
-            };
+                // LINQ: Pobieramy same komunikaty i sklejamy je enterem
+                FormError = string.Join(Environment.NewLine, validationResult.Errors.Select(e => e.ErrorMessage));
+                return;
+            }
 
-            await _databaseService.SaveExchangeRateAsync(newRate);
+            string sourceCode = Helpers.CurrencyHelper.ExtractCode(SelectedSourceCurrency)!;
+            string targetCode = Helpers.CurrencyHelper.ExtractCode(SelectedTargetCurrency)!;
+            decimal parsedRate = decimal.Parse(RateText.Replace(',', '.'), System.Globalization.CultureInfo.InvariantCulture);
 
-            // Czyszczenie formularza i przeładowanie listy
-          /*  SourceCurrencyText = string.Empty;
-            TargetCurrencyText = string.Empty;*/
-            RateText = string.Empty;
-            SelectedDate = DateTime.Today;
+            if (IsEditing && _rateBeingEdited != null)
+            {
+                _rateBeingEdited.ExchangeRate.SourceCurrency = sourceCode;
+                _rateBeingEdited.ExchangeRate.TargetCurrency = targetCode;
+                _rateBeingEdited.ExchangeRate.Rate = parsedRate;
+                _rateBeingEdited.ExchangeRate.Date = SelectedDate;
 
+                await _databaseService.SaveExchangeRateAsync(_rateBeingEdited.ExchangeRate);
+            }
+            else
+            {
+                var newRate = new ExchangeRate
+                {
+                    SourceCurrency = sourceCode,
+                    TargetCurrency = targetCode,
+                    Rate = parsedRate,
+                    Date = SelectedDate
+                };
+                await _databaseService.SaveExchangeRateAsync(newRate);
+            }
+
+            CancelEdit();
             await LoadDataAsync();
+        }
+
+        // --- USUWANIE ---
+        [RelayCommand]
+        private void ToggleDeleteMode(ExchangeRateDisplayItem item)
+        {
+            // Zamykamy inne otwarte wiersze
+            foreach (var rate in Rates.Where(r => r != item)) rate.IsDeleteMode = false;
+            item.IsDeleteMode = !item.IsDeleteMode;
         }
 
         [RelayCommand]
-        private async Task DeleteRateAsync(ExchangeRate rate)
+        private async Task DeleteRateAsync(ExchangeRateDisplayItem item)
         {
-            if (rate == null) return;
+            if (item == null) return;
 
-            await _databaseService.DeleteExchangeRateAsync(rate);
-            await LoadDataAsync();
+            await _databaseService.DeleteExchangeRateAsync(item.ExchangeRate);
+            Rates.Remove(item); // O(1) aktualizacja UI bez uderzania do bazy
         }
 
-        // Magiczny mechanizm: odpala się, gdy próbujesz zmienić walutę źródłową
+        // --- HACKI KONTROLEK UI ---
         partial void OnSelectedSourceCurrencyChanged(string oldValue, string newValue)
         {
             if (newValue != null && newValue.Contains("──"))
-            {
-                // MainThread pozwala na bezpieczną manipulację interfejsem w locie
                 MainThread.BeginInvokeOnMainThread(() => SelectedSourceCurrency = oldValue);
-            }
         }
 
-        // To samo dla waluty docelowej
         partial void OnSelectedTargetCurrencyChanged(string oldValue, string newValue)
         {
             if (newValue != null && newValue.Contains("──"))
-            {
                 MainThread.BeginInvokeOnMainThread(() => SelectedTargetCurrency = oldValue);
-            }
         }
+    }
+
+    //============= KLASA WRAPPERA =================    
+    public partial class ExchangeRateDisplayItem : ObservableObject
+    {
+        public ExchangeRate ExchangeRate { get; set; } = new();
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(MinusRotation))]
+        public partial bool IsDeleteMode { get; set; }
+
+        public double MinusRotation => IsDeleteMode ? 90 : 0;
     }
 }

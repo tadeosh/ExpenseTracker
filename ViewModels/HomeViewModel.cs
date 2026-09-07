@@ -1,15 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using ExpenseTracker.Data;
+using ExpenseTracker.Helpers;
+using ExpenseTracker.Messages;
 using ExpenseTracker.Models;
 using ExpenseTracker.Resources.Strings;
-using System.Collections.ObjectModel;
-using ExpenseTracker.Helpers;
 using ExpenseTracker.Services.Interfaces;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
+using System.Collections.ObjectModel;
 
 namespace ExpenseTracker.ViewModels
 {
@@ -17,6 +19,8 @@ namespace ExpenseTracker.ViewModels
     {
         private readonly IDatabaseService _databaseService;
         private readonly ISettingsService _settingsService;
+
+        private bool _needsReload = true;
 
         [ObservableProperty]
         public partial ObservableCollection<AccountBalanceItem> AccountsBalances { get; set; } = new();
@@ -56,9 +60,26 @@ namespace ExpenseTracker.ViewModels
         {
             _databaseService = databaseService;
             _settingsService = settingsService;
+            WeakReferenceMessenger.Default.Register<HomeViewModel, TransactionsChangedMessage>(this, (r, m) =>
+            {
+                // Teraz kompilator wie, że 'r' to TransactionsViewModel, więc ma dostęp do pola
+                r._needsReload = true;
+            });
         }
 
-       
+        public void Receive(TransactionsChangedMessage message)
+        {
+            _needsReload = true;
+        }
+
+        public async Task LoadDataIfNeededAsync()
+        {
+            if (!_needsReload) return;
+            await Task.Delay(300); // Ochrona animacji przejścia
+            await LoadDataAsync();
+            _needsReload = false;
+        }
+
         // NOWY KOD:
         [RelayCommand]
         private async Task AccountTappedAsync(AccountBalanceItem? account)
@@ -296,11 +317,13 @@ namespace ExpenseTracker.ViewModels
 
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    ExpenseSeries.Clear();
-                    ExpenseLegend.Clear(); // Czyścimy starą legendę
+                    //ExpenseSeries.Clear();
+                    //ExpenseLegend.Clear(); // Czyścimy starą legendę
 
-                    foreach (var series in tempSeries) ExpenseSeries.Add(series);
-                    foreach (var leg in tempLegend) ExpenseLegend.Add(leg); // Dodajemy nową
+                    //foreach (var series in tempSeries) ExpenseSeries.Add(series);
+                    //foreach (var leg in tempLegend) ExpenseLegend.Add(leg); // Dodajemy nową
+                    ExpenseSeries = new ObservableCollection<ISeries>(tempSeries);
+                    ExpenseLegend = new ObservableCollection<ExpenseLegendItem>(tempLegend);
 
                     CurrentMonthTotalDisplay = $"{monthChartTotal:N2}\n{defaultCurrency}";
                     HasExpensesThisMonth = ExpenseSeries.Count > 0;

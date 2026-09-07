@@ -13,16 +13,18 @@ public partial class AddTransactionPage : ContentPage
         BindingContext = _viewModel;
     }
 
-    //protected override async void OnAppearing()
-    //{
-    //    base.OnAppearing();
-    //    await _viewModel.LoadDataAsync();
-    //    if (string.IsNullOrEmpty(AmountEntry.Text))
-    //    {
-    //        await Task.Delay(100);
-    //        AmountEntry.Focus();
-    //    }
-    //}
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        // Używamy opóźnienia rzędu 100ms. Daje to czas systemowi Android 
+        // na poprawne wyrenderowanie widoku przed żądaniem wysunięcia klawiatury.
+        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+        {
+            // Metoda Focus() ustawia kursor w polu.
+            // Ponieważ Entry ma Keyboard="Numeric", Android natychmiast wysunie klawiaturę numeryczną.
+            AmountEntry.Focus();
+        });
+    }
 
     protected override void OnNavigatedTo(NavigatedToEventArgs args)
     {

@@ -18,7 +18,11 @@ public partial class HomePage : ContentPage
     {
         base.OnAppearing();
         // Pobiera na żywo najświeższe dane za każdym razem, gdy użytkownik wraca na stronę główną
-        await _viewModel.LoadDataAsync();
+        //await _viewModel.LoadDataAsync();
+        if (BindingContext is ViewModels.HomeViewModel vm)
+        {
+            await vm.LoadDataIfNeededAsync();
+        }
     }
 
     

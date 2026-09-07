@@ -18,7 +18,7 @@ public partial class TransactionsPage : ContentPage
         if (BindingContext is ViewModels.TransactionsViewModel vm)
         {
             // Wymuszamy ponowne pobranie danych z bazy i nałożenie filtrów
-            await vm.LoadDataAsync();
+            await vm.LoadDataIfNeededAsync();
         }
     }
 

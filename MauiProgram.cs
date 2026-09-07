@@ -69,6 +69,7 @@ namespace ExpenseTracker
             builder.Services.AddTransient<IValidator<AccountsViewModel>, AccountsValidator>();
             builder.Services.AddTransient<IValidator<CategoriesViewModel>, CategoriesValidator>();
             builder.Services.AddTransient<IValidator<ProjectsViewModel>, ProjectsValidator>();
+            builder.Services.AddTransient<IValidator<ExchangeRatesViewModel>, ExchangeRatesValidator>();
 
             return builder.Build();
         }

@@ -504,4 +504,22 @@
   <data name="ErrorGeneral" xml:space="preserve">
     <value>Wystąpił błąd.</value>
   </data>
+  <data name="ValErrorSourceCurrency" xml:space="preserve">
+    <value>Wybierz walutę źródłową.</value>
+  </data>
+  <data name="ValErrorInvalidCurrency" xml:space="preserve">
+    <value>Wybierz poprawną walutę.</value>
+  </data>
+  <data name="ValErrorTargetCurrency" xml:space="preserve">
+    <value>Wybierz walutę docelową.</value>
+  </data>
+  <data name="ValErrorSameCurrency" xml:space="preserve">
+    <value>Waluty źródłowa i docelowa muszą się różnić.</value>
+  </data>
+  <data name="ValErrorRateRequired" xml:space="preserve">
+    <value>Podaj kurs wymiany.</value>
+  </data>
+  <data name="ValErrorInvalidRate" xml:space="preserve">
+    <value>Kurs musi być prawidłową liczbą większą od zera.</value>
+  </data>
 </root>

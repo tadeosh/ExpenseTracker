@@ -3,17 +3,31 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
              xmlns:controls="clr-namespace:ExpenseTracker.Controls"
+             xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
              x:Class="ExpenseTracker.Views.ExchangeRatesPage"
              Title="{x:Static strings:AppResources.ManageExchangeRatesTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}"
              HideSoftInputOnTapped="True">
 
-    <Grid RowDefinitions="Auto, *" Margin="15">
+    <!-- ZMIANA: Tytuł z przyciskiem (+) jak w Projektach -->
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="*, Auto" Padding="0,0,15,0">
+            <Label Grid.Column="0" Text="{x:Static strings:AppResources.ManageExchangeRatesTitle}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource HeaderTextColor}" VerticalOptions="Center" />
+            <Path Grid.Column="1" Data="M 12 5 L 12 19 M 5 12 L 19 12" Fill="Transparent" Stroke="{DynamicResource HeaderTextColor}" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="24" HeightRequest="24" VerticalOptions="Center" HorizontalOptions="End">
+                <Path.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenAddFormCommand}" />
+                </Path.GestureRecognizers>
+            </Path>
+        </Grid>
+    </Shell.TitleView>
 
-        <Border Grid.Row="0" Padding="15" StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" Margin="0,0,0,15">
+    <VerticalStackLayout Spacing="0">
+
+        <!-- FORMULARZ DODAWANIA / EDYCJI (Ukrywalny) -->
+        <VerticalStackLayout Padding="20" Spacing="15" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsFormVisible}">
             <VerticalStackLayout Spacing="10">
                 <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
-
+                    <!-- Wybór walut (Picker) -->
                     <VerticalStackLayout Grid.Column="0" Spacing="2">
                         <Label Text="{x:Static strings:AppResources.SourceCurrencyLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
                         <Grid>
@@ -21,7 +35,6 @@
                             <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
                         </Grid>
                     </VerticalStackLayout>
-
                     <VerticalStackLayout Grid.Column="1" Spacing="2">
                         <Label Text="{x:Static strings:AppResources.TargetCurrencyLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
                         <Grid>
@@ -29,46 +42,109 @@
                             <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
                         </Grid>
                     </VerticalStackLayout>
-
                 </Grid>
 
                 <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
                     <Entry Grid.Column="0" Placeholder="{x:Static strings:AppResources.RateLabel}" Text="{Binding RateText}" Keyboard="Numeric" TextColor="{DynamicResource AppTextColor}" ReturnType="Done"/>
                     <DatePicker Grid.Column="1" Date="{Binding SelectedDate}" TextColor="{DynamicResource AppTextColor}"/>
                 </Grid>
-
-                <Button Text="{x:Static strings:AppResources.AddRateBtn}" Command="{Binding SaveRateCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource HeaderTextColor}" Margin="0,10,0,0"/>
             </VerticalStackLayout>
-        </Border>
 
-        <CollectionView Grid.Row="1" ItemsSource="{Binding Rates}">
+            <!-- ZBIORCZY KOMUNIKAT BŁĘDU (Pojawia się tylko gdy są błędy) -->
+            <Label Text="{Binding FormError}" TextColor="#D32F2F" FontSize="12" HorizontalTextAlignment="Center" Margin="0,5,0,5">
+                <Label.Triggers>
+                    <DataTrigger TargetType="Label" Binding="{Binding FormError}" Value="{x:Null}">
+                        <Setter Property="IsVisible" Value="False" />
+                    </DataTrigger>
+                </Label.Triggers>
+            </Label>
+
+            <!-- PRZYCISKI AKCJI -->
+            <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
+                <Button Grid.Column="0" Text="{x:Static strings:AppResources.AddRateBtn}" Command="{Binding SaveRateCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="White">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding IsEditing}" Value="True">
+                            <Setter Property="IsVisible" Value="False" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+                <Button Grid.Column="0" Text="{x:Static strings:AppResources.SaveChangesBtn}" Command="{Binding SaveRateCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="White" IsVisible="{Binding IsEditing}" />
+                <Button Grid.Column="1" Text="{x:Static strings:AppResources.CancelBtn}" Command="{Binding CancelEditCommand}" BackgroundColor="Transparent" TextColor="{DynamicResource AppTextColor}" />
+            </Grid>
+        </VerticalStackLayout>
+
+        <!-- LISTA KURSÓW -->
+        <CollectionView ItemsSource="{Binding Rates}" Margin="20" VerticalOptions="Fill">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Border Margin="0,0,0,10" Padding="15" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
-                        <Grid ColumnDefinitions="*, Auto, Auto" ColumnSpacing="10">
+                <DataTemplate x:DataType="viewmodels:ExchangeRateDisplayItem">
+                    <Border Margin="0,0,0,10" Padding="15,10" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                        <Grid ColumnDefinitions="Auto, *, Auto, Auto" ColumnSpacing="15">
 
-                            <VerticalStackLayout Grid.Column="0" VerticalOptions="Center">
+                            <!-- 1. Ikona Usuwania (Rotacja) -->
+                            <Path Grid.Column="0" Data="M 12 22 c 5.523 0 10 -4.477 10 -10 S 17.523 2 12 2 S 2 6.477 2 12 s 4.477 10 10 10 z M 8 12 h 8" Fill="Transparent" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" VerticalOptions="Center" HorizontalOptions="Center" Rotation="{Binding MinusRotation}">
+                                <Path.Stroke>
+                                    <SolidColorBrush Color="#D32F2F" />
+                                </Path.Stroke>
+                                <Path.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ExchangeRatesViewModel}}, Path=ToggleDeleteModeCommand}" CommandParameter="{Binding .}"/>
+                                </Path.GestureRecognizers>
+                            </Path>
+
+                            <!-- 2. Główne informacje -->
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
                                 <HorizontalStackLayout Spacing="5">
-                                    <Label Text="{Binding SourceCurrency}" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}"/>
+                                    <Label Text="{Binding ExchangeRate.SourceCurrency}" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}"/>
                                     <Label Text="➔" FontSize="16" TextColor="{DynamicResource AppTextColor}" Opacity="0.5"/>
-                                    <Label Text="{Binding TargetCurrency}" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}"/>
+                                    <Label Text="{Binding ExchangeRate.TargetCurrency}" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}"/>
                                 </HorizontalStackLayout>
-                                <Label Text="{Binding Date, StringFormat='{0:dd.MM.yyyy}'}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.6"/>
+                                <Label Text="{Binding ExchangeRate.Date, StringFormat='{0:dd.MM.yyyy}'}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.6"/>
                             </VerticalStackLayout>
 
-                            <Label Grid.Column="1" Text="{Binding Rate, StringFormat='{0:N4}'}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource PrimaryColor}" VerticalOptions="Center"/>
+                            <!-- 3. Kwota Kursu (Ukrywana w trybie usuwania) -->
+                            <Label Grid.Column="2" Text="{Binding ExchangeRate.Rate, StringFormat='{0:N4}'}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource PrimaryColor}" VerticalOptions="Center">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsDeleteMode}" Value="True">
+                                        <Setter Property="IsVisible" Value="False" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
 
-                            <ImageButton Grid.Column="2" 
-                                         Source="dotnet_bot.png" 
-                                         WidthRequest="24" HeightRequest="24" 
-                                         VerticalOptions="Center"
-                                         Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.DeleteRateCommand}"
-                                         CommandParameter="{Binding .}">
-                            </ImageButton>
+                            <!-- 4. Przyciski Edycji / Potwierdzenia usunięcia -->
+                            <Grid Grid.Column="3" VerticalOptions="Center" WidthRequest="36" HeightRequest="36">
+                                <!-- Tryb Edycji -->
+                                <Border StrokeThickness="0" BackgroundColor="Transparent" Padding="0">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsDeleteMode}" Value="True">
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Path Data="M 12 20 L 21 20 M 16.5 3.5 L 20.5 7.5 L 8.5 19.5 L 3.5 20.5 L 4.5 15.5 Z M 14.5 5.5 L 18.5 9.5" Fill="Transparent" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center">
+                                        <Path.Stroke>
+                                            <SolidColorBrush Color="{DynamicResource AppTextColor}" />
+                                        </Path.Stroke>
+                                    </Path>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ExchangeRatesViewModel}}, Path=EditRateCommand}" CommandParameter="{Binding .}"/>
+                                    </Border.GestureRecognizers>
+                                </Border>
+
+                                <!-- Tryb Usuwania -->
+                                <Border StrokeShape="RoundRectangle 8" BackgroundColor="#D32F2F" StrokeThickness="0" IsVisible="{Binding IsDeleteMode}">
+                                    <Path Data="M 3 6 h 18 M 19 6 v 14 c 0 1 -1 2 -2 2 H 7 c -1 0 -2 -1 -2 -2 V 6 M 8 6 V 4 c 0 -1 1 -2 2 -2 h 4 c 1 0 2 1 2 2 v 2 M 10 11 v 6 M 14 11 v 6" Fill="Transparent" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" HorizontalOptions="Center" VerticalOptions="Center">
+                                        <Path.Stroke>
+                                            <SolidColorBrush Color="#FFFFFF" />
+                                        </Path.Stroke>
+                                    </Path>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ExchangeRatesViewModel}}, Path=DeleteRateCommand}" CommandParameter="{Binding .}" />
+                                    </Border.GestureRecognizers>
+                                </Border>
+                            </Grid>
+
                         </Grid>
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-    </Grid>
+    </VerticalStackLayout>
 </ContentPage>

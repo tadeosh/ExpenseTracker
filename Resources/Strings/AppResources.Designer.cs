@@ -1159,6 +1159,60 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Choose the correct currency..
+        /// </summary>
+        internal static string ValErrorInvalidCurrency {
+            get {
+                return ResourceManager.GetString("ValErrorInvalidCurrency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The exchange rate must be a valid number greater than zero..
+        /// </summary>
+        internal static string ValErrorInvalidRate {
+            get {
+                return ResourceManager.GetString("ValErrorInvalidRate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Provide the exchange rate..
+        /// </summary>
+        internal static string ValErrorRateRequired {
+            get {
+                return ResourceManager.GetString("ValErrorRateRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The source and target currencies must be different..
+        /// </summary>
+        internal static string ValErrorSameCurrency {
+            get {
+                return ResourceManager.GetString("ValErrorSameCurrency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Choose the source currency..
+        /// </summary>
+        internal static string ValErrorSourceCurrency {
+            get {
+                return ResourceManager.GetString("ValErrorSourceCurrency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Choose the target currency..
+        /// </summary>
+        internal static string ValErrorTargetCurrency {
+            get {
+                return ResourceManager.GetString("ValErrorTargetCurrency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Warning.
         /// </summary>
         internal static string WarningTitle {

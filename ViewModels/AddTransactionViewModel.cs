@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using ExpenseTracker.Messages;
 using ExpenseTracker.Models;
 using ExpenseTracker.Resources.Strings;
 using ExpenseTracker.Services.Interfaces;
@@ -442,6 +444,8 @@ namespace ExpenseTracker.ViewModels
             };
 
             await _databaseService.SaveTransactionAsync(transaction);
+            // NOWOŚĆ: Powiadomienie reszty aplikacji o zmianie
+            WeakReferenceMessenger.Default.Send(new TransactionsChangedMessage());
             await CloseFormSafeAsync();
         }
 

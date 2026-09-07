@@ -137,6 +137,7 @@
   </data>
   <data name="AddRateBtn" xml:space="preserve">
     <value>Add Exchange Rate</value>
+    <comment>ExchangeRatePage</comment>
   </data>
   <data name="AddTransactionTitle" xml:space="preserve">
     <value>New Transaction</value>
@@ -201,6 +202,7 @@
   </data>
   <data name="ManageExchangeRatesTitle" xml:space="preserve">
     <value>Exchange Rates</value>
+    <comment>SettingsPage</comment>
   </data>
   <data name="ManageFavoriteCurrenciesBtn" xml:space="preserve">
     <value>Manage Favorite Currencies</value>
@@ -321,12 +323,15 @@
   </data>
   <data name="MissingRatesMsgPart1" xml:space="preserve">
     <value>The application used an emergency 1:1 conversion rate for the following currencies because their rates are missing in the database:</value>
+    <comment>HomePage</comment>
   </data>
   <data name="MissingRatesMsgPart2" xml:space="preserve">
     <value>Add the missing rates in the settings to calculate the total net worth correctly.</value>
+    <comment>HomePage</comment>
   </data>
   <data name="MissingRatesTitle" xml:space="preserve">
     <value>Missing exchange rates</value>
+    <comment>HomePage</comment>
   </data>
   <data name="UnderstoodBtn" xml:space="preserve">
     <value>Got it</value>
@@ -369,6 +374,7 @@
   </data>
   <data name="DestroyDataBtn" xml:space="preserve">
     <value>DESTROY DATA</value>
+    <comment>SettingsPage</comment>
   </data>
   <data name="WipeDataSuccessMessage" xml:space="preserve">
     <value>The application has been restored to factory settings.</value>
@@ -531,5 +537,29 @@
   </data>
   <data name="ErrorGeneral" xml:space="preserve">
     <value>An error has occured.</value>
+  </data>
+  <data name="ValErrorSourceCurrency" xml:space="preserve">
+    <value>Choose the source currency.</value>
+    <comment>ExchangeRateValidator</comment>
+  </data>
+  <data name="ValErrorInvalidCurrency" xml:space="preserve">
+    <value>Choose the correct currency.</value>
+    <comment>ExchangeRateValidator</comment>
+  </data>
+  <data name="ValErrorTargetCurrency" xml:space="preserve">
+    <value>Choose the target currency.</value>
+    <comment>ExchangeRateValidator</comment>
+  </data>
+  <data name="ValErrorSameCurrency" xml:space="preserve">
+    <value>The source and target currencies must be different.</value>
+    <comment>ExchangeRateValidator</comment>
+  </data>
+  <data name="ValErrorRateRequired" xml:space="preserve">
+    <value>Provide the exchange rate.</value>
+    <comment>ExchangeRateValidator</comment>
+  </data>
+  <data name="ValErrorInvalidRate" xml:space="preserve">
+    <value>The exchange rate must be a valid number greater than zero.</value>
+    <comment>ExchangeRateValidator</comment>
   </data>
 </root>

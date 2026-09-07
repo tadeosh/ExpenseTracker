@@ -1,12 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using ExpenseTracker.Helpers;
+using ExpenseTracker.Messages;
 using ExpenseTracker.Models;
 using ExpenseTracker.Resources.Strings;
 using ExpenseTracker.Services.Interfaces;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace ExpenseTracker.ViewModels
 {
@@ -23,7 +25,10 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial string AccountName { get; set; } = "...";
 
-        public ObservableCollection<TransactionDisplayItem> Transactions { get; } = new();
+        [ObservableProperty]
+        public partial ObservableCollection<TransactionDisplayItem> Transactions { get; set; } = new();
+
+        private bool _needsReload = true; // Flaga chroniąca przed podwójnym ładowaniem
 
         [ObservableProperty] public partial string SearchText { get; set; } = string.Empty;
         [ObservableProperty] public partial string MinAmountText { get; set; } = string.Empty;
@@ -53,6 +58,32 @@ namespace ExpenseTracker.ViewModels
         public TransactionsViewModel(IDatabaseService databaseService)
         {
             _databaseService = databaseService;
+            // Rejestracja do nasłuchiwania zmian
+            WeakReferenceMessenger.Default.Register<TransactionsViewModel, TransactionsChangedMessage>(this, (r, m) =>
+            {
+                // Teraz kompilator wie, że 'r' to TransactionsViewModel, więc ma dostęp do pola
+                r._needsReload = true;
+            });
+        }
+
+        // Odbiór wiadomości z AddTransactionViewModel
+        public void Receive(TransactionsChangedMessage message)
+        {
+            // Nie ładujemy danych od razu! Zaznaczamy tylko, że widok jest "brudny".
+            _needsReload = true;
+        }
+
+        // Tę metodę powinieneś wywoływać w np. w OnNavigatedTo na stronie TransactionsPage
+        public async Task LoadDataIfNeededAsync()
+        {
+            if (!_needsReload) return;
+
+            // Zabezpieczenie animacji: Czekamy 300ms aż animacja przejścia MAUI (Slide) w 100% się zakończy!
+            await Task.Delay(300);
+
+           // await FetchAndApplyFiltersAsync();
+           await LoadDataAsync();
+            _needsReload = false;
         }
 
         public async Task LoadDataAsync()
@@ -241,33 +272,34 @@ namespace ExpenseTracker.ViewModels
                 _isAscending);
 
             // Błyskawiczne mapowanie z DTO do modelu widoku
-            var displayItems = rawData.Select(dto => new TransactionDisplayItem
+            var newCollection = await Task.Run(() =>
             {
-                Transaction = new Transaction
+                var displayItems = rawData.Select(dto => new TransactionDisplayItem
                 {
-                    Id = dto.Id,
-                    Amount = dto.Amount,
-                    Date = dto.Date,
-                    Type = (TransactionType)dto.Type,
-                    AccountId = dto.AccountId
-                },
-                CategoryName = dto.CategoryName,
-                ProjectName = dto.ProjectName,
-                AccountName = dto.AccountName,
-                Description = dto.Description,
-                ShowAccount = IsGlobalView,
-                SignedAmount = dto.SignedAmount,
-                IsTransferIn = dto.IsTransferIn,
-                Currency = dto.AccountCurrency ?? "" // NOWOŚĆ
-            }).ToList();
+                    Transaction = new Transaction
+                    {
+                        Id = dto.Id,
+                        Amount = dto.Amount,
+                        Date = dto.Date,
+                        Type = (TransactionType)dto.Type,
+                        AccountId = dto.AccountId
+                    },
+                    CategoryName = dto.CategoryName,
+                    ProjectName = dto.ProjectName,
+                    AccountName = dto.AccountName,
+                    Description = dto.Description,
+                    ShowAccount = IsGlobalView,
+                    SignedAmount = dto.SignedAmount,
+                    IsTransferIn = dto.IsTransferIn,
+                    Currency = dto.AccountCurrency ?? "" // NOWOŚĆ
+                }).ToList();
+                return new ObservableCollection<TransactionDisplayItem>(displayItems);
+            });
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                Transactions.Clear();
-                foreach (var item in displayItems)
-                {
-                    Transactions.Add(item);
-                }
+
+                Transactions = newCollection;
             });
         }
 
@@ -279,10 +311,10 @@ namespace ExpenseTracker.ViewModels
                 return;
 
             var navParams = new Dictionary<string, object>
-    {
-        // Przekazujemy ID transakcji jako string, tak jak radzi MAUI Shell Navigation
-        { "TransactionId", item.Transaction.Id.ToString() }
-    };
+            {
+                // Przekazujemy ID transakcji jako string, tak jak radzi MAUI Shell Navigation
+                { "TransactionId", item.Transaction.Id.ToString() }
+            };
 
             // Nawigacja do formularza w trybie edycji (oczekujemy, że AddTransactionPage potrafi obsłużyć ten parametr)
             await Shell.Current.GoToAsync(RoutesHelper.AddTransactionPage, navParams);
