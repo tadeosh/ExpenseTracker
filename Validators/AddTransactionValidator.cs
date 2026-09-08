@@ -39,8 +39,8 @@ namespace ExpenseTracker.Validators
 
                 When(x => x.HasEndDate, () =>
                 {
-                    RuleFor(x => x.EndDate)
-                        .GreaterThan(x => x.SelectedDate)
+                    RuleFor(x => x.EndDate.Date)
+                        .GreaterThan(x => x.SelectedDate.Date)
                         .WithMessage(AppResources.ValErrorEndDateTooEarly ?? "Data zakończenia musi być późniejsza niż data pierwszej transakcji.");
                 });
             });

@@ -8,10 +8,23 @@ using ExpenseTracker.Services.Interfaces;
 using FluentValidation;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using ExpenseTracker.ViewModels;
+using ExpenseTracker.Helpers;
 
 
 namespace ExpenseTracker.ViewModels
-{    
+{
+    // Czysty model reprezentujący pozycję w Pickerze
+    public class UnitDisplayItem
+    {
+        public RecurrenceUnit Unit { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
+
+        // Nadpisanie Equals, aby Picker w MAUI prawidłowo rozpoznawał SelectedItem
+        public override bool Equals(object? obj) => obj is UnitDisplayItem other && Unit == other.Unit;
+        public override int GetHashCode() => Unit.GetHashCode();
+    }
+    // ================ klasa główna ViewModel dla AddTransactionPage =========================
     public partial class AddTransactionViewModel : ObservableObject, IQueryAttributable
     {
         private readonly IDatabaseService _databaseService;
@@ -97,25 +110,18 @@ namespace ExpenseTracker.ViewModels
         // Tekst, aby walidator mógł sprawdzić czy pole nie jest puste
         [ObservableProperty]
         public partial string RecurrenceIntervalText { get; set; } = "1";
-        
-        public ObservableCollection<string> RecurrenceUnits { get; } = new()
-        {
-            "Dni",
-            "Tygodnie",
-            "Miesiące",
-            "Lata"
-            // Jeśli używasz AppResources:
-            // AppResources.UnitDays ?? "Dni", itp.
-        };
+
+        // 1. ZMIANA: Zamiast ObservableCollection<string>, używamy naszej klasy
+        public ObservableCollection<UnitDisplayItem> RecurrenceUnits { get; } = new();
 
         [ObservableProperty]
-        public partial string SelectedRecurrenceUnit { get; set; } // Domyślnie "Miesiące"
+        public partial UnitDisplayItem? SelectedRecurrenceUnit { get; set; }
 
         [ObservableProperty]
         public partial bool HasEndDate { get; set; } = false;
 
         [ObservableProperty]
-        public partial DateTime EndDate { get; set; } = DateTime.Today.AddYears(1);
+        public partial DateTime EndDate { get; set; } = DateTime.Today.AddDays(1);
 
         [ObservableProperty]
         public partial string CurrencyConversionLabel { get; set; } = string.Empty;
@@ -132,17 +138,44 @@ namespace ExpenseTracker.ViewModels
             _databaseService = databaseService;
             _validator = validator;
 
-            SelectedRecurrenceUnit = RecurrenceUnits[2];
+            UpdateUnitDisplayNames();
         }
 
-        // Metoda pomocnicza zamieniająca tekst z Pickera na Enum
-        private RecurrenceUnit MapUnit(string selectedUnit)
+        // Metody pomocnicze do odmiany jednostek cykliczności
+        // 2. NOWOŚĆ: Reakcja na wpisanie nowej liczby interwału (np. z "1" na "2")
+        // Ta metoda wyzwala się automatycznie za każdym razem gdy pole RecurrenceIntervalText zmieni wartość!
+        partial void OnRecurrenceIntervalTextChanged(string value)
         {
-            if (selectedUnit.Contains("Dni", StringComparison.OrdinalIgnoreCase)) return RecurrenceUnit.Days;
-            if (selectedUnit.Contains("Tygodni", StringComparison.OrdinalIgnoreCase)) return RecurrenceUnit.Weeks;
-            if (selectedUnit.Contains("Lat", StringComparison.OrdinalIgnoreCase)) return RecurrenceUnit.Years;
+            UpdateUnitDisplayNames();
+        }
 
-            return RecurrenceUnit.Months;
+        // 3. Metoda przebudowująca teksty w Pickerze
+        private void UpdateUnitDisplayNames()
+        {
+            // Wyłuskujemy wartość lub dajemy 1
+            int interval = int.TryParse(RecurrenceIntervalText, out int result) && result > 0 ? result : 1;
+
+            // Zapamiętujemy, jaki Enum był wybrany przed przebudową
+            var currentUnit = SelectedRecurrenceUnit?.Unit ?? RecurrenceUnit.Months;
+
+            // Tworzymy nową listę z odpowiednią gramatyką
+            var newItems = new List<UnitDisplayItem>
+            {
+                new() { Unit = RecurrenceUnit.Days, DisplayName = PluralizationHelper.GetUnitDisplayName(RecurrenceUnit.Days, interval) },
+                new() { Unit = RecurrenceUnit.Weeks, DisplayName = PluralizationHelper.GetUnitDisplayName(RecurrenceUnit.Weeks, interval) },
+                new() { Unit = RecurrenceUnit.Months, DisplayName = PluralizationHelper.GetUnitDisplayName(RecurrenceUnit.Months, interval) },
+                new() { Unit = RecurrenceUnit.Years, DisplayName = PluralizationHelper.GetUnitDisplayName(RecurrenceUnit.Years, interval) }
+            };
+
+            // Zastępujemy kolekcję
+            RecurrenceUnits.Clear();
+            foreach (var item in newItems)
+            {
+                RecurrenceUnits.Add(item);
+            }
+
+            // Przywracamy wybór (dzięki metodzie Equals w UnitDisplayItem znajdzie odpowiedni obiekt)
+            SelectedRecurrenceUnit = RecurrenceUnits.FirstOrDefault(x => x.Unit == currentUnit);
         }
 
         // Metoda do czyszczenia błędów przed kolejną próbą zapisu
@@ -198,8 +231,15 @@ namespace ExpenseTracker.ViewModels
 
         partial void OnSelectedAccountChanged(Account? value) => CheckCurrencyConversion();
         partial void OnDestinationAccountChanged(Account? value) => CheckCurrencyConversion();
-        partial void OnSelectedDateChanged(DateTime value) => CheckCurrencyConversion();
-
+        partial void OnSelectedDateChanged(DateTime value)
+        {
+            CheckCurrencyConversion();
+            // NOWOŚĆ: Jeśli użytkownik cofa datę transakcji, a EndDate jest za blisko, zsynchronizuj ją
+            if (EndDate <= value)
+            {
+                EndDate = value.AddDays(1);
+            }
+        }
         // ZMIANA: Usuwamy "async void" i opakowujemy logikę!
         private void CheckCurrencyConversion()
         {
@@ -294,7 +334,9 @@ namespace ExpenseTracker.ViewModels
 
                     // Mapowanie specyficzne dla cykli
                     RecurrenceIntervalText = existingRec.RecurrenceInterval.ToString();
-                    SelectedRecurrenceUnit = RecurrenceUnits.FirstOrDefault(u => MapUnit(u) == existingRec.RecurrenceUnit) ?? RecurrenceUnits[2];
+                    
+                    SelectedRecurrenceUnit = RecurrenceUnits.FirstOrDefault(u => u.Unit == existingRec.RecurrenceUnit)
+                                 ?? RecurrenceUnits.FirstOrDefault(u => u.Unit == RecurrenceUnit.Months);
 
                     if (existingRec.EndDate.HasValue)
                     {
@@ -452,8 +494,9 @@ namespace ExpenseTracker.ViewModels
             IsProjectDropdownOpen = false;
             SubProjects.Clear();
         }
-        // end prjekty
+        // ========================end prjekty
 
+        // ======================== ZAPIS TRANSAKCJI =========================================
         [RelayCommand]
         private async Task SaveTransactionAsync()
         {
@@ -519,12 +562,13 @@ namespace ExpenseTracker.ViewModels
                     Type = type,
                     Description = DescriptionText,
                     AccountId = SelectedAccount!.Id,
+                    DestinationAccountId = type == TransactionType.Transfer ? DestinationAccount?.Id : null,
                     CategoryId = SelectedCategory?.Id,
                     ProjectId = SelectedProject?.Id,
 
                     RecurrenceInterval = int.Parse(RecurrenceIntervalText),
-                    RecurrenceUnit = MapUnit(SelectedRecurrenceUnit),
-                    EndDate = HasEndDate ? EndDate : null,
+                    RecurrenceUnit = SelectedRecurrenceUnit?.Unit ?? RecurrenceUnit.Months,
+                    EndDate = HasEndDate ? EndDate.Date : null,
                     IsActive = true
                 };
 
@@ -538,7 +582,7 @@ namespace ExpenseTracker.ViewModels
                 else
                 {
                     // Nowa transakcja - startujemy od daty wybranej w UI
-                    recurringTemplate.NextDueDate = SelectedDate;
+                    recurringTemplate.NextDueDate = SelectedDate.Date;
                 }
 
                 await _databaseService.SaveRecurringTransactionAsync(recurringTemplate);

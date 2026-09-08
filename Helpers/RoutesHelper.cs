@@ -9,4 +9,6 @@ public static class RoutesHelper
     public const string TransactionsPage = "TransactionsPage";
     public const string AddTransactionPage = "AddTransactionPage";
     public const string AccountTransactionsRoute = "AccountTransactionsPage";
+    public const string RecurringTransactionsPage = "RecurringTransactionsPage";
+    public const string ReportsPage = "ReportsPage";
 }

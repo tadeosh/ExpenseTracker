@@ -51,6 +51,11 @@ namespace ExpenseTracker
                     catch (Exception ex)
                     {
                         System.Diagnostics.Debug.WriteLine($"[RecurringEngine Error]: {ex.Message}");
+                        // Wypchnięcie błędu na główny wątek, aby Developer go zobaczył na urządzeniu!
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            Shell.Current?.DisplayAlertAsync("Błąd Silnika", ex.Message, "OK");
+                        });
                     }
                 });
             };

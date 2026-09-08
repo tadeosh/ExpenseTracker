@@ -22,6 +22,8 @@ namespace ExpenseTracker.Models
         public TransactionType Type { get; set; } // Mapowane na TransactionType
         public string Description { get; set; } = string.Empty;
         public int AccountId { get; set; }
+        // DODANE: Obsługa transferów
+        public int? DestinationAccountId { get; set; }
         public int? CategoryId { get; set; }
         public int? ProjectId { get; set; }
 

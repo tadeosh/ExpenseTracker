@@ -534,4 +534,58 @@
   <data name="RecurringTransactionsTitle" xml:space="preserve">
     <value>Wiederkehrende Transaktionen</value>
   </data>
+  <data name="UnitDays_1" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="UnitDays_2" xml:space="preserve">
+    <value>Tage</value>
+  </data>
+  <data name="UnitDays_5" xml:space="preserve">
+    <value>Tage</value>
+  </data>
+  <data name="RecurringTransactionLabel" xml:space="preserve">
+    <value>Wiederkehrende Transaktion</value>
+  </data>
+  <data name="RecurringTransactionUnitLabel" xml:space="preserve">
+    <value>Wiederholen alle</value>
+  </data>
+  <data name="EndDateLabel" xml:space="preserve">
+    <value>Enddatum</value>
+  </data>
+  <data name="UnitWeeks_1" xml:space="preserve">
+    <value>Woche</value>
+  </data>
+  <data name="UnitWeeks_2" xml:space="preserve">
+    <value>Wochen</value>
+  </data>
+  <data name="UnitWeeks_5" xml:space="preserve">
+    <value>Wochen</value>
+  </data>
+  <data name="UnitYears_1" xml:space="preserve">
+    <value>Jahr</value>
+  </data>
+  <data name="UnitYears_2" xml:space="preserve">
+    <value>Jahre</value>
+  </data>
+  <data name="UnitYears_5" xml:space="preserve">
+    <value>Jahre</value>
+  </data>
+  <data name="UnitMonths_1" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="UnitMonths_2" xml:space="preserve">
+    <value>Monate</value>
+  </data>
+  <data name="UnitMonths_5" xml:space="preserve">
+    <value>Monate</value>
+  </data>
+  <data name="NextDueDateLabel" xml:space="preserve">
+    <value>Nächste:</value>
+  </data>
+  <data name="Suspend_Resume" xml:space="preserve">
+    <value>Aussetzen / fortsetzen</value>
+  </data>
+  <data name="ReportsPageTitle" xml:space="preserve">
+    <value>Berichte</value>
+  </data>
 </root>

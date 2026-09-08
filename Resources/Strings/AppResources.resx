@@ -577,4 +577,75 @@
   <data name="RecurringTransactionsTitle" xml:space="preserve">
     <value>Recurring transactions</value>
   </data>
+  <data name="UnitDays_1" xml:space="preserve">
+    <value>Day</value>
+    <comment>AddTransactionViewModel</comment>
+  </data>
+  <data name="UnitDays_2" xml:space="preserve">
+    <value>Days</value>
+    <comment>AddTransactionViewModel</comment>
+  </data>
+  <data name="UnitDays_5" xml:space="preserve">
+    <value>Days</value>
+    <comment>AddTransactionViewModel</comment>
+  </data>
+  <data name="RecurringTransactionLabel" xml:space="preserve">
+    <value>Reecurring transaction</value>
+    <comment>AddTransactionPage</comment>
+  </data>
+  <data name="RecurringTransactionUnitLabel" xml:space="preserve">
+    <value>Repeat every</value>
+    <comment>AddTransactionPage</comment>
+  </data>
+  <data name="EndDateLabel" xml:space="preserve">
+    <value>End date</value>
+    <comment>AddTransactionPage</comment>
+  </data>
+  <data name="UnitWeeks_1" xml:space="preserve">
+    <value>Week</value>
+    <comment>AddTransactionViewModel</comment>
+  </data>
+  <data name="UnitWeeks_2" xml:space="preserve">
+    <value>Weeks</value>
+    <comment>AddTransactionViewModel</comment>
+  </data>
+  <data name="UnitWeeks_5" xml:space="preserve">
+    <value>Weeks</value>
+    <comment>AddTransactionViewModel</comment>
+  </data>
+  <data name="UnitYears_1" xml:space="preserve">
+    <value>Year</value>
+    <comment>AddTransactionViewModel</comment>
+  </data>
+  <data name="UnitYears_2" xml:space="preserve">
+    <value>Years</value>
+    <comment>AddTransactionViewModel</comment>
+  </data>
+  <data name="UnitYears_5" xml:space="preserve">
+    <value>Years</value>
+    <comment>AddTransactionViewModel</comment>
+  </data>
+  <data name="UnitMonths_1" xml:space="preserve">
+    <value>Month</value>
+    <comment>AddTransactionViewModel</comment>
+  </data>
+  <data name="UnitMonths_2" xml:space="preserve">
+    <value>Months</value>
+    <comment>AddTransactionViewModel</comment>
+  </data>
+  <data name="UnitMonths_5" xml:space="preserve">
+    <value>Months</value>
+    <comment>AddTransactionViewModel</comment>
+  </data>
+  <data name="NextDueDateLabel" xml:space="preserve">
+    <value>Next:</value>
+    <comment>RecurringTransactionsPage</comment>
+  </data>
+  <data name="Suspend_Resume" xml:space="preserve">
+    <value>Suspend / resume</value>
+    <comment>RecurringtransactionsPage</comment>
+  </data>
+  <data name="ReportsPageTitle" xml:space="preserve">
+    <value>Reports</value>
+  </data>
 </root>

@@ -19,7 +19,7 @@ namespace ExpenseTracker.Services
             var activeTemplates = await _databaseService.GetActiveRecurringTransactionsAsync();
             if (!activeTemplates.Any()) return;
 
-            var today = DateTime.Today;
+            var today = DateTime.Today; // Zawsze 00:00:00
             var transactionsToInsert = new List<Transaction>();
             var templatesToUpdate = new List<RecurringTransaction>();
 
@@ -27,26 +27,54 @@ namespace ExpenseTracker.Services
             {
                 bool hasChanges = false;
 
-                // Nadrabianie zaległości (Catch-up)
-                while (template.NextDueDate <= today && (template.EndDate == null || template.NextDueDate <= template.EndDate))
+                // Bezpieczne sprawdzanie samej daty bez części godzinowej
+                while (template.NextDueDate.Date <= today && (template.EndDate == null || template.NextDueDate.Date <= template.EndDate.Value.Date))
                 {
+                    decimal? applicableExchangeRate = null;
+                    string descriptionSuffix = string.Empty;
+
+                    // LOGIKA TRANSFERU I KURSÓW WALUT
+                    if (template.Type == TransactionType.Transfer && template.DestinationAccountId.HasValue)
+                    {
+                        var sourceAcc = await _databaseService.GetAccountAsync(template.AccountId);
+                        var destAcc = await _databaseService.GetAccountAsync(template.DestinationAccountId.Value);
+
+                        if (sourceAcc != null && destAcc != null && sourceAcc.Currency != destAcc.Currency)
+                        {
+                            // Pobieramy historyczny kurs na dzień wygenerowania zaległej transakcji
+                            var rate = await _databaseService.GetApplicableExchangeRateAsync(sourceAcc.Currency, destAcc.Currency, template.NextDueDate.Date);
+
+                            if (rate.HasValue)
+                            {
+                                applicableExchangeRate = rate.Value;
+                            }
+                            else
+                            {
+                                // Bezpiecznik: Brak kursu. Ustawiamy 1.0, by nie wysypać przeliczeń, i oznaczamy opis.
+                                applicableExchangeRate = 1.0m;
+                                descriptionSuffix = " [Brak ustalonego kursu]";
+                            }
+                        }
+                    }
+
                     transactionsToInsert.Add(new Transaction
                     {
                         Amount = template.Amount,
                         Type = (TransactionType)template.Type,
-                        Description = template.Description,
-                        Date = template.NextDueDate, // Data historyczna z momentu, gdy transakcja powinna mieć miejsce
+                        Description = template.Description + descriptionSuffix,
+                        Date = template.NextDueDate.Date,
                         AccountId = template.AccountId,
                         CategoryId = template.CategoryId,
-                        ProjectId = template.ProjectId
+                        ProjectId = template.ProjectId,
+                        DestinationAccountId = template.DestinationAccountId,
+                        ExchangeRate = applicableExchangeRate
                     });
 
-                    template.NextDueDate = CalculateNextDate(template.NextDueDate, template.RecurrenceInterval, template.RecurrenceUnit);
+                    template.NextDueDate = CalculateNextDate(template.NextDueDate.Date, template.RecurrenceInterval, template.RecurrenceUnit);
                     hasChanges = true;
                 }
 
-                // Dodatkowa ochrona: jeśli wyliczyliśmy daty poza EndDate, dezaktywujemy szablon
-                if (template.EndDate.HasValue && template.NextDueDate > template.EndDate.Value)
+                if (template.EndDate.HasValue && template.NextDueDate.Date > template.EndDate.Value.Date)
                 {
                     template.IsActive = false;
                     hasChanges = true;
@@ -57,15 +85,17 @@ namespace ExpenseTracker.Services
 
             if (transactionsToInsert.Any())
             {
-                // Bezpieczny, atomowy zapis wszystkiego naraz (błyskawiczne na Android/Windows)
                 await _databaseService.RunInTransactionAsync(conn =>
                 {
                     conn.InsertAll(transactionsToInsert);
                     conn.UpdateAll(templatesToUpdate);
                 });
 
-                // Odświeżamy UI dla ekranu głównego i listy transakcji
-                WeakReferenceMessenger.Default.Send(new TransactionsChangedMessage());
+                // Rozgłoszenie zmiany wymusza aktualizację UI 
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    WeakReferenceMessenger.Default.Send(new TransactionsChangedMessage());
+                });
             }
         }
 

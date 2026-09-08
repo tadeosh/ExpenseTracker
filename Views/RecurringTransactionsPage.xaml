@@ -2,32 +2,57 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:ExpenseTracker.Models"
+             xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
              xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
              x:DataType="viewmodels:RecurringTransactionsViewModel"
              x:Class="ExpenseTracker.Views.RecurringTransactionsPage"
-             Title="Transakcje Cykliczne"
+             Title="{x:Static strings:AppResources.RecurringTransactionsTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}">
 
     <!-- Grid pozwala na nałożenie przycisku (FAB) nad CollectionView -->
     <Grid>
         <CollectionView ItemsSource="{Binding Templates}" Margin="15">
             <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:RecurringTransaction">
+                <DataTemplate x:DataType="viewmodels:RecurringTransactionDisplayItem">
                     <SwipeView>
                         <SwipeView.RightItems>
                             <SwipeItems Mode="Reveal">
-                                <SwipeItem Text="Edytuj" BackgroundColor="#1E88E5" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.EditTemplateCommand}" CommandParameter="{Binding .}"/>
-                                <SwipeItem Text="Zawieś/Wznów" BackgroundColor="#F9A825" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.ToggleActiveStatusCommand}" CommandParameter="{Binding .}"/>
-                                <SwipeItem Text="Usuń" BackgroundColor="#E53935" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.DeleteTemplateCommand}" CommandParameter="{Binding .}"/>
+                                <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.EditTemplateCommand}" CommandParameter="{Binding .}">
+                                    <Grid BackgroundColor="#1E88E5" WidthRequest="60">
+                                        <Image Source="pencil_line.png" WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </Grid>
+                                </SwipeItemView>
+                                <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.ToggleActiveStatusCommand}" CommandParameter="{Binding .}">
+                                    <Grid BackgroundColor="#F9A825"  WidthRequest="60">
+                                        <Image Source="circle_power.png" WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </Grid>
+                                </SwipeItemView>
+                                <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.DeleteTemplateCommand}" CommandParameter="{Binding .}">
+                                    <Grid BackgroundColor="#E53935" WidthRequest="60">
+                                        <Image Source="trash.png" WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </Grid>
+                                </SwipeItemView>
                             </SwipeItems>
                         </SwipeView.RightItems>
 
                         <Border Padding="15" Margin="0,0,0,10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
                             <FlyoutBase.ContextFlyout>
                                 <MenuFlyout>
-                                    <MenuFlyoutItem Text="Edytuj" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.EditTemplateCommand}" CommandParameter="{Binding .}"/>
-                                    <MenuFlyoutItem Text="Zawieś / Wznów" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.ToggleActiveStatusCommand}" CommandParameter="{Binding .}"/>
-                                    <MenuFlyoutItem Text="Usuń" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.DeleteTemplateCommand}" CommandParameter="{Binding .}"/>
+                                    <MenuFlyoutItem Text="{x:Static strings:AppResources.Edit}" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.EditTemplateCommand}" CommandParameter="{Binding .}">
+                                        <MenuFlyoutItem.IconImageSource>
+                                            <FileImageSource File="pencil_line.png" />
+                                        </MenuFlyoutItem.IconImageSource>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="{x:Static strings:AppResources.Suspend_Resume}" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.ToggleActiveStatusCommand}" CommandParameter="{Binding .}">
+                                        <MenuFlyoutItem.IconImageSource>
+                                            <FileImageSource File="circle_power.png" />
+                                        </MenuFlyoutItem.IconImageSource>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="{x:Static strings:AppResources.Delete}" Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.DeleteTemplateCommand}" CommandParameter="{Binding .}">
+                                        <MenuFlyoutItem.IconImageSource>
+                                            <FileImageSource File="trash.png" />
+                                        </MenuFlyoutItem.IconImageSource>
+                                    </MenuFlyoutItem>
                                 </MenuFlyout>
                             </FlyoutBase.ContextFlyout>
 
@@ -36,11 +61,11 @@
                                 <Label Grid.Row="0" Grid.Column="1" Text="{Binding Amount, StringFormat='{0:N2}'}" FontAttributes="Bold" FontSize="16" TextColor="{DynamicResource PrimaryColor}"/>
 
                                 <HorizontalStackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="5" Margin="0,5,0,0" Opacity="0.7">
-                                    <Label Text="Kolejna:" FontSize="12" TextColor="{DynamicResource AppTextColor}" />
+                                    <Label Text="{x:Static strings:AppResources.NextDueDateLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" />
                                     <Label Text="{Binding NextDueDate, StringFormat='{0:dd.MM.yyyy}'}" FontSize="12" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
                                     <Label Text="|" FontSize="12" TextColor="{DynamicResource AppTextColor}" />
-                                    <Label Text="{Binding RecurrenceInterval}" FontSize="12" TextColor="{DynamicResource AppTextColor}" />
-                                    <Label Text="{Binding RecurrenceUnit}" FontSize="12" TextColor="{DynamicResource AppTextColor}" />
+                                    <!-- ZMIANA: Zastąpienie dwóch labeli jednym powiązanym z właściwością RecurrenceText -->
+                                    <Label Text="{Binding RecurrenceText}" FontSize="12" TextColor="{DynamicResource AppTextColor}" />
                                 </HorizontalStackLayout>
 
                                 <!-- Zero-Dependency FIX: Używamy DataTrigger zamiast konwertera -->

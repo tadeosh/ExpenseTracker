@@ -6,6 +6,7 @@ namespace ExpenseTracker.Services.Interfaces
     {
         // Konta
         Task<List<Account>> GetAccountsAsync();
+        Task<Account> GetAccountAsync(int accountId);
         Task<int> SaveAccountAsync(Account account);
         Task<int> DeleteAccountAsync(Account account);
         Task<Dictionary<int, decimal>> GetAllAccountBalancesAsync();

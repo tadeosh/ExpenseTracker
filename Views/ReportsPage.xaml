@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+             xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
+             x:DataType="viewmodels:ReportsViewModel"
+             x:Class="ExpenseTracker.Views.ReportsPage"
+             Title="{x:Static strings:AppResources.ReportsPageTitle}"
+             BackgroundColor="{DynamicResource AppBackgroundColor}">
+
+    <Grid RowDefinitions="Auto, *">
+
+        <!-- Pasek nawigacji zakresem dat -->
+        <HorizontalStackLayout Grid.Row="0" HorizontalOptions="Center" Spacing="10" Margin="15">
+            <Button Text="&lt;" Command="{Binding SetLastMonthCommand}" BackgroundColor="Transparent" TextColor="{DynamicResource PrimaryColor}" FontSize="18" FontAttributes="Bold"/>
+            <Label Text="{Binding CurrentPeriodLabel}" VerticalOptions="Center" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}"/>
+            <Button Text="&gt;" Command="{Binding SetThisMonthCommand}" BackgroundColor="Transparent" TextColor="{DynamicResource PrimaryColor}" FontSize="18" FontAttributes="Bold"/>
+        </HorizontalStackLayout>
+
+        <!-- Wykres Donut (Kategorie) -->
+        <Border Grid.Row="1" Margin="15" Padding="15" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+            <Grid RowDefinitions="Auto, *">
+                <Label Grid.Row="0" Text="Wydatki wg kategorii" FontAttributes="Bold" FontSize="16" TextColor="{DynamicResource AppTextColor}" Margin="0,0,0,10"/>
+
+                <!-- Wykres - dodano MinHeightRequest i powiązano widoczność z HasData -->
+                <lvc:PieChart Grid.Row="1" 
+                      Series="{Binding CategorySeries}" 
+                      LegendPosition="Right" 
+                      MinimumHeightRequest="250"
+                      IsVisible="{Binding HasData}" />
+
+                <!-- Komunikat, gdy nie ma danych w danym miesiącu -->
+                <VerticalStackLayout Grid.Row="1" 
+                             IsVisible="{Binding HasData, Converter={x:StaticResource InvertedBoolConverter}}" 
+                             VerticalOptions="Center" 
+                             HorizontalOptions="Center" 
+                             Spacing="10">
+                    <Label Text="Brak transakcji" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center"/>
+                    <Label Text="Nie odnotowano wydatków w wybranym okresie." FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+
+    </Grid>
+</ContentPage>

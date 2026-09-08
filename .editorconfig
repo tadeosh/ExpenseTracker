@@ -1,0 +1,7 @@
+# Top-most EditorConfig file
+root = true
+
+# Zastosuj dla wszystkich plików
+[*]
+end_of_line = crlf
+insert_final_newline = true

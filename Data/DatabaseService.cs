@@ -60,6 +60,12 @@ namespace ExpenseTracker.Data
             return await _database.Table<Account>().ToListAsync();
         }
 
+        public async Task<Account> GetAccountAsync(int id)
+        {
+            await InitAsync();
+            return await _database.Table<Account>().FirstOrDefaultAsync(a => a.Id == id) ?? throw new Exception($"Nie znaleziono konta o Id {id}");
+        }
+
         public async Task<int> SaveAccountAsync(Account account)
         {
             await InitAsync();

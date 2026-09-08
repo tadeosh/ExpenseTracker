@@ -628,6 +628,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu End date.
+        /// </summary>
+        internal static string EndDateLabel {
+            get {
+                return ResourceManager.GetString("EndDateLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Expense.
         /// </summary>
         internal static string Enum_Expense {
@@ -880,6 +889,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Next:.
+        /// </summary>
+        internal static string NextDueDateLabel {
+            get {
+                return ResourceManager.GetString("NextDueDateLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu No transactions ....
         /// </summary>
         internal static string NoTransactionsLabel {
@@ -961,11 +979,38 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Reecurring transaction.
+        /// </summary>
+        internal static string RecurringTransactionLabel {
+            get {
+                return ResourceManager.GetString("RecurringTransactionLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Recurring transactions.
         /// </summary>
         internal static string RecurringTransactionsTitle {
             get {
                 return ResourceManager.GetString("RecurringTransactionsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Repeat every.
+        /// </summary>
+        internal static string RecurringTransactionUnitLabel {
+            get {
+                return ResourceManager.GetString("RecurringTransactionUnitLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Reports.
+        /// </summary>
+        internal static string ReportsPageTitle {
+            get {
+                return ResourceManager.GetString("ReportsPageTitle", resourceCulture);
             }
         }
         
@@ -1078,6 +1123,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Suspend / resume.
+        /// </summary>
+        internal static string Suspend_Resume {
+            get {
+                return ResourceManager.GetString("Suspend_Resume", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu To Currency.
         /// </summary>
         internal static string TargetCurrencyLabel {
@@ -1164,6 +1218,114 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string UnderstoodBtn {
             get {
                 return ResourceManager.GetString("UnderstoodBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Day.
+        /// </summary>
+        internal static string UnitDays_1 {
+            get {
+                return ResourceManager.GetString("UnitDays_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Days.
+        /// </summary>
+        internal static string UnitDays_2 {
+            get {
+                return ResourceManager.GetString("UnitDays_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Days.
+        /// </summary>
+        internal static string UnitDays_5 {
+            get {
+                return ResourceManager.GetString("UnitDays_5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Month.
+        /// </summary>
+        internal static string UnitMonths_1 {
+            get {
+                return ResourceManager.GetString("UnitMonths_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Months.
+        /// </summary>
+        internal static string UnitMonths_2 {
+            get {
+                return ResourceManager.GetString("UnitMonths_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Months.
+        /// </summary>
+        internal static string UnitMonths_5 {
+            get {
+                return ResourceManager.GetString("UnitMonths_5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Week.
+        /// </summary>
+        internal static string UnitWeeks_1 {
+            get {
+                return ResourceManager.GetString("UnitWeeks_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Weeks.
+        /// </summary>
+        internal static string UnitWeeks_2 {
+            get {
+                return ResourceManager.GetString("UnitWeeks_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Weeks.
+        /// </summary>
+        internal static string UnitWeeks_5 {
+            get {
+                return ResourceManager.GetString("UnitWeeks_5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Year.
+        /// </summary>
+        internal static string UnitYears_1 {
+            get {
+                return ResourceManager.GetString("UnitYears_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Years.
+        /// </summary>
+        internal static string UnitYears_2 {
+            get {
+                return ResourceManager.GetString("UnitYears_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Years.
+        /// </summary>
+        internal static string UnitYears_5 {
+            get {
+                return ResourceManager.GetString("UnitYears_5", resourceCulture);
             }
         }
         
