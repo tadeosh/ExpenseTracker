@@ -647,5 +647,61 @@
   </data>
   <data name="ReportsPageTitle" xml:space="preserve">
     <value>Reports</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="NoTransactionsDescription" xml:space="preserve">
+    <value>No expenses were recorded during the selected period.</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_ExpensesByProject" xml:space="preserve">
+    <value>Expenses by Project</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_ExpensesByCategory" xml:space="preserve">
+    <value>Expenses by Category</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_YearLabel" xml:space="preserve">
+    <value>Year {0}</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_TopExpenses" xml:space="preserve">
+    <value>Top Expenses</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_ScopeMonthly" xml:space="preserve">
+    <value>Monthly</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_ScopeLast3Months" xml:space="preserve">
+    <value>Last 3 months</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_ScopeLast6Months" xml:space="preserve">
+    <value>Last 6 months</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_ScopeCustom" xml:space="preserve">
+    <value>Custom range</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_GenerateReport" xml:space="preserve">
+    <value>Generate report</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_ScopeYearly" xml:space="preserve">
+    <value>Yearly</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_SelectPeriod" xml:space="preserve">
+    <value>Select analysis period</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_SelectTimeframe" xml:space="preserve">
+    <value>Select timeframe:</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="NoProject" xml:space="preserve">
+    <value>No project</value>
   </data>
 </root>

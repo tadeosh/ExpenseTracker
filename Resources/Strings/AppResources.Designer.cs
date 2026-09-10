@@ -898,6 +898,24 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu No project.
+        /// </summary>
+        internal static string NoProject {
+            get {
+                return ResourceManager.GetString("NoProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu No expenses were recorded during the selected period..
+        /// </summary>
+        internal static string NoTransactionsDescription {
+            get {
+                return ResourceManager.GetString("NoTransactionsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu No transactions ....
         /// </summary>
         internal static string NoTransactionsLabel {
@@ -1002,6 +1020,114 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string RecurringTransactionUnitLabel {
             get {
                 return ResourceManager.GetString("RecurringTransactionUnitLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Expenses by Category.
+        /// </summary>
+        internal static string Reports_ExpensesByCategory {
+            get {
+                return ResourceManager.GetString("Reports_ExpensesByCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Expenses by Project.
+        /// </summary>
+        internal static string Reports_ExpensesByProject {
+            get {
+                return ResourceManager.GetString("Reports_ExpensesByProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Generate report.
+        /// </summary>
+        internal static string Reports_GenerateReport {
+            get {
+                return ResourceManager.GetString("Reports_GenerateReport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Custom range.
+        /// </summary>
+        internal static string Reports_ScopeCustom {
+            get {
+                return ResourceManager.GetString("Reports_ScopeCustom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Last 3 months.
+        /// </summary>
+        internal static string Reports_ScopeLast3Months {
+            get {
+                return ResourceManager.GetString("Reports_ScopeLast3Months", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Last 6 months.
+        /// </summary>
+        internal static string Reports_ScopeLast6Months {
+            get {
+                return ResourceManager.GetString("Reports_ScopeLast6Months", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Monthly.
+        /// </summary>
+        internal static string Reports_ScopeMonthly {
+            get {
+                return ResourceManager.GetString("Reports_ScopeMonthly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Yearly.
+        /// </summary>
+        internal static string Reports_ScopeYearly {
+            get {
+                return ResourceManager.GetString("Reports_ScopeYearly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Select analysis period.
+        /// </summary>
+        internal static string Reports_SelectPeriod {
+            get {
+                return ResourceManager.GetString("Reports_SelectPeriod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Select timeframe:.
+        /// </summary>
+        internal static string Reports_SelectTimeframe {
+            get {
+                return ResourceManager.GetString("Reports_SelectTimeframe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Top Expenses.
+        /// </summary>
+        internal static string Reports_TopExpenses {
+            get {
+                return ResourceManager.GetString("Reports_TopExpenses", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Year {0}.
+        /// </summary>
+        internal static string Reports_YearLabel {
+            get {
+                return ResourceManager.GetString("Reports_YearLabel", resourceCulture);
             }
         }
         

@@ -10,6 +10,9 @@ namespace ExpenseTracker.Models
         public string Description { get; set; } = string.Empty;
         public int Type { get; set; }
         public int AccountId { get; set; }
+        public int? CategoryId { get; set; }
+        public int? ProjectId { get; set; }
+
 
         // Złączone nazwy słowników
         public string CategoryName { get; set; } = string.Empty;

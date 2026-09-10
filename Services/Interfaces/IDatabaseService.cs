@@ -17,11 +17,11 @@ namespace ExpenseTracker.Services.Interfaces
         Task<int> SaveTransactionAsync(Transaction transaction);
         Task<int> DeleteTransactionAsync(Transaction transaction);
         Task<List<Transaction>> GetRecentTransactionsAsync(int limit = 10);
-        Task<List<Transaction>> GetFilteredTransactionsAsync(int? accountId, int? categoryId, int? projectId, decimal? minAmount, decimal? maxAmount);
+        Task<List<Transaction>> GetFilteredTransactionsAsync(int? accountId, int? categoryId, int? projectId, decimal? minAmount, decimal? maxAmount, DateTime? startDate=null, DateTime? endDate=null);
         Task<List<TransactionDetailDto>> GetTransactionsWithDetailsAsync(
                 int? accountId, int? categoryId, int? projectId,
                 decimal? minAmount, decimal? maxAmount,
-                string? searchText, string sortColumn, bool isAscending);
+                string? searchText, string sortColumn, bool isAscending, DateTime? startDate = null, DateTime? endDate = null);
         Task<List<TransactionDetailDto>> GetRecentTransactionsWithDetailsAsync(int limit = 30);
 
         //Transakcje Cykliczne

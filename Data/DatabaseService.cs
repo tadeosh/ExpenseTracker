@@ -284,7 +284,8 @@ namespace ExpenseTracker.Data
             return result;
         }
 
-        public async Task<List<Transaction>> GetFilteredTransactionsAsync(int? accountId, int? categoryId, int? projectId, decimal? minAmount, decimal? maxAmount)
+        public async Task<List<Transaction>> GetFilteredTransactionsAsync(
+            int? accountId, int? categoryId, int? projectId, decimal? minAmount, decimal? maxAmount, DateTime? startDate=null, DateTime? endDate=null)
         {
             await InitAsync();
 
@@ -306,6 +307,8 @@ namespace ExpenseTracker.Data
 
             if (maxAmount.HasValue)
                 query = query.Where(t => t.Amount <= maxAmount.Value);
+            if (startDate.HasValue) query = query.Where(t => t.Date >= startDate.Value);
+            if (endDate.HasValue) query = query.Where(t => t.Date <= endDate.Value);
 
             // Dopiero tutaj faktycznie wysyłamy zapytanie do bazy i pobieramy WĄSKI wycinek danych!
             return await query.ToListAsync();
@@ -314,7 +317,7 @@ namespace ExpenseTracker.Data
         public async Task<List<TransactionDetailDto>> GetTransactionsWithDetailsAsync(
             int? accountId, int? categoryId, int? projectId,
             decimal? minAmount, decimal? maxAmount,
-            string? searchText, string sortColumn, bool isAscending)
+            string? searchText, string sortColumn, bool isAscending, DateTime? startDate = null, DateTime? endDate = null)
         {
             await InitAsync();
 
@@ -373,7 +376,7 @@ namespace ExpenseTracker.Data
             WHERE t.Type = 2 AND t.DestinationAccountId IS NOT NULL
         )
         SELECT 
-            Id, Amount, Date, Description, Type, AccountId,
+            Id, Amount, Date, Description, Type, AccountId,CategoryId, ProjectId,
             IFNULL(CategoryName, '-') AS CategoryName,
             IFNULL(ProjectName, '-') AS ProjectName,
             IFNULL(AccountName, '-') AS AccountName,
@@ -391,6 +394,8 @@ namespace ExpenseTracker.Data
             if (projectId.HasValue) { sql += " AND ProjectId = ? "; args.Add(projectId.Value); }
             if (minAmount.HasValue) { sql += " AND Amount >= ? "; args.Add(minAmount.Value); }
             if (maxAmount.HasValue) { sql += " AND Amount <= ? "; args.Add(maxAmount.Value); }
+            if (startDate.HasValue) { sql += " AND Date >= ? "; args.Add(startDate.Value); }
+            if (endDate.HasValue) { sql += " AND Date <= ? "; args.Add(endDate.Value); }
 
             if (!string.IsNullOrWhiteSpace(searchText))
             {

@@ -588,4 +588,46 @@
   <data name="ReportsPageTitle" xml:space="preserve">
     <value>Berichte</value>
   </data>
+  <data name="NoTransactionsDescription" xml:space="preserve">
+    <value>Im ausgewählten Zeitraum wurden keine Ausgaben erfasst.</value>
+  </data>
+  <data name="Reports_ExpensesByProject" xml:space="preserve">
+    <value>Ausgaben nach Projekt</value>
+  </data>
+  <data name="Reports_ExpensesByCategory" xml:space="preserve">
+    <value>Ausgaben nach Kategorie</value>
+  </data>
+  <data name="Reports_YearLabel" xml:space="preserve">
+    <value>Jahr {0}</value>
+  </data>
+  <data name="Reports_TopExpenses" xml:space="preserve">
+    <value>Größte Ausgaben</value>
+  </data>
+  <data name="Reports_ScopeMonthly" xml:space="preserve">
+    <value>Monatlich</value>
+  </data>
+  <data name="Reports_ScopeLast3Months" xml:space="preserve">
+    <value>Letzte 3 Monate</value>
+  </data>
+  <data name="Reports_ScopeLast6Months" xml:space="preserve">
+    <value>Letzte 6 Monate</value>
+  </data>
+  <data name="Reports_ScopeCustom" xml:space="preserve">
+    <value>Benutzerdefinierter Bereich</value>
+  </data>
+  <data name="Reports_GenerateReport" xml:space="preserve">
+    <value>Bericht generieren</value>
+  </data>
+  <data name="Reports_ScopeYearly" xml:space="preserve">
+    <value>Jährlich</value>
+  </data>
+  <data name="Reports_SelectPeriod" xml:space="preserve">
+    <value>Analysezeitraum auswählen</value>
+  </data>
+  <data name="Reports_SelectTimeframe" xml:space="preserve">
+    <value>Zeitraum auswählen:</value>
+  </data>
+  <data name="NoProject" xml:space="preserve">
+    <value>Kein Projekt</value>
+  </data>
 </root>
