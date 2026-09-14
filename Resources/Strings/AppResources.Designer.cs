@@ -1501,6 +1501,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The rate for this currency pair and date already exists..
+        /// </summary>
+        internal static string ValErrorRateAlreadyExists {
+            get {
+                return ResourceManager.GetString("ValErrorRateAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Provide the exchange rate..
         /// </summary>
         internal static string ValErrorRateRequired {

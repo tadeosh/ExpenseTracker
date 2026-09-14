@@ -637,6 +637,89 @@ namespace ExpenseTracker.Data
             return null; // Brak kursu w bazie
         }
 
+        public async Task<bool> ExchangeRateExistsAsync(string sourceCurrency, string targetCurrency, DateTime date, int excludeId = 0)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(sourceCurrency);
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetCurrency);
+
+            await InitAsync();
+
+            sourceCurrency = sourceCurrency.Trim().ToUpperInvariant();
+            targetCurrency = targetCurrency.Trim().ToUpperInvariant();
+
+            var dayStart = date.Date;
+            var dayEnd = dayStart.AddDays(1);
+
+            var existingRate = await _database
+                .Table<ExchangeRate>()
+                .Where(x =>
+                    x.Id != excludeId &&
+                    x.SourceCurrency == sourceCurrency &&
+                    x.TargetCurrency == targetCurrency &&
+                    x.Date >= dayStart &&
+                    x.Date < dayEnd)
+                .FirstOrDefaultAsync();
+
+            return existingRate is not null;
+        }
+
+        public async Task<int> SaveOrUpdateDailyExchangeRateAsync(string sourceCurrency, string targetCurrency, decimal rate, DateTime date)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(sourceCurrency);
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetCurrency);
+
+            if (rate <= 0)
+                throw new ArgumentOutOfRangeException(nameof(rate), "Kurs musi być większy od zera.");
+
+            await InitAsync();
+
+            sourceCurrency = sourceCurrency.Trim().ToUpperInvariant();
+            targetCurrency = targetCurrency.Trim().ToUpperInvariant();
+
+            if (sourceCurrency == targetCurrency)
+                throw new ArgumentException("Waluta źródłowa i docelowa muszą się różnić.");
+
+            var dayStart = date.Date;
+            var dayEnd = dayStart.AddDays(1);
+            var result = 0;
+
+            await _database.RunInTransactionAsync(connection =>
+            {
+                var existingRate = connection
+                    .Table<ExchangeRate>()
+                    .Where(x =>
+                        x.SourceCurrency == sourceCurrency &&
+                        x.TargetCurrency == targetCurrency &&
+                        x.Date >= dayStart &&
+                        x.Date < dayEnd)
+                    .FirstOrDefault();
+
+                if (existingRate is null)
+                {
+                    var newRate = new ExchangeRate
+                    {
+                        SourceCurrency = sourceCurrency,
+                        TargetCurrency = targetCurrency,
+                        Rate = rate,
+                        Date = dayStart
+                    };
+
+                    result = connection.Insert(newRate);
+                    return;
+                }
+
+                if (existingRate.Rate == rate)
+                    return;
+
+                existingRate.Rate = rate;
+                existingRate.Date = dayStart;
+
+                result = connection.Update(existingRate);
+            });
+
+            return result;
+        }
+
         // ===================================================
         // --- RESETOWANIE BAZY DANYCH (FACTORY RESET) ---
         // ===================================================
@@ -654,6 +737,7 @@ namespace ExpenseTracker.Data
                 conn.DeleteAll<Account>();
                 conn.DeleteAll<Project>();
                 conn.DeleteAll<Category>();
+                conn.DeleteAll<RecurringTransaction>();
             });
 
             // Czyszczenie ustawień zapisanych w preferencjach (opcjonalnie, ale wskazane przy "Factory Reset")

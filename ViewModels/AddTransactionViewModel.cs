@@ -540,14 +540,11 @@ namespace ExpenseTracker.ViewModels
 
                 if (_lastFetchedRate == null || _lastFetchedRate.Value != parsedRate)
                 {
-                    var newLearnedRate = new ExchangeRate
-                    {
-                        SourceCurrency = SelectedAccount!.Currency,
-                        TargetCurrency = DestinationAccount!.Currency,
-                        Rate = parsedRate,
-                        Date = SelectedDate
-                    };
-                    await _databaseService.SaveExchangeRateAsync(newLearnedRate);
+                    await _databaseService.SaveOrUpdateDailyExchangeRateAsync(
+                        SelectedAccount!.Currency,
+                        DestinationAccount!.Currency,
+                        parsedRate,
+                        SelectedDate);
                 }
             }
 

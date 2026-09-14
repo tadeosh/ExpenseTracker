@@ -94,6 +94,9 @@
 	  <Compile Update="Views\RecurringTransactionsPage.xaml.cs">
 	    <DependentUpon>RecurringTransactionsPage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\TransactionRowControl.xaml.cs">
+	    <DependentUpon>TransactionRowControl.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -146,7 +149,7 @@
 	  <MauiXaml Update="Views\SetupPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Views\TansactionRowControl.xaml">
+	  <MauiXaml Update="Views\TransactionRowControl.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\TransactionsPage.xaml">

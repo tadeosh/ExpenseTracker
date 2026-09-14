@@ -28,7 +28,7 @@ namespace ExpenseTracker.Services.Interfaces
 
         Task<List<RecurringTransaction>> GetActiveRecurringTransactionsAsync();
         Task<List<RecurringTransaction>> GetRecurringTransactionsAsync();
-        Task<RecurringTransaction> GetRecurringTransactionAsync(int id);
+        Task<RecurringTransaction?> GetRecurringTransactionAsync(int id);
         Task<int> DeleteRecurringTransactionAsync(RecurringTransaction recurringTransaction);
         Task<int> SaveRecurringTransactionAsync(RecurringTransaction recurringTransaction);
         Task RunInTransactionAsync(Action<SQLite.SQLiteConnection> action);
@@ -52,6 +52,8 @@ namespace ExpenseTracker.Services.Interfaces
         Task SaveExchangeRateAsync(ExchangeRate rate);
         Task DeleteExchangeRateAsync(ExchangeRate rate);
         Task<decimal?> GetApplicableExchangeRateAsync(string sourceCurrency, string targetCurrency, DateTime transactionDate);
+        Task<bool> ExchangeRateExistsAsync(string sourceCurrency, string targetCurrency, DateTime date, int excludeId = 0);
+        Task<int> SaveOrUpdateDailyExchangeRateAsync(string sourceCurrency, string targetCurrency, decimal rate, DateTime date);
 
         // Zarządzanie
         Task WipeAllDataAsync();

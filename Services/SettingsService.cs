@@ -2,6 +2,13 @@
 
 namespace ExpenseTracker.Services
 {
+    public enum AppThemeOption
+    {
+        Light = 0,
+        Dark = 1,
+        HighContrast = 2
+    }
+
     public class SettingsService : ISettingsService
     {
         // Używamy nameof(), aby uniknąć literówek w kluczach (tzw. "Magic Strings")
@@ -19,7 +26,7 @@ namespace ExpenseTracker.Services
 
         public int AppTheme
         {
-            get => Preferences.Default.Get(nameof(AppTheme), 0);
+            get => Preferences.Default.Get(nameof(AppTheme), (int)AppThemeOption.Light);
             set => Preferences.Default.Set(nameof(AppTheme), value);
         }
 

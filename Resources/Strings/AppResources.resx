@@ -546,6 +546,10 @@
     <value>Choose the correct currency.</value>
     <comment>ExchangeRateValidator</comment>
   </data>
+  <data name="ValErrorRateAlreadyExists" xml:space="preserve">
+    <value>The rate for this currency pair and date already exists.</value>
+    <comment>ExchangeRateValidator</comment>
+  </data>
   <data name="ValErrorTargetCurrency" xml:space="preserve">
     <value>Choose the target currency.</value>
     <comment>ExchangeRateValidator</comment>

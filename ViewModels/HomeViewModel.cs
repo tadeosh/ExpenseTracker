@@ -67,10 +67,10 @@ namespace ExpenseTracker.ViewModels
             });
         }
 
-        public void Receive(TransactionsChangedMessage message)
-        {
-            _needsReload = true;
-        }
+        //public void Receive(TransactionsChangedMessage message)
+        //{
+        //    _needsReload = true;
+        //}
 
         public async Task LoadDataIfNeededAsync()
         {

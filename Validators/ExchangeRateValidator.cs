@@ -1,14 +1,18 @@
-﻿using FluentValidation;
+﻿using ExpenseTracker.Resources.Strings;
+using ExpenseTracker.Services.Interfaces;
 using ExpenseTracker.ViewModels;
+using FluentValidation;
 using System.Globalization;
-using ExpenseTracker.Resources.Strings;
 
 namespace ExpenseTracker.Validators
 {
     public class ExchangeRatesValidator : AbstractValidator<ExchangeRatesViewModel>
     {
-        public ExchangeRatesValidator()
+        private readonly IDatabaseService _databaseService;
+        public ExchangeRatesValidator(IDatabaseService databaseService)
         {
+            _databaseService = databaseService;
+
             // 1. Walidacja waluty źródłowej
             RuleFor(x => x.SelectedSourceCurrency)
                 .NotEmpty().WithMessage(AppResources.ValErrorSourceCurrency ?? "Wybierz walutę źródłową.")
@@ -25,6 +29,9 @@ namespace ExpenseTracker.Validators
             RuleFor(x => x.RateText)
                 .NotEmpty().WithMessage(AppResources.ValErrorRateRequired ?? "Podaj kurs wymiany.")
                 .Must(BeAValidPositiveDecimal).WithMessage(AppResources.ValErrorInvalidRate ?? "Kurs musi być prawidłową liczbą większą od zera.");
+
+            RuleFor(x => x)
+                  .MustAsync(BeUniqueRateAsync).WithMessage(AppResources.ValErrorRateAlreadyExists ?? "Kurs dla tej pary walut i daty już istnieje.");
         }
 
         // --- Metody pomocnicze ---
@@ -51,6 +58,32 @@ namespace ExpenseTracker.Validators
                 out decimal parsedRate);
 
             return isValid && parsedRate > 0;
+        }
+
+        private async Task<bool> BeUniqueRateAsync(ExchangeRatesViewModel vm, CancellationToken token)
+        {
+            if (string.IsNullOrWhiteSpace(vm.SelectedSourceCurrency))
+                return true;
+
+            if (string.IsNullOrWhiteSpace(vm.SelectedTargetCurrency))
+                return true;
+
+            string sourceCode =
+                Helpers.CurrencyHelper.ExtractCode(
+                    vm.SelectedSourceCurrency)!;
+
+            string targetCode =
+                Helpers.CurrencyHelper.ExtractCode(
+                    vm.SelectedTargetCurrency)!;
+
+            bool exists =
+                await _databaseService.ExchangeRateExistsAsync(
+                    sourceCode,
+                    targetCode,
+                    vm.SelectedDate,
+                    vm.EditingRateId);
+
+            return !exists;
         }
     }
 }

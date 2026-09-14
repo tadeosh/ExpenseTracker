@@ -510,6 +510,9 @@
   <data name="ValErrorInvalidCurrency" xml:space="preserve">
     <value>Wybierz poprawną walutę.</value>
   </data>
+  <data name="ValErrorRateAlreadyExists" xml:space="preserve">
+    <value>Kurs dla tej pary walut i daty już istnieje.</value>
+  </data>
   <data name="ValErrorTargetCurrency" xml:space="preserve">
     <value>Wybierz walutę docelową.</value>
   </data>

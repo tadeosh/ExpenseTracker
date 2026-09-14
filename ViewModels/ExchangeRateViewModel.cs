@@ -32,6 +32,7 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty] public partial string? FormError { get; set; }
 
         private ExchangeRateDisplayItem? _rateBeingEdited;
+        public int EditingRateId => _rateBeingEdited?.ExchangeRate.Id ?? 0;
 
         public ExchangeRatesViewModel(IDatabaseService databaseService, IValidator<ExchangeRatesViewModel> validator)
         {
