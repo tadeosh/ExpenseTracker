@@ -8,6 +8,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Controls.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <Converters:InvertedBoolConverter x:Key="InvertedBoolConverter" xmlns:Converters="clr-namespace:ExpenseTracker.Converters" />
             <Converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter" xmlns:Converters="clr-namespace:ExpenseTracker.Converters" />

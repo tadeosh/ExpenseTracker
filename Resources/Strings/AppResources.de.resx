@@ -630,6 +630,70 @@
   <data name="Reports_SelectTimeframe" xml:space="preserve">
     <value>Zeitraum auswählen:</value>
   </data>
+	<data name="Reports_TabCategories" xml:space="preserve">
+  <value>Kategorien</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_TabProjects" xml:space="preserve">
+  <value>Projekte</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_TabTrend" xml:space="preserve">
+  <value>Verlauf</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_TabWealth" xml:space="preserve">
+  <value>Vermögen</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_TabTop" xml:space="preserve">
+  <value>Größte</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_TrendComingSoon" xml:space="preserve">
+  <value>Die Entwicklung von Einnahmen und Ausgaben wird hier angezeigt.</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_WealthComingSoon" xml:space="preserve">
+  <value>Die Entwicklung des Vermögens wird hier angezeigt.</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_MainItemsOnly" xml:space="preserve">
+  <value>Nur Hauptkategorien</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_AllItems" xml:space="preserve">
+  <value>Alle</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_BackToAllCategories" xml:space="preserve">
+  <value>Alle Kategorien</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_BackToAllProjects" xml:space="preserve">
+  <value>Alle Projekte</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_NoSubcategory" xml:space="preserve">
+  <value>Ohne Unterkategorie</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_NoSubproject" xml:space="preserve">
+  <value>Ohne Unterprojekt</value>
+  <comment>ReportsPage</comment>
+</data>
   <data name="NoProject" xml:space="preserve">
     <value>Kein Projekt</value>
   </data>

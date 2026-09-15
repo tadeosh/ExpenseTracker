@@ -1,3 +1,6 @@
 <Solution>
-  <Project Path="ExpenseTracker.csproj" />
+  <Project Path="../ExpenseTracker.Tests/ExpenseTracker.Tests.csproj" Id="9790b03b-1c13-47b9-a430-b8d400377141" />
+  <Project Path="ExpenseTracker.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
 </Solution>

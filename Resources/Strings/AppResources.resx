@@ -705,6 +705,70 @@
     <value>Select timeframe:</value>
     <comment>ReportsPage</comment>
   </data>
+	<data name="Reports_TabCategories" xml:space="preserve">
+  <value>Categories</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_TabProjects" xml:space="preserve">
+  <value>Projects</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_TabTrend" xml:space="preserve">
+  <value>Trend</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_TabWealth" xml:space="preserve">
+  <value>Wealth</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_TabTop" xml:space="preserve">
+  <value>Largest</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_TrendComingSoon" xml:space="preserve">
+  <value>Income and expense trends will be available here.</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_WealthComingSoon" xml:space="preserve">
+  <value>Wealth history will be available here.</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_MainItemsOnly" xml:space="preserve">
+  <value>Main only</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_AllItems" xml:space="preserve">
+  <value>All</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_BackToAllCategories" xml:space="preserve">
+  <value>All categories</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_BackToAllProjects" xml:space="preserve">
+  <value>All projects</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_NoSubcategory" xml:space="preserve">
+  <value>No subcategory</value>
+  <comment>ReportsPage</comment>
+</data>
+
+	<data name="Reports_NoSubproject" xml:space="preserve">
+  <value>No subproject</value>
+  <comment>ReportsPage</comment>
+</data>
   <data name="NoProject" xml:space="preserve">
     <value>No project</value>
   </data>

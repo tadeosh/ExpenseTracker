@@ -1,105 +1,144 @@
 ﻿using ExpenseTracker.Models;
 using ExpenseTracker.Services.Interfaces;
-using CommunityToolkit.Mvvm.Messaging;
-using ExpenseTracker.Messages;
+using Microsoft.Extensions.Logging;
+using ExpenseTracker.Resources.Strings;
+
 
 namespace ExpenseTracker.Services
 {
     public class RecurringTransactionEngine : IRecurringTransactionEngine
     {
         private readonly IDatabaseService _databaseService;
+        private readonly ITransactionChangeNotifier _transactionChangeNotifier;
+        private readonly ILogger<RecurringTransactionEngine> _logger;
 
-        public RecurringTransactionEngine(IDatabaseService databaseService)
+        private readonly SemaphoreSlim _processingLock = new(1, 1);
+
+        public RecurringTransactionEngine(IDatabaseService databaseService, ITransactionChangeNotifier transactionChangeNotifier, ILogger<RecurringTransactionEngine> logger)
         {
             _databaseService = databaseService;
+            _transactionChangeNotifier = transactionChangeNotifier;
+            _logger = logger;
         }
 
         public async Task ProcessPendingTransactionsAsync()
         {
-            var activeTemplates = await _databaseService.GetActiveRecurringTransactionsAsync();
-            if (!activeTemplates.Any()) return;
+            await _processingLock.WaitAsync();
 
-            var today = DateTime.Today; // Zawsze 00:00:00
+            try
+            {
+                await ProcessPendingTransactionsInternalAsync();
+            }
+            finally
+            {
+                _processingLock.Release();
+            }
+        }
+
+        private async Task ProcessPendingTransactionsInternalAsync()
+        {
+            var activeTemplates = await _databaseService.GetActiveRecurringTransactionsAsync();
+
+            if (!activeTemplates.Any())
+                return;
+
+            var today = DateTime.Today;
             var transactionsToInsert = new List<Transaction>();
             var templatesToUpdate = new List<RecurringTransaction>();
 
             foreach (var template in activeTemplates)
             {
-                bool hasChanges = false;
-
-                // Bezpieczne sprawdzanie samej daty bez części godzinowej
-                while (template.NextDueDate.Date <= today && (template.EndDate == null || template.NextDueDate.Date <= template.EndDate.Value.Date))
+                if (template.RecurrenceInterval <= 0)
                 {
-                    decimal? applicableExchangeRate = null;
-                    string descriptionSuffix = string.Empty;
+                    _logger.LogWarning("Pominięto szablon cykliczny {TemplateId}, ponieważ interwał {Interval} jest nieprawidłowy.", template.Id, template.RecurrenceInterval);
+                    continue;
+                }
 
-                    // LOGIKA TRANSFERU I KURSÓW WALUT
-                    if (template.Type == TransactionType.Transfer && template.DestinationAccountId.HasValue)
+                try
+                {
+                    var generatedTransactions = new List<Transaction>();
+                    var nextDueDate = template.NextDueDate.Date;
+
+                    while (nextDueDate <= today && (!template.EndDate.HasValue || nextDueDate <= template.EndDate.Value.Date))
                     {
-                        var sourceAcc = await _databaseService.GetAccountAsync(template.AccountId);
-                        var destAcc = await _databaseService.GetAccountAsync(template.DestinationAccountId.Value);
+                        decimal? applicableExchangeRate = null;
+                        var descriptionSuffix = string.Empty;
 
-                        if (sourceAcc != null && destAcc != null && sourceAcc.Currency != destAcc.Currency)
+                        if (template.Type == TransactionType.Transfer && template.DestinationAccountId.HasValue)
                         {
-                            // Pobieramy historyczny kurs na dzień wygenerowania zaległej transakcji
-                            var rate = await _databaseService.GetApplicableExchangeRateAsync(sourceAcc.Currency, destAcc.Currency, template.NextDueDate.Date);
+                            var sourceAccount = await _databaseService.GetAccountAsync(template.AccountId);
+                            var destinationAccount = await _databaseService.GetAccountAsync(template.DestinationAccountId.Value);
 
-                            if (rate.HasValue)
+                            if (sourceAccount.Currency != destinationAccount.Currency)
                             {
-                                applicableExchangeRate = rate.Value;
-                            }
-                            else
-                            {
-                                // Bezpiecznik: Brak kursu. Ustawiamy 1.0, by nie wysypać przeliczeń, i oznaczamy opis.
-                                applicableExchangeRate = 1.0m;
-                                descriptionSuffix = " [Brak ustalonego kursu]";
+                                var rate = await _databaseService.GetApplicableExchangeRateAsync(sourceAccount.Currency, destinationAccount.Currency, nextDueDate);
+
+                                if (rate.HasValue)
+                                {
+                                    applicableExchangeRate = rate.Value;
+                                }
+                                else
+                                {
+                                    applicableExchangeRate = 1.0m;
+                                    descriptionSuffix = $" [{AppResources.MissingRatesTitle}]";
+                                }
                             }
                         }
+
+                        generatedTransactions.Add(new Transaction
+                        {
+                            Amount = template.Amount,
+                            Type = template.Type,
+                            Description = template.Description + descriptionSuffix,
+                            Date = nextDueDate,
+                            AccountId = template.AccountId,
+                            CategoryId = template.CategoryId,
+                            ProjectId = template.ProjectId,
+                            DestinationAccountId = template.DestinationAccountId,
+                            ExchangeRate = applicableExchangeRate
+                        });
+
+                        nextDueDate = CalculateNextDate(nextDueDate, template.RecurrenceInterval, template.RecurrenceUnit);
                     }
 
-                    transactionsToInsert.Add(new Transaction
-                    {
-                        Amount = template.Amount,
-                        Type = (TransactionType)template.Type,
-                        Description = template.Description + descriptionSuffix,
-                        Date = template.NextDueDate.Date,
-                        AccountId = template.AccountId,
-                        CategoryId = template.CategoryId,
-                        ProjectId = template.ProjectId,
-                        DestinationAccountId = template.DestinationAccountId,
-                        ExchangeRate = applicableExchangeRate
-                    });
+                    var shouldDeactivate = template.EndDate.HasValue && nextDueDate > template.EndDate.Value.Date;
+                    var nextDateChanged = nextDueDate != template.NextDueDate.Date;
+                    var activeStateChanged = shouldDeactivate && template.IsActive;
 
-                    template.NextDueDate = CalculateNextDate(template.NextDueDate.Date, template.RecurrenceInterval, template.RecurrenceUnit);
-                    hasChanges = true;
+                    if (!nextDateChanged && !activeStateChanged)
+                        continue;
+
+                    template.NextDueDate = nextDueDate;
+
+                    if (shouldDeactivate)
+                        template.IsActive = false;
+
+                    transactionsToInsert.AddRange(generatedTransactions);
+                    templatesToUpdate.Add(template);
                 }
-
-                if (template.EndDate.HasValue && template.NextDueDate.Date > template.EndDate.Value.Date)
+                catch (Exception ex)
                 {
-                    template.IsActive = false;
-                    hasChanges = true;
+                    _logger.LogError(ex, "Nie udało się przetworzyć szablonu transakcji cyklicznej {TemplateId}. Szablon został pominięty.", template.Id);
                 }
-
-                if (hasChanges) templatesToUpdate.Add(template);
             }
+
+            if (!transactionsToInsert.Any() && !templatesToUpdate.Any())
+                return;
+
+            await _databaseService.RunInTransactionAsync(connection =>
+            {
+                if (transactionsToInsert.Any())
+                    connection.InsertAll(transactionsToInsert);
+
+                if (templatesToUpdate.Any())
+                    connection.UpdateAll(templatesToUpdate);
+            });
 
             if (transactionsToInsert.Any())
-            {
-                await _databaseService.RunInTransactionAsync(conn =>
-                {
-                    conn.InsertAll(transactionsToInsert);
-                    conn.UpdateAll(templatesToUpdate);
-                });
-
-                // Rozgłoszenie zmiany wymusza aktualizację UI 
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    WeakReferenceMessenger.Default.Send(new TransactionsChangedMessage());
-                });
-            }
+                _transactionChangeNotifier.NotifyTransactionsChanged();
         }
 
-        private DateTime CalculateNextDate(DateTime current, int interval, RecurrenceUnit unit) => unit switch
+        internal static DateTime CalculateNextDate(DateTime current, int interval, RecurrenceUnit unit) => unit switch
         {
             RecurrenceUnit.Days => current.AddDays(interval),
             RecurrenceUnit.Weeks => current.AddDays(interval * 7),

@@ -22,6 +22,15 @@ namespace ExpenseTracker.ViewModels
         Custom
     }
 
+    public enum ReportTab
+    {
+        Categories,
+        Projects,
+        Trend,
+        Wealth,
+        Top
+    }
+
     public class ReportScopeItem
     {
         public ReportScope Scope { get; set; }
@@ -70,6 +79,30 @@ namespace ExpenseTracker.ViewModels
             new ReportScopeItem { Scope = ReportScope.Custom, DisplayName = AppResources.Reports_ScopeCustom }
         };
 
+        // ================ przygotowanie do zakładek =====================
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsCategoriesTabVisible))]
+        [NotifyPropertyChangedFor(nameof(IsProjectsTabVisible))]
+        [NotifyPropertyChangedFor(nameof(IsTrendTabVisible))]
+        [NotifyPropertyChangedFor(nameof(IsWealthTabVisible))]
+        [NotifyPropertyChangedFor(nameof(IsTopTabVisible))]
+        public partial ReportTab SelectedTab { get; set; } = ReportTab.Categories;
+
+        public bool IsCategoriesTabVisible => SelectedTab == ReportTab.Categories;
+        public bool IsProjectsTabVisible => SelectedTab == ReportTab.Projects;
+        public bool IsTrendTabVisible => SelectedTab == ReportTab.Trend;
+        public bool IsWealthTabVisible => SelectedTab == ReportTab.Wealth;
+        public bool IsTopTabVisible => SelectedTab == ReportTab.Top;
+
+        [RelayCommand]
+        private void SwitchReportTab(string tabName)
+        {
+            if (Enum.TryParse<ReportTab>(tabName, true, out var selectedTab))
+                SelectedTab = selectedTab;
+        }
+
+        //========     koniec przygotowania zakładek =====================
+
         [ObservableProperty]
         public partial ObservableCollection<ISeries> ProjectSeries { get; set; } = new();
 
@@ -89,19 +122,31 @@ namespace ExpenseTracker.ViewModels
         [NotifyPropertyChangedFor(nameof(IsProjectChartActuallyVisible))]
         public partial bool HasProjectData { get; set; }
 
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsProjectEmptyStateVisible))]
-        [NotifyPropertyChangedFor(nameof(IsProjectChartActuallyVisible))]
-        public partial bool IsCategoryChartVisible { get; set; } = true;
+        //[ObservableProperty]
+        //[NotifyPropertyChangedFor(nameof(IsProjectEmptyStateVisible))]
+        //[NotifyPropertyChangedFor(nameof(IsProjectChartActuallyVisible))]
+        //public partial bool IsCategoryChartVisible { get; set; } = true;
 
-        [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsProjectEmptyStateVisible))]
-        [NotifyPropertyChangedFor(nameof(IsProjectChartActuallyVisible))]
-        public partial bool IsProjectChartVisible { get; set; } = false;
-        public bool IsProjectEmptyStateVisible => IsProjectChartVisible && !HasProjectData;
-        public bool IsProjectChartActuallyVisible => IsProjectChartVisible && HasProjectData;
-        
+        //[ObservableProperty]
+        //[NotifyPropertyChangedFor(nameof(IsProjectEmptyStateVisible))]
+        //[NotifyPropertyChangedFor(nameof(IsProjectChartActuallyVisible))]
+        //public partial bool IsProjectChartVisible { get; set; } = false;
+        public bool IsProjectEmptyStateVisible => !HasProjectData;
+        public bool IsProjectChartActuallyVisible => HasProjectData;
+
         //============================koniec deklaracji pól i właściwości========================================================
+        // TRENDY
+        //[ObservableProperty]
+        //public partial bool ShowIncomeTrend { get; set; } = true;
+
+        //[ObservableProperty]
+        //public partial bool ShowExpenseTrend { get; set; } = true;
+
+        //[ObservableProperty]
+        //public partial bool ShowNetTrend { get; set; } = true;
+
+        // koniec Trendów
+
         public ReportsViewModel(IReportService reportService)
         {
             _reportService = reportService;
@@ -134,20 +179,20 @@ namespace ExpenseTracker.ViewModels
             _ = UpdateRangeAndLoadAsync();   // Bezpieczne odpalenie asynchroniczne typu Fire-and-forget (XAML je obsłuży)
         }
 
-        [RelayCommand]
-        private void SwitchChart(string chartType)
-        {
-            if(chartType == "Category")
-    {
-                IsCategoryChartVisible = true;
-                IsProjectChartVisible = false;
-            }
-            else if (chartType == "Project")
-            {
-                IsCategoryChartVisible = false;
-                IsProjectChartVisible = true;
-            }
-        }
+        //[RelayCommand]
+        //private void SwitchChart(string chartType)
+        //{
+        //    if(chartType == "Category")
+        //    {
+        //        IsCategoryChartVisible = true;
+        //        IsProjectChartVisible = false;
+        //    }
+        //    else if (chartType == "Project")
+        //    {
+        //        IsCategoryChartVisible = false;
+        //        IsProjectChartVisible = true;
+        //    }
+        //}
 
         [RelayCommand]
         private async Task PreviousPeriodAsync()

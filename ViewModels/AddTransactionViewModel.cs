@@ -132,6 +132,8 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty] public partial string? DestinationAccountError { get; set; }
         [ObservableProperty] public partial string? ExchangeRateError { get; set; }
 
+        private CancellationTokenSource? _exchangeRateCancellation;
+
         private readonly IValidator<AddTransactionViewModel> _validator;
         public AddTransactionViewModel(IDatabaseService databaseService, IValidator<AddTransactionViewModel> validator)
         {
@@ -226,14 +228,22 @@ namespace ExpenseTracker.ViewModels
         partial void OnSelectedTypeIndexChanged(int value)
         {
             IsTransfer = value == 2;
-            CheckCurrencyConversion();
+            _ = CheckCurrencyConversionAsync();
         }
 
-        partial void OnSelectedAccountChanged(Account? value) => CheckCurrencyConversion();
-        partial void OnDestinationAccountChanged(Account? value) => CheckCurrencyConversion();
+        partial void OnSelectedAccountChanged(Account? value)
+        {
+            _ = CheckCurrencyConversionAsync();
+        }
+
+        partial void OnDestinationAccountChanged(Account? value)
+        {
+            _ = CheckCurrencyConversionAsync();
+        }
+
         partial void OnSelectedDateChanged(DateTime value)
         {
-            CheckCurrencyConversion();
+            _ = CheckCurrencyConversionAsync();
             // NOWOŚĆ: Jeśli użytkownik cofa datę transakcji, a EndDate jest za blisko, zsynchronizuj ją
             if (EndDate <= value)
             {
@@ -241,10 +251,15 @@ namespace ExpenseTracker.ViewModels
             }
         }
         // ZMIANA: Usuwamy "async void" i opakowujemy logikę!
-        private void CheckCurrencyConversion()
+        private async Task CheckCurrencyConversionAsync()
         {
-            // Jeśli warunki nie są spełnione, od razu zerujemy
-            if (!IsTransfer || SelectedAccount == null || DestinationAccount == null || SelectedAccount.Currency == DestinationAccount.Currency)
+            _exchangeRateCancellation?.Cancel();
+            _exchangeRateCancellation?.Dispose();
+            _exchangeRateCancellation = new CancellationTokenSource();
+
+            var cancellationToken = _exchangeRateCancellation.Token;
+
+            if (!IsTransfer || SelectedAccount is null || DestinationAccount is null || SelectedAccount.Currency == DestinationAccount.Currency)
             {
                 IsCurrencyConversion = false;
                 CurrencyConversionLabel = string.Empty;
@@ -254,31 +269,51 @@ namespace ExpenseTracker.ViewModels
             }
 
             IsCurrencyConversion = true;
-            CurrencyConversionLabel = $"{SelectedAccount.Currency} -> {DestinationAccount.Currency}";
 
-            // "Fire-and-forget" w tle, bezpieczne dla wątku UI!
-            Task.Run(async () =>
+            var sourceAccountId = SelectedAccount.Id;
+            var destinationAccountId = DestinationAccount.Id;
+            var sourceCurrency = SelectedAccount.Currency;
+            var targetCurrency = DestinationAccount.Currency;
+            var selectedDate = SelectedDate;
+
+            CurrencyConversionLabel = $"{sourceCurrency} -> {targetCurrency}";
+
+            try
             {
-                var rate = await _databaseService.GetApplicableExchangeRateAsync(
-                    SelectedAccount.Currency,
-                    DestinationAccount.Currency,
-                    SelectedDate);
+                var rate = await _databaseService.GetApplicableExchangeRateAsync(sourceCurrency, targetCurrency, selectedDate);
 
-                // Kiedy mamy wynik z bazy, wracamy na wątek główny żeby zaktualizować XAML
-                MainThread.BeginInvokeOnMainThread(() =>
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (SelectedAccount?.Id != sourceAccountId ||
+                    DestinationAccount?.Id != destinationAccountId ||
+                    SelectedDate != selectedDate ||
+                    !IsTransfer)
                 {
-                    if (rate.HasValue)
-                    {
-                        ExchangeRateText = rate.Value.ToString("0.####", CultureInfo.InvariantCulture);
-                        _lastFetchedRate = rate.Value;
-                    }
-                    else
-                    {
-                        ExchangeRateText = string.Empty;
-                        _lastFetchedRate = null;
-                    }
-                });
-            });
+                    return;
+                }
+
+                if (rate.HasValue)
+                {
+                    ExchangeRateText = rate.Value.ToString("0.####", CultureInfo.InvariantCulture);
+                    _lastFetchedRate = rate.Value;
+                }
+                else
+                {
+                    ExchangeRateText = string.Empty;
+                    _lastFetchedRate = null;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception)
+            {
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    ExchangeRateText = string.Empty;
+                    _lastFetchedRate = null;
+                }
+            }
         }
         //==============================================================================
         // ================ Ładowanie danych z bazy ====================================

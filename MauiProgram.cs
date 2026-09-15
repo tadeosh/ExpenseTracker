@@ -38,6 +38,7 @@ namespace ExpenseTracker
             builder.Services.AddSingleton<ISettingsService, SettingsService>();
             builder.Services.AddSingleton<IRecurringTransactionEngine, RecurringTransactionEngine>();
             builder.Services.AddSingleton<IReportService, ReportService>();
+            builder.Services.AddSingleton<ITransactionChangeNotifier, TransactionChangeNotifier>();
 
             builder.Services.AddTransient<Views.SetupPage>();
 

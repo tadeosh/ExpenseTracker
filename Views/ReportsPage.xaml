@@ -53,6 +53,55 @@
                             TextColor="White" FontAttributes="Bold" CornerRadius="8" Margin="0,10,0,0"/>
                 </VerticalStackLayout>
             </Border>
+            
+            <!--  ZAKŁADKI -->
+            <Border Margin="10,0" Padding="4" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                    <HorizontalStackLayout Spacing="6">
+                        <Button Text="{x:Static resources:AppResources.Reports_TabCategories}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Categories" Style="{StaticResource TabButtonStyle}">
+                            <Button.Triggers>
+                                <DataTrigger TargetType="Button" Binding="{Binding IsCategoriesTabVisible}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
+                                    <Setter Property="TextColor" Value="White" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                        <Button Text="{x:Static resources:AppResources.Reports_TabProjects}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Projects" Style="{StaticResource TabButtonStyle}">
+                            <Button.Triggers>
+                                <DataTrigger TargetType="Button" Binding="{Binding IsProjectsTabVisible}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
+                                    <Setter Property="TextColor" Value="White" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                        <Button Text="{x:Static resources:AppResources.Reports_TabTrend}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Trend" Style="{StaticResource TabButtonStyle}">
+                            <Button.Triggers>
+                                <DataTrigger TargetType="Button" Binding="{Binding IsTrendTabVisible}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
+                                    <Setter Property="TextColor" Value="White" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                        <Button Text="{x:Static resources:AppResources.Reports_TabWealth}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Wealth" Style="{StaticResource TabButtonStyle}">
+                            <Button.Triggers>
+                                <DataTrigger TargetType="Button" Binding="{Binding IsWealthTabVisible}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
+                                    <Setter Property="TextColor" Value="White" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                        <Button Text="{x:Static resources:AppResources.Reports_TabTop}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Top" Style="{StaticResource TabButtonStyle}">
+                            <Button.Triggers>
+                                <DataTrigger TargetType="Button" Binding="{Binding IsTopTabVisible}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
+                                    <Setter Property="TextColor" Value="White" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                    </HorizontalStackLayout>
+                </ScrollView>
+            </Border>
+            <!-- KONIEC ZAKŁADEK-->           
 
             <!-- 2. Widok braku danych -->
             <VerticalStackLayout IsVisible="{Binding HasData, Converter={StaticResource InvertedBoolConverter}}" VerticalOptions="Center" HorizontalOptions="Center" Margin="0,50,0,0" Spacing="10">
@@ -61,62 +110,44 @@
             </VerticalStackLayout>
             
 
-            <!-- 3. Wykresy (Kategorie / Projekty) -->
-            <Border Margin="10,0" Padding="10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding HasData}">
-                <VerticalStackLayout Spacing="10">
-
-                    <!-- Przełącznik zakładek z użyciem DataTriggers -->
-                    <Grid ColumnDefinitions="*, *" ColumnSpacing="5" BackgroundColor="{DynamicResource AppBackgroundColor}" Padding="4">
-                        <Grid.Resources>
-                            <Style TargetType="Button">
-                                <Setter Property="CornerRadius" Value="8" />
-                                <Setter Property="Padding" Value="0,8" />
-                                <Setter Property="FontSize" Value="13" />
-                                <Setter Property="FontAttributes" Value="Bold" />
-                                <Setter Property="BackgroundColor" Value="Transparent" />
-                                <Setter Property="TextColor" Value="{DynamicResource AppTextColor}" />
-                            </Style>
-                        </Grid.Resources>
-
-                        <Button Grid.Column="0" Text="{x:Static resources:AppResources.Reports_ExpensesByCategory}" Command="{Binding SwitchChartCommand}" CommandParameter="Category">
-                            <Button.Triggers>
-                                <DataTrigger TargetType="Button" Binding="{Binding IsCategoryChartVisible}" Value="True">
-                                    <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
-                                    <Setter Property="TextColor" Value="White" />
-                                </DataTrigger>
-                            </Button.Triggers>
-                        </Button>
-
-                        <Button Grid.Column="1" Text="{x:Static resources:AppResources.Reports_ExpensesByProject}" Command="{Binding SwitchChartCommand}" CommandParameter="Project">
-                            <Button.Triggers>
-                                <DataTrigger TargetType="Button" Binding="{Binding IsProjectChartVisible}" Value="True">
-                                    <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
-                                    <Setter Property="TextColor" Value="White" />
-                                </DataTrigger>
-                            </Button.Triggers>
-                        </Button>
-                    </Grid>
-
-                    <Grid HeightRequest="240">
-                        <!-- 1. Wykres Kategorii -->
-                        <lvc:PieChart Series="{Binding CategorySeries}" LegendPosition="Right" 
-                          IsVisible="{Binding IsCategoryChartVisible}" />
-
-                        <!-- 2. Wykres Projektów (Teraz korzysta z wyliczanej właściwości) -->
-                        <lvc:PieChart Series="{Binding ProjectSeries}" LegendPosition="Right" 
-                          IsVisible="{Binding IsProjectChartActuallyVisible}" />
-                        
-                        <!-- pusty stan tyko dla projektów -->
-                        <VerticalStackLayout IsVisible="{Binding IsProjectEmptyStateVisible}" VerticalOptions="Center" HorizontalOptions="Center" Margin="0,50,0,0" Spacing="10">
-                            <Label Text="{x:Static resources:AppResources.NoTransactionsLabel}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center"/>
-                            <Label Text="{x:Static resources:AppResources.NoTransactionsDescription}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalOptions="Center"/>
-                        </VerticalStackLayout>
-                    </Grid>
-                </VerticalStackLayout>
+            <!-- 3. Wykresy (Kategorie ) -->
+            <Border Margin="10,0" Padding="10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsCategoriesTabVisible}">
+                <Grid HeightRequest="260">
+                    <lvc:PieChart Series="{Binding CategorySeries}" LegendPosition="Right" />
+                </Grid>
+            </Border>
+            
+            <!--  3. Wykresy - Projekty-->
+            <Border Margin="10,0" Padding="10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsProjectsTabVisible}">
+                <Grid HeightRequest="260">
+                    <lvc:PieChart Series="{Binding ProjectSeries}" LegendPosition="Right" IsVisible="{Binding IsProjectChartActuallyVisible}" />
+                    <VerticalStackLayout IsVisible="{Binding IsProjectEmptyStateVisible}" VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
+                        <Label Text="{x:Static resources:AppResources.NoTransactionsLabel}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
+                        <Label Text="{x:Static resources:AppResources.NoTransactionsDescription}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+            <!--  Trend-->
+            <Border Margin="10,0" Padding="20" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsTrendTabVisible}">
+                <Grid HeightRequest="260">
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
+                        <Label Text="{x:Static resources:AppResources.Reports_TabTrend}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
+                        <Label Text="{x:Static resources:AppResources.Reports_TrendComingSoon}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.65" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+            <!-- Majątek-->
+            <Border Margin="10,0" Padding="20" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsWealthTabVisible}">
+                <Grid HeightRequest="260">
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
+                        <Label Text="{x:Static resources:AppResources.Reports_TabWealth}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
+                        <Label Text="{x:Static resources:AppResources.Reports_WealthComingSoon}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.65" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+                </Grid>
             </Border>
 
             <!-- 4. Top 10 Wydatków -->
-            <Border Margin="10,0" Padding="10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding HasData}">
+            <Border Margin="10,0" Padding="10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsTopTabVisible}">
                 <VerticalStackLayout Spacing="5">
                     <Label Text="{x:Static resources:AppResources.Reports_TopExpenses}" FontAttributes="Bold" FontSize="14" TextColor="{DynamicResource AppTextColor}" Margin="0,0,0,5"/>
 
@@ -132,7 +163,7 @@
                                         <Label Text="{Binding ProjectName}" FontSize="11" TextColor="{DynamicResource AppTextColor}" IsVisible="{Binding ProjectName, Converter={StaticResource StringNotEmptyConverter}}" />
                                     </HorizontalStackLayout>
 
-                                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding Amount, StringFormat='{0:C2}'}" FontAttributes="Bold" FontSize="13" TextColor="{DynamicResource PrimaryColor}" HorizontalOptions="End" />
+                                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding Amount, StringFormat='{0:N2}'}" FontAttributes="Bold" FontSize="13" TextColor="{DynamicResource PrimaryColor}" HorizontalOptions="End" />
                                     <Label Grid.Row="1" Grid.Column="1" Text="{Binding Date, StringFormat='{0:dd.MM}'}" FontSize="11" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" HorizontalOptions="End" />
                                 </Grid>
                             </DataTemplate>

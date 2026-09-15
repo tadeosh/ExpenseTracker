@@ -1024,6 +1024,33 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu All.
+        /// </summary>
+        internal static string Reports_AllItems {
+            get {
+                return ResourceManager.GetString("Reports_AllItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu All categories.
+        /// </summary>
+        internal static string Reports_BackToAllCategories {
+            get {
+                return ResourceManager.GetString("Reports_BackToAllCategories", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu All projects.
+        /// </summary>
+        internal static string Reports_BackToAllProjects {
+            get {
+                return ResourceManager.GetString("Reports_BackToAllProjects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Expenses by Category.
         /// </summary>
         internal static string Reports_ExpensesByCategory {
@@ -1047,6 +1074,33 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string Reports_GenerateReport {
             get {
                 return ResourceManager.GetString("Reports_GenerateReport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Main only.
+        /// </summary>
+        internal static string Reports_MainItemsOnly {
+            get {
+                return ResourceManager.GetString("Reports_MainItemsOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu No subcategory.
+        /// </summary>
+        internal static string Reports_NoSubcategory {
+            get {
+                return ResourceManager.GetString("Reports_NoSubcategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu No subproject.
+        /// </summary>
+        internal static string Reports_NoSubproject {
+            get {
+                return ResourceManager.GetString("Reports_NoSubproject", resourceCulture);
             }
         }
         
@@ -1114,11 +1168,74 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Categories.
+        /// </summary>
+        internal static string Reports_TabCategories {
+            get {
+                return ResourceManager.GetString("Reports_TabCategories", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Projects.
+        /// </summary>
+        internal static string Reports_TabProjects {
+            get {
+                return ResourceManager.GetString("Reports_TabProjects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Largest.
+        /// </summary>
+        internal static string Reports_TabTop {
+            get {
+                return ResourceManager.GetString("Reports_TabTop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Trend.
+        /// </summary>
+        internal static string Reports_TabTrend {
+            get {
+                return ResourceManager.GetString("Reports_TabTrend", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Wealth.
+        /// </summary>
+        internal static string Reports_TabWealth {
+            get {
+                return ResourceManager.GetString("Reports_TabWealth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Top Expenses.
         /// </summary>
         internal static string Reports_TopExpenses {
             get {
                 return ResourceManager.GetString("Reports_TopExpenses", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Income and expense trends will be available here..
+        /// </summary>
+        internal static string Reports_TrendComingSoon {
+            get {
+                return ResourceManager.GetString("Reports_TrendComingSoon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Wealth history will be available here..
+        /// </summary>
+        internal static string Reports_WealthComingSoon {
+            get {
+                return ResourceManager.GetString("Reports_WealthComingSoon", resourceCulture);
             }
         }
         

@@ -9,6 +9,17 @@ namespace ExpenseTracker.Data
         // Obiekt reprezentujący połączenie z bazą
         private SQLiteAsyncConnection _database = null!;
 
+        public DatabaseService()
+        {
+        }
+
+        internal DatabaseService(SQLiteAsyncConnection database)
+        {
+            _database = database ?? throw new ArgumentNullException(nameof(database));
+        }
+
+
+
         // Inicjalizacja bazy danych (tworzenie pliku i tabel z szyfrowaniem SQLCipher)
         private async Task InitAsync()
         {
