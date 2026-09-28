@@ -1,6 +1,6 @@
 ﻿using ExpenseTracker.Helpers;
 
-namespace ExpenseTracker.Controls
+namespace ExpenseTracker.Views.Controls
 {
     // Dziedziczymy po standardowym Pickerze, dzięki czemu zachowujemy jego wygląd i zachowanie
     public class CurrencyPicker : Picker

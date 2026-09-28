@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
+
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
@@ -6,9 +7,10 @@
              xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
              xmlns:resources="clr-namespace:ExpenseTracker.Resources.Strings"
              xmlns:converters="clr-namespace:ExpenseTracker.Converters"
+             xmlns:controls="clr-namespace:ExpenseTracker.Views.Controls"
              x:DataType="viewmodels:ReportsViewModel"
              x:Class="ExpenseTracker.Views.ReportsPage"
-             Title="{x:Static resources:AppResources.ReportsPageTitle}"
+             Title="{Binding PageTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}">
 
     <ContentPage.Resources>
@@ -16,129 +18,199 @@
         <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter" />
     </ContentPage.Resources>
 
-    <ScrollView>
-        <VerticalStackLayout Spacing="10" Padding="0,0,0,20">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="10" Padding="0,10,0,10">
 
-            <!-- 1. Nawigacja zakresem czasu -->
-            <Border BackgroundColor="{DynamicResource SectionBackgroundColor}" StrokeThickness="0" Padding="15,0" Margin="10,10,10,0">
-                <Picker ItemsSource="{Binding Scopes}" 
-                        SelectedItem="{Binding SelectedScope}" 
-                        ItemDisplayBinding="{Binding DisplayName}"
-                        Title="{x:Static resources:AppResources.Reports_SelectPeriod}"
-                        TextColor="{DynamicResource AppTextColor}" 
-                        HorizontalOptions="Fill" />
-            </Border>
+        <!-- 1. Nawigacja zakresem czasu -->
+        <Border Grid.Row="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" StrokeThickness="0" Padding="15,0" Margin="10,0">
+            <!--<Picker ItemsSource="{Binding Scopes}" SelectedItem="{Binding SelectedScope}" ItemDisplayBinding="{Binding DisplayName}" 
+                    Title="{x:Static resources:AppResources.Reports_SelectPeriod}" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />-->
+            <controls:AppPicker ItemsSource="{Binding Scopes}" SelectedItem="{Binding SelectedScope}" ItemDisplayPath="DisplayName" Title="{x:Static resources:AppResources.Reports_SelectPeriod}" HorizontalOptions="Fill" />
+        </Border>
 
-            <!-- Strzałki przesuwania miesięcy (Widoczne dla Miesiąc/Rok) -->
-            <Grid ColumnDefinitions="Auto, *, Auto" Margin="15,0" IsVisible="{Binding IsNavigationVisible}">
-                <Button Grid.Column="0" Text="&lt;" Command="{Binding PreviousPeriodCommand}" BackgroundColor="Transparent" TextColor="{DynamicResource PrimaryColor}" FontSize="24" FontAttributes="Bold" Padding="10"/>
-                <Label Grid.Column="1" Text="{Binding CurrentPeriodLabel}" HorizontalOptions="Center" VerticalOptions="Center" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}"/>
-                <Button Grid.Column="2" Text="&gt;" Command="{Binding NextPeriodCommand}" BackgroundColor="Transparent" TextColor="{DynamicResource PrimaryColor}" FontSize="24" FontAttributes="Bold" Padding="10"/>
-            </Grid>
+        <!-- 2. Strzałki przesuwania miesięcy / lat -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Margin="15,0" IsVisible="{Binding IsNavigationVisible}">
+            <Button Grid.Column="0" Text="&lt;" Command="{Binding PreviousPeriodCommand}" BackgroundColor="Transparent" TextColor="{DynamicResource PrimaryColor}" FontSize="24" FontAttributes="Bold" Padding="10" />
+            <Label Grid.Column="1" Text="{Binding CurrentPeriodLabel}" HorizontalOptions="Center" VerticalOptions="Center" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
+            <Button Grid.Column="2" Text="&gt;" Command="{Binding NextPeriodCommand}" BackgroundColor="Transparent" TextColor="{DynamicResource PrimaryColor}" FontSize="24" FontAttributes="Bold" Padding="10" />
+        </Grid>
 
-            <!-- Własny zakres dat (Widoczne tylko dla ReportScope.Custom) -->
-            <Border BackgroundColor="{DynamicResource SectionBackgroundColor}" StrokeThickness="0" Padding="15" Margin="10,0" IsVisible="{Binding IsCustomDateVisible}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="{x:Static resources:AppResources.Reports_SelectTimeframe}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.7"/>
+        <!-- 3. Własny zakres dat -->
+        <Border Grid.Row="2" BackgroundColor="{DynamicResource SectionBackgroundColor}" StrokeThickness="0" Padding="15" Margin="10,0" IsVisible="{Binding IsCustomDateVisible}">
+            <Grid>
 
-                    <Grid ColumnDefinitions="*, Auto, *" ColumnSpacing="10" VerticalOptions="Center">
-                        <DatePicker Grid.Column="0" Date="{Binding StartDate}" Format="dd.MM.yyyy" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill"/>
-                        <Label Grid.Column="1" Text="-" VerticalOptions="Center" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}"/>
-                        <DatePicker Grid.Column="2" Date="{Binding EndDate}" Format="dd.MM.yyyy" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill"/>
+                <!-- Zwinięty Custom -->
+                <Grid ColumnDefinitions="*,Auto" Padding="4,6" IsVisible="{Binding IsCustomDateExpanded, Converter={StaticResource InvertedBoolConverter}}">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ToggleCustomDateCommand}" />
+                    </Grid.GestureRecognizers>
+
+                    <Label Grid.Column="0" Text="{Binding CurrentPeriodLabel}" VerticalOptions="Center" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" InputTransparent="True" />
+                    <Label Grid.Column="1" Text="▼" VerticalOptions="Center" TextColor="{DynamicResource PrimaryColor}" FontSize="18" FontAttributes="Bold" Padding="10,0" InputTransparent="True" />
+                </Grid>
+
+                <!-- Rozwinięty Custom -->
+                <VerticalStackLayout Spacing="10" IsVisible="{Binding IsCustomDateExpanded}">
+                    <Label Text="{x:Static resources:AppResources.Reports_SelectTimeframe}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" />
+
+                    <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="10" VerticalOptions="Center">
+                        <DatePicker Grid.Column="0" Date="{Binding StartDate}" Format="d" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />
+                        <Label Grid.Column="1" Text="-" VerticalOptions="Center" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
+                        <DatePicker Grid.Column="2" Date="{Binding EndDate}" Format="d" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />
                     </Grid>
 
-                    <Button Text="{x:Static resources:AppResources.Reports_GenerateReport}" 
-                            Command="{Binding ApplyCustomDateCommand}" 
-                            BackgroundColor="{DynamicResource PrimaryColor}" 
-                            TextColor="White" FontAttributes="Bold" CornerRadius="8" Margin="0,10,0,0"/>
+                    <Label Text="{Binding CustomDateError}" IsVisible="{Binding CustomDateError, Converter={StaticResource StringNotEmptyConverter}}" TextColor="#D9534F" FontSize="13" HorizontalTextAlignment="Center" />
+
+                    <Button Text="{x:Static resources:AppResources.Reports_GenerateReport}" Command="{Binding ApplyCustomDateCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="White" FontAttributes="Bold" CornerRadius="8" Margin="0,10,0,0" />
                 </VerticalStackLayout>
-            </Border>
-            
-            <!--  ZAKŁADKI -->
-            <Border Margin="10,0" Padding="4" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
-                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
-                    <HorizontalStackLayout Spacing="6">
-                        <Button Text="{x:Static resources:AppResources.Reports_TabCategories}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Categories" Style="{StaticResource TabButtonStyle}">
-                            <Button.Triggers>
-                                <DataTrigger TargetType="Button" Binding="{Binding IsCategoriesTabVisible}" Value="True">
-                                    <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
-                                    <Setter Property="TextColor" Value="White" />
-                                </DataTrigger>
-                            </Button.Triggers>
-                        </Button>
-                        <Button Text="{x:Static resources:AppResources.Reports_TabProjects}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Projects" Style="{StaticResource TabButtonStyle}">
-                            <Button.Triggers>
-                                <DataTrigger TargetType="Button" Binding="{Binding IsProjectsTabVisible}" Value="True">
-                                    <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
-                                    <Setter Property="TextColor" Value="White" />
-                                </DataTrigger>
-                            </Button.Triggers>
-                        </Button>
-                        <Button Text="{x:Static resources:AppResources.Reports_TabTrend}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Trend" Style="{StaticResource TabButtonStyle}">
-                            <Button.Triggers>
-                                <DataTrigger TargetType="Button" Binding="{Binding IsTrendTabVisible}" Value="True">
-                                    <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
-                                    <Setter Property="TextColor" Value="White" />
-                                </DataTrigger>
-                            </Button.Triggers>
-                        </Button>
-                        <Button Text="{x:Static resources:AppResources.Reports_TabWealth}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Wealth" Style="{StaticResource TabButtonStyle}">
-                            <Button.Triggers>
-                                <DataTrigger TargetType="Button" Binding="{Binding IsWealthTabVisible}" Value="True">
-                                    <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
-                                    <Setter Property="TextColor" Value="White" />
-                                </DataTrigger>
-                            </Button.Triggers>
-                        </Button>
-                        <Button Text="{x:Static resources:AppResources.Reports_TabTop}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Top" Style="{StaticResource TabButtonStyle}">
-                            <Button.Triggers>
-                                <DataTrigger TargetType="Button" Binding="{Binding IsTopTabVisible}" Value="True">
-                                    <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
-                                    <Setter Property="TextColor" Value="White" />
-                                </DataTrigger>
-                            </Button.Triggers>
-                        </Button>
-                    </HorizontalStackLayout>
-                </ScrollView>
-            </Border>
-            <!-- KONIEC ZAKŁADEK-->           
 
-            <!-- 2. Widok braku danych -->
-            <VerticalStackLayout IsVisible="{Binding HasData, Converter={StaticResource InvertedBoolConverter}}" VerticalOptions="Center" HorizontalOptions="Center" Margin="0,50,0,0" Spacing="10">
-                <Label Text="{x:Static resources:AppResources.NoTransactionsLabel}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center"/>
-                <Label Text="{x:Static resources:AppResources.NoTransactionsDescription}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalOptions="Center"/>
-            </VerticalStackLayout>
-            
+            </Grid>
+        </Border>
 
-            <!-- 3. Wykresy (Kategorie ) -->
+        <!-- 4. Zakładki -->
+        <Border Grid.Row="3" Margin="10,0" Padding="4" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+            <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                <HorizontalStackLayout Spacing="6">
+
+                    <Button Text="{x:Static resources:AppResources.Reports_TabCategories}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Categories" Style="{StaticResource TabButtonStyle}">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsCategoriesTabVisible}" Value="True">
+                                <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
+                                <Setter Property="TextColor" Value="White" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Button Text="{x:Static resources:AppResources.Reports_TabProjects}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Projects" Style="{StaticResource TabButtonStyle}">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsProjectsTabVisible}" Value="True">
+                                <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
+                                <Setter Property="TextColor" Value="White" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Button Text="{x:Static resources:AppResources.Reports_TabTrend}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Trend" Style="{StaticResource TabButtonStyle}">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsTrendTabVisible}" Value="True">
+                                <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
+                                <Setter Property="TextColor" Value="White" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Button Text="{x:Static resources:AppResources.Reports_TabWealth}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Wealth" Style="{StaticResource TabButtonStyle}">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsWealthTabVisible}" Value="True">
+                                <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
+                                <Setter Property="TextColor" Value="White" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                    <Button Text="{x:Static resources:AppResources.Reports_TabTop}" Command="{Binding SwitchReportTabCommand}" CommandParameter="Top" Style="{StaticResource TabButtonStyle}">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding IsTopTabVisible}" Value="True">
+                                <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryColor}" />
+                                <Setter Property="TextColor" Value="White" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
+
+                </HorizontalStackLayout>
+            </ScrollView>
+        </Border>
+
+        <!-- 5. Aktywna zakładka -->
+        <Grid Grid.Row="4">
+
+            <!-- Brak danych --><!--
+            <VerticalStackLayout IsVisible="{Binding HasData, Converter={StaticResource InvertedBoolConverter}}" VerticalOptions="Center" HorizontalOptions="Center" Margin="20" Spacing="10">
+                <Label Text="{x:Static resources:AppResources.NoTransactionsLabel}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
+                <Label Text="{x:Static resources:AppResources.NoTransactionsDescription}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>-->
+
+            <!-- Kategorie -->
             <Border Margin="10,0" Padding="10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsCategoriesTabVisible}">
-                <Grid HeightRequest="260">
-                    <lvc:PieChart Series="{Binding CategorySeries}" LegendPosition="Right" />
+                <Grid>
+                    <lvc:PieChart Series="{Binding CategorySeries}" LegendPosition="Right" IsVisible="{Binding HasCategoryData}" />
+
+                    <VerticalStackLayout IsVisible="{Binding HasCategoryData, Converter={StaticResource InvertedBoolConverter}}" VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
+                        <Label Text="{x:Static resources:AppResources.NoTransactionsLabel}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
+                        <Label Text="{x:Static resources:AppResources.NoTransactionsDescription}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
                 </Grid>
             </Border>
-            
-            <!--  3. Wykresy - Projekty-->
+
+            <!-- Projekty -->
             <Border Margin="10,0" Padding="10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsProjectsTabVisible}">
-                <Grid HeightRequest="260">
+                <Grid>
                     <lvc:PieChart Series="{Binding ProjectSeries}" LegendPosition="Right" IsVisible="{Binding IsProjectChartActuallyVisible}" />
+
                     <VerticalStackLayout IsVisible="{Binding IsProjectEmptyStateVisible}" VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
                         <Label Text="{x:Static resources:AppResources.NoTransactionsLabel}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
                         <Label Text="{x:Static resources:AppResources.NoTransactionsDescription}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalOptions="Center" />
                     </VerticalStackLayout>
                 </Grid>
             </Border>
-            <!--  Trend-->
-            <Border Margin="10,0" Padding="20" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsTrendTabVisible}">
-                <Grid HeightRequest="260">
-                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
-                        <Label Text="{x:Static resources:AppResources.Reports_TabTrend}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
-                        <Label Text="{x:Static resources:AppResources.Reports_TrendComingSoon}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.65" HorizontalTextAlignment="Center" />
-                    </VerticalStackLayout>
+
+            <!-- Trend -->
+            <Border Margin="10,0" Padding="10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsTrendTabVisible}">
+                <Grid RowDefinitions="*,Auto,Auto" RowSpacing="10">
+
+                    <Grid Grid.Row="0">
+                        <lvc:CartesianChart Series="{Binding TrendSeries}" XAxes="{Binding TrendXAxes}" YAxes="{Binding TrendYAxes}" ZoomMode="X,NoFit" LegendPosition="Top" IsVisible="{Binding HasTrendData}" />
+
+                        <VerticalStackLayout IsVisible="{Binding HasTrendData, Converter={StaticResource InvertedBoolConverter}}" VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
+                            <Label Text="{x:Static resources:AppResources.Reports_NoTrendData}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.65" HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Serie trendu -->
+                    <FlexLayout Grid.Row="1" Direction="Row" Wrap="Wrap" JustifyContent="Center" AlignItems="Center">
+
+                        <HorizontalStackLayout Spacing="4" Margin="6,0">
+                            <CheckBox IsChecked="{Binding ShowIncomeTrend}" Color="#2E8B57" />
+                            <Label Text="{x:Static resources:AppResources.Reports_TrendIncome}" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout Spacing="4" Margin="6,0">
+                            <CheckBox IsChecked="{Binding ShowExpenseTrend}" Color="#D9534F" />
+                            <Label Text="{x:Static resources:AppResources.Reports_TrendExpenses}" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout Spacing="4" Margin="6,0">
+                            <CheckBox IsChecked="{Binding ShowNetTrend}" Color="#1E88E5" />
+                            <Label Text="{x:Static resources:AppResources.Reports_TrendBalance}" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
+                        </HorizontalStackLayout>
+
+                    </FlexLayout>
+
+                    <!-- Opcje trendu -->
+                    <FlexLayout Grid.Row="2" Direction="Row" Wrap="Wrap" JustifyContent="Center" AlignItems="Center">
+
+                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="4" Margin="6,0" IsVisible="{Binding IsWeeklyTrend}">
+                            <CheckBox IsChecked="{Binding ShowWeekNumbers}" />
+                            <Label Text="{x:Static resources:AppResources.Reports_ShowWeekNumbers}" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="4" Margin="6,0" IsVisible="{Binding HasTrendData}">
+                            <CheckBox IsChecked="{Binding ShowRoundedTrendAmounts}" />
+                            <Label Text="{x:Static resources:AppResources.Reports_ShowRoundedAmounts}" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="4" Margin="6,0">
+                            <CheckBox IsChecked="{Binding AutoScaleYAxis}" />
+                            <Label Text="{x:Static resources:AppResources.Reports_AutoScaleYAxis}" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
+                        </HorizontalStackLayout>
+
+                    </FlexLayout>
+
                 </Grid>
             </Border>
-            <!-- Majątek-->
+
+            <!-- Majątek -->
             <Border Margin="10,0" Padding="20" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsWealthTabVisible}">
-                <Grid HeightRequest="260">
+                <Grid>
                     <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
                         <Label Text="{x:Static resources:AppResources.Reports_TabWealth}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
                         <Label Text="{x:Static resources:AppResources.Reports_WealthComingSoon}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.65" HorizontalTextAlignment="Center" />
@@ -146,15 +218,18 @@
                 </Grid>
             </Border>
 
-            <!-- 4. Top 10 Wydatków -->
+            <!-- Top 10 wydatków -->
             <Border Margin="10,0" Padding="10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsTopTabVisible}">
-                <VerticalStackLayout Spacing="5">
-                    <Label Text="{x:Static resources:AppResources.Reports_TopExpenses}" FontAttributes="Bold" FontSize="14" TextColor="{DynamicResource AppTextColor}" Margin="0,0,0,5"/>
+                <Grid RowDefinitions="Auto,*" RowSpacing="5">
 
-                    <CollectionView ItemsSource="{Binding TopExpenses}" SelectionMode="None">
+                    <Label Grid.Row="0" Text="{x:Static resources:AppResources.Reports_TopExpenses}" FontAttributes="Bold" FontSize="14" TextColor="{DynamicResource AppTextColor}" Margin="0,0,0,5" />
+
+                    <CollectionView Grid.Row="1" ItemsSource="{Binding TopExpenses}" SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="dto:TransactionDetailDto">
-                                <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto" Padding="0,6">
+
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" Padding="0,6">
+
                                     <Label Grid.Row="0" Grid.Column="0" Text="{Binding Description}" FontAttributes="Bold" FontSize="13" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
 
                                     <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="4" Opacity="0.7">
@@ -165,13 +240,18 @@
 
                                     <Label Grid.Row="0" Grid.Column="1" Text="{Binding Amount, StringFormat='{0:N2}'}" FontAttributes="Bold" FontSize="13" TextColor="{DynamicResource PrimaryColor}" HorizontalOptions="End" />
                                     <Label Grid.Row="1" Grid.Column="1" Text="{Binding Date, StringFormat='{0:dd.MM}'}" FontSize="11" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" HorizontalOptions="End" />
+
                                 </Grid>
+
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
-                </VerticalStackLayout>
+
+                </Grid>
             </Border>
 
-        </VerticalStackLayout>
-    </ScrollView>
+        </Grid>
+
+    </Grid>
+
 </ContentPage>

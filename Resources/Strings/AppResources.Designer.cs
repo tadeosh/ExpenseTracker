@@ -1033,6 +1033,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Trend.
+        /// </summary>
+        internal static string Reports_AutoScaleYAxis {
+            get {
+                return ResourceManager.GetString("Reports_AutoScaleYAxis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu All categories.
         /// </summary>
         internal static string Reports_BackToAllCategories {
@@ -1069,11 +1078,29 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The report could not be generated..
+        /// </summary>
+        internal static string Reports_GenerateError {
+            get {
+                return ResourceManager.GetString("Reports_GenerateError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Generate report.
         /// </summary>
         internal static string Reports_GenerateReport {
             get {
                 return ResourceManager.GetString("Reports_GenerateReport", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Start date cannot be greater than end date!.
+        /// </summary>
+        internal static string Reports_InvalidDateRange {
+            get {
+                return ResourceManager.GetString("Reports_InvalidDateRange", resourceCulture);
             }
         }
         
@@ -1101,6 +1128,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string Reports_NoSubproject {
             get {
                 return ResourceManager.GetString("Reports_NoSubproject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu No trend data is available for the selected period..
+        /// </summary>
+        internal static string Reports_NoTrendData {
+            get {
+                return ResourceManager.GetString("Reports_NoTrendData", resourceCulture);
             }
         }
         
@@ -1168,6 +1204,24 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Show rounded amounts.
+        /// </summary>
+        internal static string Reports_ShowRoundedAmounts {
+            get {
+                return ResourceManager.GetString("Reports_ShowRoundedAmounts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Show week numbers.
+        /// </summary>
+        internal static string Reports_ShowWeekNumbers {
+            get {
+                return ResourceManager.GetString("Reports_ShowWeekNumbers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Categories.
         /// </summary>
         internal static string Reports_TabCategories {
@@ -1222,11 +1276,38 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Balance.
+        /// </summary>
+        internal static string Reports_TrendBalance {
+            get {
+                return ResourceManager.GetString("Reports_TrendBalance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Income and expense trends will be available here..
         /// </summary>
         internal static string Reports_TrendComingSoon {
             get {
                 return ResourceManager.GetString("Reports_TrendComingSoon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Expenses.
+        /// </summary>
+        internal static string Reports_TrendExpenses {
+            get {
+                return ResourceManager.GetString("Reports_TrendExpenses", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Income.
+        /// </summary>
+        internal static string Reports_TrendIncome {
+            get {
+                return ResourceManager.GetString("Reports_TrendIncome", resourceCulture);
             }
         }
         

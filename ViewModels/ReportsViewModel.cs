@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using ExpenseTracker.Models;
 using ExpenseTracker.Models.Reports;
 using ExpenseTracker.Resources.Strings;
+using ExpenseTracker.Services;
 using ExpenseTracker.Services.Interfaces;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
@@ -44,9 +45,13 @@ namespace ExpenseTracker.ViewModels
     public partial class ReportsViewModel : ObservableObject
     {
         private readonly IReportService _reportService;
+        private readonly ISettingsService _settingsService;
 
         // Baza do obliczeń (punkt w czasie, po którym przesuwają się strzałki)
         private DateTime _referenceDate = DateTime.Today;
+        //[ObservableProperty]
+        //public partial string PageTitle { get; set; } = string.Empty;
+        public string PageTitle => $"{AppResources.ReportsPageTitle} ({_settingsService.DefaultCurrency})";
 
         [ObservableProperty]
         public partial DateTime StartDate { get; set; }
@@ -78,6 +83,9 @@ namespace ExpenseTracker.ViewModels
             new ReportScopeItem { Scope = ReportScope.Yearly, DisplayName = AppResources.Reports_ScopeYearly },
             new ReportScopeItem { Scope = ReportScope.Custom, DisplayName = AppResources.Reports_ScopeCustom }
         };
+
+        [ObservableProperty]
+        private bool isCustomDateExpanded = true;
 
         // ================ przygotowanie do zakładek =====================
         [ObservableProperty]
@@ -121,39 +129,66 @@ namespace ExpenseTracker.ViewModels
         [NotifyPropertyChangedFor(nameof(IsProjectEmptyStateVisible))]
         [NotifyPropertyChangedFor(nameof(IsProjectChartActuallyVisible))]
         public partial bool HasProjectData { get; set; }
+        [ObservableProperty]
+        public partial bool HasCategoryData { get; set; }
+        [ObservableProperty]
+        public partial string CustomDateError { get; set; } = string.Empty;
 
-        //[ObservableProperty]
-        //[NotifyPropertyChangedFor(nameof(IsProjectEmptyStateVisible))]
-        //[NotifyPropertyChangedFor(nameof(IsProjectChartActuallyVisible))]
-        //public partial bool IsCategoryChartVisible { get; set; } = true;
 
-        //[ObservableProperty]
-        //[NotifyPropertyChangedFor(nameof(IsProjectEmptyStateVisible))]
-        //[NotifyPropertyChangedFor(nameof(IsProjectChartActuallyVisible))]
-        //public partial bool IsProjectChartVisible { get; set; } = false;
         public bool IsProjectEmptyStateVisible => !HasProjectData;
         public bool IsProjectChartActuallyVisible => HasProjectData;
 
         //============================koniec deklaracji pól i właściwości========================================================
         // TRENDY
-        //[ObservableProperty]
-        //public partial bool ShowIncomeTrend { get; set; } = true;
+        [ObservableProperty]
+        public partial ObservableCollection<ISeries> TrendSeries { get; set; } = new();
 
-        //[ObservableProperty]
-        //public partial bool ShowExpenseTrend { get; set; } = true;
+        [ObservableProperty]
+        public partial Axis[] TrendXAxes { get; set; } = [new Axis()];
 
-        //[ObservableProperty]
-        //public partial bool ShowNetTrend { get; set; } = true;
+        [ObservableProperty]
+        public partial Axis[] TrendYAxes { get; set; } = [new Axis()];
+
+        [ObservableProperty]
+        public partial bool ShowIncomeTrend { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool ShowExpenseTrend { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool ShowNetTrend { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool ShowWeekNumbers { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool ShowRoundedTrendAmounts { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool IsWeeklyTrend { get; set; }
+
+        [ObservableProperty]
+        public partial bool HasTrendData { get; set; }
+        [ObservableProperty]
+        public partial bool AutoScaleYAxis { get; set; } = true;
+
+        private LineSeries<double>? _incomeTrendSeries;
+        private LineSeries<double>? _expenseTrendSeries;
+        private LineSeries<double>? _netTrendSeries;
+        private IReadOnlyList<TrendDataPoint> _trendData = [];
+        private TrendGrouping _currentTrendGrouping = TrendGrouping.Day;
+        private bool _isCustomTrendRange;
 
         // koniec Trendów
 
-        public ReportsViewModel(IReportService reportService)
+        public ReportsViewModel(IReportService reportService, ISettingsService settingsService)
         {
             _reportService = reportService;
-            // Ustawienie domyślne na Miesięczny nie wyzwala od razu ładowania (robimy to w InitializeAsync)
-            //SelectedScope = Scopes.First();
+            _settingsService = settingsService;
+        
         }
 
+        
         public async Task InitializeAsync()
         {
             // Jeśli wracamy na stronę (nawigacja wstecz), tylko odświeżamy dane
@@ -179,20 +214,11 @@ namespace ExpenseTracker.ViewModels
             _ = UpdateRangeAndLoadAsync();   // Bezpieczne odpalenie asynchroniczne typu Fire-and-forget (XAML je obsłuży)
         }
 
-        //[RelayCommand]
-        //private void SwitchChart(string chartType)
-        //{
-        //    if(chartType == "Category")
-        //    {
-        //        IsCategoryChartVisible = true;
-        //        IsProjectChartVisible = false;
-        //    }
-        //    else if (chartType == "Project")
-        //    {
-        //        IsCategoryChartVisible = false;
-        //        IsProjectChartVisible = true;
-        //    }
-        //}
+        [RelayCommand]
+        private void ToggleCustomDate()
+        {
+            IsCustomDateExpanded = !IsCustomDateExpanded;
+        }
 
         [RelayCommand]
         private async Task PreviousPeriodAsync()
@@ -211,8 +237,30 @@ namespace ExpenseTracker.ViewModels
         [RelayCommand]
         private async Task ApplyCustomDateAsync()
         {
-            // Ręczne wymuszenie załadowania danych dla wybranych z DatePickerów dat
-            await LoadReportDataAsync();
+            CustomDateError = string.Empty;
+
+            var startDate = StartDate.Date;
+            var endDate = EndDate.Date;
+
+            if (startDate > endDate)
+            {
+                CustomDateError = AppResources.Reports_InvalidDateRange;
+                IsCustomDateExpanded = true;
+                return;
+            }
+
+            try
+            {
+                await LoadReportDataAsync();
+
+                CurrentPeriodLabel = FormatCustomPeriodLabel(startDate, endDate);
+                IsCustomDateExpanded = false;
+            }
+            catch (Exception)
+            {
+                CustomDateError = AppResources.Reports_GenerateError;
+                IsCustomDateExpanded = true;
+            }
         }
 
         private void ShiftReferenceDate(int direction)
@@ -221,6 +269,11 @@ namespace ExpenseTracker.ViewModels
                 _referenceDate = _referenceDate.AddYears(direction);
             else if (SelectedScope?.Scope == ReportScope.Monthly)
                 _referenceDate = _referenceDate.AddMonths(direction);
+        }
+
+        private static string FormatCustomPeriodLabel(DateTime startDate, DateTime endDate)
+        {
+            return $"{startDate.ToString("d", CultureInfo.CurrentCulture)} – {endDate.ToString("d", CultureInfo.CurrentCulture)}";
         }
 
         private async Task UpdateRangeAndLoadAsync()
@@ -267,6 +320,8 @@ namespace ExpenseTracker.ViewModels
                     case ReportScope.Custom:
                         CurrentPeriodLabel = "Własny zakres";
                         IsCustomDateVisible = true;
+                        IsCustomDateExpanded = true;
+                        CustomDateError = string.Empty;
                         // Ważne: Nie nadpisujemy StartDate i EndDate, pozwalamy użytkownikowi je wybrać!
                         break;
                 }
@@ -292,36 +347,61 @@ namespace ExpenseTracker.ViewModels
         private async Task LoadReportDataAsync()
         {
             double innerRadius = DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.iOS ? 30 : 60;
-            var filterContext = new ReportFilterContext
+
+            var expenseContext = new ReportFilterContext
             {
                 StartDate = StartDate,
                 EndDate = EndDate,
-                TransactionType = TransactionType.Expense
-                // Docelowo: BaseCurrency = _settingsService.GetBaseCurrency()
+                TransactionType = TransactionType.Expense,
+                BaseCurrency = _settingsService.DefaultCurrency
             };
 
-            var categoryData = await _reportService.GetCategoryBreakdownAsync(filterContext);
-            var projectData = await _reportService.GetProjectBreakdownAsync(filterContext);
+            var trendContext = new ReportFilterContext
+            {
+                StartDate = StartDate,
+                EndDate = EndDate,
+                TransactionType = null,
+                BaseCurrency = _settingsService.DefaultCurrency
+            };
+
+            var categoryData = await _reportService.GetCategoryBreakdownAsync(expenseContext);
+            var projectData = await _reportService.GetProjectBreakdownAsync(expenseContext);
+            var topTransactions = await _reportService.GetTopTransactionsAsync(expenseContext, 10);
+
+            await LoadTrendAsync(trendContext, SelectedScope?.Scope == ReportScope.Custom);
+
+            CategorySeries.Clear();
             ProjectSeries.Clear();
+            TopExpenses.Clear();
 
-            if (!projectData.Any(p => p.ProjectId != 0)) // Sprawdzamy czy są jakiekolwiek przypisane projekty
-            {
-                HasProjectData = false;
-            }
-            else
-            {
-                HasProjectData = true;
-                //innerRadius = DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.iOS ? 30 : 60;
+            HasCategoryData = categoryData.Any();
+            HasProjectData = projectData.Any(x => x.ProjectId != 0);
 
-                foreach (var item in projectData)
+            foreach (var item in categoryData)
+            {
+                SKColor.TryParse(item.ColorHex, out var skColor);
+
+                CategorySeries.Add(new PieSeries<double>
                 {
-                    // Ignorujemy z wykresu transakcje bez projektu (opcjonalne, w zależności od wymagań biznesowych)
-                    if (item.ProjectId == 0) continue;
-
+                    Values = [(double)item.TotalAmount],
+                    Name = item.CategoryName,
+                    Fill = new SolidColorPaint(skColor),
+                    InnerRadius = innerRadius,
+                    MaxRadialColumnWidth = 70,
+                    HoverPushout = 10,
+                    ToolTipLabelFormatter = point => $"{point.Context.Series.Name}: {point.Model:N2} ({item.Percentage:F1}%)"
+                });
+            }
+                        
+            if (HasProjectData)
+            {
+                foreach (var item in projectData.Where(x => x.ProjectId != 0))
+                {
                     SKColor.TryParse(item.ColorHex, out var skColor);
+
                     ProjectSeries.Add(new PieSeries<double>
                     {
-                        Values = new double[] { (double)item.TotalAmount },
+                        Values = [(double)item.TotalAmount],
                         Name = item.ProjectName,
                         Fill = new SolidColorPaint(skColor),
                         InnerRadius = innerRadius,
@@ -332,42 +412,203 @@ namespace ExpenseTracker.ViewModels
                 }
             }
 
-            // CZYSZCZENIE KOLEKCJI ZAMIAST TWORZENIA NOWYCH INSTANCJI
-            CategorySeries.Clear();
-            TopExpenses.Clear();
-
-            if (!categoryData.Any())
-            {
-                HasData = false;
-                return;
-            }
-
-            HasData = true;
-
-            // 1. Aktualizacja wykresu kołowego
-            //double innerRadius = DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.iOS ? 30 : 60;
-
-            foreach (var item in categoryData)
-            {
-                SKColor.TryParse(item.ColorHex, out var skColor);
-                CategorySeries.Add(new PieSeries<double>
-                {
-                    Values = new double[] { (double)item.TotalAmount },
-                    Name = item.CategoryName,
-                    Fill = new SolidColorPaint(skColor),
-                    InnerRadius = innerRadius,
-                    MaxRadialColumnWidth = 70, // Blokuje nadmierne "puchnięcie" wykresu na Windowsie
-                    HoverPushout = 10, // Efekt wysunięcia przy najechaniu/dotknięciu
-                    ToolTipLabelFormatter = point => $"{point.Context.Series.Name}: {point.Model:N2} ({item.Percentage:F1}%)"
-                });
-            }
-
-            // 2. Aktualizacja największych wydatków
-            var topTransactions = await _reportService.GetTopTransactionsAsync(filterContext, 10);
             foreach (var transaction in topTransactions)
-            {
                 TopExpenses.Add(transaction);
-            }
+
+            HasData = categoryData.Any() || projectData.Any(x => x.ProjectId != 0) || topTransactions.Any() || HasTrendData;
+        }
+
+        // ================ TRENDY ==========================
+        partial void OnShowIncomeTrendChanged(bool value)
+        {
+            RefreshVisibleTrendSeries();
+        }
+
+        partial void OnShowExpenseTrendChanged(bool value)
+        {
+            RefreshVisibleTrendSeries();
+        }
+
+        partial void OnShowNetTrendChanged(bool value)
+        {
+            RefreshVisibleTrendSeries();
+        }
+
+        partial void OnShowWeekNumbersChanged(bool value)
+        {
+            RefreshTrendAxes();
+        }
+
+        partial void OnShowRoundedTrendAmountsChanged(bool value)
+        {
+            RefreshTrendAxes();
+        }
+        partial void OnAutoScaleYAxisChanged(bool value)
+        {
+            RefreshTrendAxes();
+        }
+        
+        private async Task LoadTrendAsync(ReportFilterContext context, bool isCustomRange)
+        {
+            var trendData = await _reportService.GetTrendAsync(context);
+
+            _isCustomTrendRange = isCustomRange;
+
+            _trendData = trendData;
+            _currentTrendGrouping = ReportService.GetTrendGrouping(context.StartDate, context.EndDate);
+            IsWeeklyTrend = _currentTrendGrouping == TrendGrouping.Week;
+            HasTrendData = trendData.Any(x => x.Income != 0m || x.Expense != 0m);
+
+            var incomeColor = SKColor.Parse("#2E8B57");
+            var expenseColor = SKColor.Parse("#D9534F");
+            var netColor = SKColor.Parse("#1E88E5");
+
+            _incomeTrendSeries = new LineSeries<double>
+            {
+                Name = AppResources.Reports_TrendIncome,
+                Values = trendData.Select(x => (double)x.Income).ToArray(),
+                Stroke = new SolidColorPaint(incomeColor) { StrokeThickness = 3 },
+                GeometryStroke = new SolidColorPaint(incomeColor) { StrokeThickness = 2 },
+                GeometryFill = new SolidColorPaint(incomeColor),
+                GeometrySize = 7,
+                Fill = null,
+                LineSmoothness = 0.25,
+                //ToolTipLabelFormatter = point => $"{AppResources.Reports_TrendIncome}: {point.PrimaryValue:N2} {_settingsService.DefaultCurrency}"
+            };
+
+            _expenseTrendSeries = new LineSeries<double>
+            {
+                Name = AppResources.Reports_TrendExpenses,
+                Values = trendData.Select(x => (double)x.Expense).ToArray(),
+                Stroke = new SolidColorPaint(expenseColor) { StrokeThickness = 3 },
+                GeometryStroke = new SolidColorPaint(expenseColor) { StrokeThickness = 2 },
+                GeometryFill = new SolidColorPaint(expenseColor),
+                GeometrySize = 7,
+                Fill = null,
+                LineSmoothness = 0.25,
+                //ToolTipLabelFormatter = point => $"{AppResources.Reports_TrendExpenses}: {point.PrimaryValue:N2} {_settingsService.DefaultCurrency}"
+            };
+
+            _netTrendSeries = new LineSeries<double>
+            {
+                Name = AppResources.Reports_TrendBalance,
+                Values = trendData.Select(x => (double)(x.Income - x.Expense)).ToArray(),
+                Stroke = new SolidColorPaint(netColor) { StrokeThickness = 3 },
+                GeometryStroke = new SolidColorPaint(netColor) { StrokeThickness = 2 },
+                GeometryFill = new SolidColorPaint(netColor),
+                GeometrySize = 7,
+                Fill = null,
+                LineSmoothness = 0.25,
+                //ToolTipLabelFormatter = point => $"{AppResources.Reports_TrendBalance}: {point.PrimaryValue:N2} {_settingsService.DefaultCurrency}"
+            };
+
+            RefreshVisibleTrendSeries();
+            RefreshTrendAxes();
+        }
+
+        private void RefreshVisibleTrendSeries()
+        {
+            TrendSeries.Clear();
+
+            if (ShowIncomeTrend && _incomeTrendSeries is not null)
+                TrendSeries.Add(_incomeTrendSeries);
+
+            if (ShowExpenseTrend && _expenseTrendSeries is not null)
+                TrendSeries.Add(_expenseTrendSeries);
+
+            if (ShowNetTrend && _netTrendSeries is not null)
+                TrendSeries.Add(_netTrendSeries);
+        }
+
+        private double GetTrendMaxValue()
+        {
+            if (_trendData.Count == 0)
+                return 10;
+
+            var maxValue =
+                Math.Max(
+                    _trendData.Max(x => (double)x.Income),
+                    Math.Max(
+                        _trendData.Max(x => (double)x.Expense),
+                        _trendData.Max(x => (double)Math.Abs(x.Income - x.Expense))));
+
+            return maxValue <= 0
+                ? 10
+                : maxValue;
+        }
+
+        private void RefreshTrendAxes()
+        {
+            var labels = _trendData.Select(CreateTrendLabel).ToArray();
+
+            TrendXAxes =
+            [
+                new Axis
+                {
+                    Labels = labels,
+                    LabelsRotation = 90,
+                    TextSize = 10,
+                    MinStep = 1,
+                    ForceStepToMin = true
+                }
+            ];
+
+            var maxValue = GetTrendMaxValue();
+
+            if (maxValue <= 0)
+                maxValue = 10;
+
+            TrendYAxes =
+            [
+                new Axis
+                {
+                    TextSize = 10,
+                    Labeler = FormatTrendAmount,
+                    MinLimit = AutoScaleYAxis ? null : 0,
+                    MaxLimit = AutoScaleYAxis
+                        ? null
+                        : Math.Ceiling(maxValue * 1.1)
+                }
+            ];
+        }
+
+        private string FormatTrendAmount(double value)
+        {
+            return value.ToString(ShowRoundedTrendAmounts ? "N0" : "N2", CultureInfo.CurrentCulture);
+        }
+
+        private string CreateTrendLabel(TrendDataPoint point)
+        {
+            return _currentTrendGrouping switch
+            {
+                TrendGrouping.Day when _isCustomTrendRange => CreateCustomDayLabel(point.Date),
+                TrendGrouping.Day => point.Date.Day.ToString(CultureInfo.CurrentCulture),
+                TrendGrouping.Week when ShowWeekNumbers => $"W{ISOWeek.GetWeekOfYear(point.Date):00}",
+                TrendGrouping.Week => CreateWeekRangeLabel(point.Date),
+                TrendGrouping.Month when _isCustomTrendRange => point.Date.ToString("MMM yy", CultureInfo.CurrentCulture),
+                TrendGrouping.Month => point.Date.ToString("MMM", CultureInfo.CurrentCulture),
+                _ => point.Date.ToShortDateString()
+            };
+        }
+
+        private string CreateCustomDayLabel(DateTime date)
+        {
+            var crossesYears = _trendData.Count > 0 && _trendData.First().Date.Year != _trendData.Last().Date.Year;
+            return date.ToString(crossesYears ? "dd.MM.yy" : "dd.MM", CultureInfo.CurrentCulture);
+        }
+
+        private string CreateWeekRangeLabel(DateTime weekStart)
+        {
+            var weekEnd = weekStart.AddDays(6);
+            var crossesYears = weekStart.Year != weekEnd.Year || (_trendData.Count > 0 && _trendData.First().Date.Year != _trendData.Last().Date.Year);
+
+            if (crossesYears)
+                return $"{weekStart:dd.MM.yy}-{weekEnd:dd.MM.yy}";
+
+            if (weekStart.Month != weekEnd.Month)
+                return $"{weekStart:dd.MM}-{weekEnd:dd.MM}";
+
+            return $"{weekStart:dd}-{weekEnd:dd.MM}";
         }
     }
 }

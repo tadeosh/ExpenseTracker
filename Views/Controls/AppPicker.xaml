@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="ExpenseTracker.Views.Controls.AppPicker" x:Name="Root">
+    <Grid>
+        <Picker x:Name="InnerPicker" ItemsSource="{Binding ItemsSource, Source={x:Reference Root}}" SelectedItem="{Binding SelectedItem, Source={x:Reference Root}, Mode=TwoWay}"
+                Title="{Binding Title, Source={x:Reference Root}}" TextColor="{Binding SelectedTextColor, Source={x:Reference Root}}"
+                FontAttributes="{Binding SelectedFontAttributes, Source={x:Reference Root}}" TitleColor="{DynamicResource AppTextColor}" BackgroundColor="Transparent">
+            <Picker.Triggers>
+                <DataTrigger TargetType="Picker" Binding="{Binding SelectedItem, Source={RelativeSource Self}}" Value="{x:Null}">
+                    <Setter Property="TextColor" Value="{DynamicResource AppTextColor}" />
+                    <Setter Property="FontAttributes" Value="None" />
+                </DataTrigger>
+            </Picker.Triggers>
+        </Picker>
+        <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" 
+               Margin="0,0,15,0" InputTransparent="True" IsVisible="{OnPlatform Android=True, WinUI=True, iOS=True, MacCatalyst=True}" />
+    </Grid>
+</ContentView>

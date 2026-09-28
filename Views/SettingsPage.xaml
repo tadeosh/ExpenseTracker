@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
              xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:controls="clr-namespace:ExpenseTracker.Views.Controls"
              x:Class="ExpenseTracker.Views.SettingsPage"
              x:DataType="viewmodels:SettingsViewModel"
              Title="{x:Static strings:AppResources.SettingsTitle}"
@@ -14,37 +15,40 @@
             <!-- JĘZYK -->
             <VerticalStackLayout Spacing="5">
                 <Label Text="{x:Static strings:AppResources.LanguageLabel}" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{DynamicResource AppTextColor}"/>
-                <Grid WidthRequest="250">
+                <!--<Grid WidthRequest="250">
                     <Picker x:Name="LanguagePicker"
                             ItemsSource="{Binding Languages}"
                             SelectedItem="{Binding SelectedLanguage}"
                             BackgroundColor="Transparent" TextColor="{DynamicResource AppTextColor}" TitleColor="{DynamicResource AppTextColor}"/>
                     <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
-                </Grid>
+                </Grid>-->
+                    <controls:AppPicker ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}" WidthRequest="250" />
             </VerticalStackLayout>
 
             <!-- WALUTA DOMYŚLNA -->
             <VerticalStackLayout Spacing="5">
                 <Label Text="{x:Static strings:AppResources.DefaultCurrencyLabel}" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{DynamicResource AppTextColor}"/>
-                <Grid WidthRequest="250">
+                <!--<Grid WidthRequest="250">
                     <Picker x:Name="CurrencyPicker" 
                             ItemsSource="{Binding Currencies}"
                             SelectedItem="{Binding SelectedCurrency}"
                             BackgroundColor="Transparent" TextColor="{DynamicResource AppTextColor}" TitleColor="{DynamicResource AppTextColor}"/>
                     <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
-                </Grid>
+                </Grid>-->
+                <controls:AppCurrencyPicker SelectedItem="{Binding SelectedCurrency}" WidthRequest="250" />  
             </VerticalStackLayout>
 
             <!-- MOTYW -->
             <VerticalStackLayout Spacing="5">
                 <Label Text="{x:Static strings:AppResources.ThemeLabel}" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{DynamicResource AppTextColor}"/>
-                <Grid WidthRequest="250">
+                <!--<Grid WidthRequest="250">
                     <Picker x:Name="ThemePicker"
                             ItemsSource="{Binding Themes}"
                             SelectedItem="{Binding SelectedTheme}"
                             BackgroundColor="Transparent" TextColor="{DynamicResource AppTextColor}" TitleColor="{DynamicResource AppTextColor}"/>
                     <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
-                </Grid>
+                </Grid>-->
+                <controls:AppPicker ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" WidthRequest="250" />
             </VerticalStackLayout>
 
             <Label Text="{x:Static strings:AppResources.DataSettingsLabel}" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" Margin="0,15,0,5" TextColor="{DynamicResource AppTextColor}"/>

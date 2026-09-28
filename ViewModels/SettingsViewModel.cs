@@ -14,7 +14,7 @@ namespace ExpenseTracker.ViewModels
         private readonly ISettingsService _settingsService;
 
         // Listy dla Pickerów
-        public ObservableCollection<string> Currencies { get; } = new();
+       // public ObservableCollection<string> Currencies { get; } = new();
         public ObservableCollection<string> Languages { get; } = new();
         public ObservableCollection<string> Themes { get; } = new();
 
@@ -50,8 +50,8 @@ namespace ExpenseTracker.ViewModels
             _isInitializing = true;
 
             // 1. Waluty
-            foreach (var c in CurrencyHelper.GetSortedCurrencyDisplayList())
-                Currencies.Add(c);
+            //foreach (var c in CurrencyHelper.GetSortedCurrencyDisplayList())
+            //    Currencies.Add(c);
 
             string savedCurrencyCode = _settingsService.DefaultCurrency;
             SelectedCurrency = CurrencyHelper.FormatDisplay(savedCurrencyCode);

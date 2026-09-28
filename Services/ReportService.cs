@@ -7,6 +7,12 @@ using System.Collections.Concurrent;
 
 namespace ExpenseTracker.Services
 {
+    internal enum TrendGrouping
+    {
+        Day,
+        Week,
+        Month
+    }
     public class ReportService : IReportService
     {
         private readonly IDatabaseService _databaseService;
@@ -194,10 +200,115 @@ namespace ExpenseTracker.Services
                 .ToList();
         }
 
-        public Task<List<TrendDataPoint>> GetTrendAsync(ReportFilterContext context)
+        //==================== TRENDY ==========================
+        public async Task<List<TrendDataPoint>> GetTrendAsync(ReportFilterContext context)
         {
-            // Do implementacji w kolejnym kroku
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(context);
+
+            var startDate = context.StartDate.Date;
+            var endDate = context.EndDate.Date;
+
+            if (startDate > endDate)
+                throw new ArgumentException("Data początkowa nie może być późniejsza niż data końcowa.", nameof(context));
+
+            var transactions = await _databaseService.GetFilteredTransactionsAsync(context.AccountId, context.CategoryId, context.ProjectId, null, null, startDate, endDate);
+
+            var relevantTransactions = transactions
+                .Where(x => x.Type == TransactionType.Income || x.Type == TransactionType.Expense)
+                .ToList();
+
+            var accounts = await _databaseService.GetAccountsAsync();
+            var accountCurrencies = accounts.ToDictionary(x => x.Id, x => x.Currency);
+
+            var grouping = GetTrendGrouping(startDate, endDate);
+            var totals = new Dictionary<DateTime, (decimal Income, decimal Expense)>();
+
+            foreach (var transaction in relevantTransactions)
+            {
+                var amount = transaction.Amount;
+                var sourceCurrency = accountCurrencies.TryGetValue(transaction.AccountId, out var currency) ? currency : context.BaseCurrency;
+
+                if (!string.Equals(sourceCurrency, context.BaseCurrency, StringComparison.OrdinalIgnoreCase))
+                {
+                    var rate = await _databaseService.GetApplicableExchangeRateAsync(sourceCurrency, context.BaseCurrency, transaction.Date);
+
+                    if (rate.HasValue && rate.Value > 0)
+                        amount *= 1.0m / rate.Value;
+                }
+
+                var bucketDate = GetBucketStart(transaction.Date, grouping);
+
+                if (!totals.TryGetValue(bucketDate, out var total))
+                    total = (0m, 0m);
+
+                if (transaction.Type == TransactionType.Income)
+                    total.Income += amount;
+                else if (transaction.Type == TransactionType.Expense)
+                    total.Expense += amount;
+
+                totals[bucketDate] = total;
+            }
+
+            var points = new List<TrendDataPoint>();
+
+            foreach (var bucketDate in GenerateBucketDates(startDate, endDate, grouping))
+            {
+                var total = totals.TryGetValue(bucketDate, out var value) ? value : (Income: 0m, Expense: 0m);
+                points.Add(new TrendDataPoint(bucketDate, total.Income, total.Expense));
+            }
+
+            return points;
+        }
+
+        internal static TrendGrouping GetTrendGrouping(DateTime startDate, DateTime endDate)
+        {
+            var inclusiveDayCount = (endDate.Date - startDate.Date).Days + 1;
+
+            if (inclusiveDayCount <= 60)
+                return TrendGrouping.Day;
+
+            if (inclusiveDayCount <= 180)
+                return TrendGrouping.Week;
+
+            return TrendGrouping.Month;
+        }
+
+        internal static DateTime GetBucketStart(DateTime date, TrendGrouping grouping)
+        {
+            var normalizedDate = date.Date;
+
+            return grouping switch
+            {
+                TrendGrouping.Day => normalizedDate,
+                TrendGrouping.Week => GetIsoWeekStart(normalizedDate),
+                TrendGrouping.Month => new DateTime(normalizedDate.Year, normalizedDate.Month, 1),
+                _ => throw new ArgumentOutOfRangeException(nameof(grouping), grouping, null)
+            };
+        }
+
+        internal static DateTime GetIsoWeekStart(DateTime date)
+        {
+            var difference = ((int)date.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+            return date.Date.AddDays(-difference);
+        }
+
+        internal static IEnumerable<DateTime> GenerateBucketDates(DateTime startDate, DateTime endDate, TrendGrouping grouping)
+        {
+            var current = GetBucketStart(startDate, grouping);
+            var last = GetBucketStart(endDate, grouping);
+
+            while (current <= last)
+            {
+                yield return current;
+
+                current = grouping switch
+                {
+                    TrendGrouping.Day => current.AddDays(1),
+                    TrendGrouping.Week => current.AddDays(7),
+                    TrendGrouping.Month => current.AddMonths(1),
+                    _ => throw new ArgumentOutOfRangeException(nameof(grouping), grouping, null)
+                };
+            }
         }
     }
 }

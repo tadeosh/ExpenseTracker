@@ -618,8 +618,11 @@
   <data name="Reports_ScopeCustom" xml:space="preserve">
     <value>Własny zakres</value>
   </data>
-  <data name="Reports_GenerateReport" xml:space="preserve">
-    <value>Generuj raport</value>
+  <data name="Reports_GenerateError" xml:space="preserve">
+    <value>Nie udało się wygenerować raportu.</value>
+  </data>
+  <data name="Reports_InvalidDateRange" xml:space="preserve">
+    <value>Data rozpoczęcia nie może być późniejsza niż data zakończenia!</value>
   </data>
   <data name="Reports_ScopeYearly" xml:space="preserve">
     <value>Roczny</value>
@@ -630,71 +633,90 @@
   <data name="Reports_SelectTimeframe" xml:space="preserve">
     <value>Wybierz ramy czasowe:</value>
   </data>
-	<data name="Reports_TabCategories" xml:space="preserve">
-  <value>Kategorie</value>
-  <comment>ReportsPage</comment>
-</data>
-
-	<data name="Reports_TabProjects" xml:space="preserve">
-  <value>Projekty</value>
-  <comment>ReportsPage</comment>
-</data>
-
-	<data name="Reports_TabTrend" xml:space="preserve">
-  <value>Trend</value>
-  <comment>ReportsPage</comment>
-</data>
-
-	<data name="Reports_TabWealth" xml:space="preserve">
-  <value>Majątek</value>
-  <comment>ReportsPage</comment>
-</data>
-
-	<data name="Reports_TabTop" xml:space="preserve">
-  <value>Największe</value>
-  <comment>ReportsPage</comment>
-</data>
-
-	<data name="Reports_TrendComingSoon" xml:space="preserve">
-  <value>Trend przychodów i wydatków będzie dostępny tutaj.</value>
-  <comment>ReportsPage</comment>
-</data>
-
-	<data name="Reports_WealthComingSoon" xml:space="preserve">
-  <value>Historia wartości majątku będzie dostępna tutaj.</value>
-  <comment>ReportsPage</comment>
-</data>
-
-	<data name="Reports_MainItemsOnly" xml:space="preserve">
-  <value>Tylko główne</value>
-  <comment>ReportsPage</comment>
-</data>
-
-	<data name="Reports_AllItems" xml:space="preserve">
-  <value>Wszystkie</value>
-  <comment>ReportsPage</comment>
-</data>
-
-	<data name="Reports_BackToAllCategories" xml:space="preserve">
-  <value>Wszystkie kategorie</value>
-  <comment>ReportsPage</comment>
-</data>
-
-	<data name="Reports_BackToAllProjects" xml:space="preserve">
-  <value>Wszystkie projekty</value>
-  <comment>ReportsPage</comment>
-</data>
-
-	<data name="Reports_NoSubcategory" xml:space="preserve">
-  <value>Bez podkategorii</value>
-  <comment>ReportsPage</comment>
-</data>
-
-	<data name="Reports_NoSubproject" xml:space="preserve">
-  <value>Bez podprojektu</value>
-  <comment>ReportsPage</comment>
-</data>
+  <data name="Reports_TabCategories" xml:space="preserve">
+    <value>Kategorie</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_TabProjects" xml:space="preserve">
+    <value>Projekty</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_ShowWeekNumbers" xml:space="preserve">
+    <value>Pokaż numery tygodni</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_TabTrend" xml:space="preserve">
+    <value>Trend</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_AutoScaleYAxis" xml:space="preserve">
+    <value>Automatyczna skala osi Y</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_TabWealth" xml:space="preserve">
+    <value>Majątek</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_TabTop" xml:space="preserve">
+    <value>Największe</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_TrendComingSoon" xml:space="preserve">
+    <value>Trend przychodów i wydatków będzie dostępny tutaj.</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_WealthComingSoon" xml:space="preserve">
+    <value>Historia wartości majątku będzie dostępna tutaj.</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_MainItemsOnly" xml:space="preserve">
+    <value>Tylko główne</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_AllItems" xml:space="preserve">
+    <value>Wszystkie</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_ShowRoundedAmounts" xml:space="preserve">
+    <value>Pokaz zaokrąglone kwoty</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_BackToAllCategories" xml:space="preserve">
+    <value>Wszystkie kategorie</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_BackToAllProjects" xml:space="preserve">
+    <value>Wszystkie projekty</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_NoSubcategory" xml:space="preserve">
+    <value>Bez podkategorii</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_NoSubproject" xml:space="preserve">
+    <value>Bez podprojektu</value>
+    <comment>ReportsPage</comment>
+  </data>
   <data name="NoProject" xml:space="preserve">
     <value>Brak projektu</value>
+  </data>
+  <data name="Reports_TrendIncome" xml:space="preserve">
+    <value>Przychody</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_TrendExpenses" xml:space="preserve">
+    <value>Wydatki</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_TrendBalance" xml:space="preserve">
+    <value>Bilans</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_NoTrendData" xml:space="preserve">
+    <value>Brak danych trendu dla wybranego okresu.</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_GenerateReport" xml:space="preserve">
+    <value>Generuj raport</value>
   </data>
 </root>

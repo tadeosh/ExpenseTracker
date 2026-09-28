@@ -17,8 +17,6 @@ namespace ExpenseTracker.ViewModels
         // ZMIANA: Używamy naszego nowego Wrappera
         public ObservableCollection<ExchangeRateDisplayItem> Rates { get; } = new();
 
-        public ObservableCollection<string> AvailableCurrencies { get; } = new();
-
         // --- STAN FORMULARZA ---
         [ObservableProperty] public partial bool IsFormVisible { get; set; } = false;
         [ObservableProperty] public partial bool IsEditing { get; set; } = false;
@@ -48,13 +46,7 @@ namespace ExpenseTracker.ViewModels
             foreach (var rate in ratesFromDb)
             {
                 Rates.Add(new ExchangeRateDisplayItem { ExchangeRate = rate });
-            }
-
-            if (!AvailableCurrencies.Any())
-            {
-                foreach (var c in Helpers.CurrencyHelper.GetSortedCurrencyDisplayList())
-                    AvailableCurrencies.Add(c);
-            }
+            }         
         }
 
         // --- ZARZĄDZANIE FORMULARZEM ---
@@ -90,8 +82,8 @@ namespace ExpenseTracker.ViewModels
             SelectedDate = itemToEdit.ExchangeRate.Date;
 
             // Dopasowanie Pickera do istniejących wartości (Wymaga dopasowania kodu waluty do wyświetlanej nazwy)
-            SelectedSourceCurrency = AvailableCurrencies.FirstOrDefault(c => c.Contains(itemToEdit.ExchangeRate.SourceCurrency)) ?? string.Empty;
-            SelectedTargetCurrency = AvailableCurrencies.FirstOrDefault(c => c.Contains(itemToEdit.ExchangeRate.TargetCurrency)) ?? string.Empty;
+            SelectedSourceCurrency = Helpers.CurrencyHelper.FormatDisplay(itemToEdit.ExchangeRate.SourceCurrency);
+            SelectedTargetCurrency = Helpers.CurrencyHelper.FormatDisplay(itemToEdit.ExchangeRate.TargetCurrency);
         }
 
         [RelayCommand]
@@ -165,18 +157,6 @@ namespace ExpenseTracker.ViewModels
             Rates.Remove(item); // O(1) aktualizacja UI bez uderzania do bazy
         }
 
-        // --- HACKI KONTROLEK UI ---
-        partial void OnSelectedSourceCurrencyChanged(string oldValue, string newValue)
-        {
-            if (newValue != null && newValue.Contains("──"))
-                MainThread.BeginInvokeOnMainThread(() => SelectedSourceCurrency = oldValue);
-        }
-
-        partial void OnSelectedTargetCurrencyChanged(string oldValue, string newValue)
-        {
-            if (newValue != null && newValue.Contains("──"))
-                MainThread.BeginInvokeOnMainThread(() => SelectedTargetCurrency = oldValue);
-        }
     }
 
     //============= KLASA WRAPPERA =================    
