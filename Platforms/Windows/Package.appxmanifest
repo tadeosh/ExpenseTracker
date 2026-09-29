@@ -22,7 +22,10 @@
   </Dependencies>
 
   <Resources>
-    <Resource Language="x-generate" />
+    <!--<Resource Language="x-generate" />-->
+	  <Resource Language="en" />
+	  <Resource Language="pl" />
+	  <Resource Language="de" />
   </Resources>
 
   <Applications>

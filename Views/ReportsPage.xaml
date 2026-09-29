@@ -53,9 +53,11 @@
                     <Label Text="{x:Static resources:AppResources.Reports_SelectTimeframe}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" />
 
                     <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="10" VerticalOptions="Center">
-                        <DatePicker Grid.Column="0" Date="{Binding StartDate}" Format="d" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />
+                        <!--<DatePicker Grid.Column="0" Date="{Binding StartDate}" Format="d" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />-->
+                        <controls:AppDatePicker Grid.Column="0" Date="{Binding StartDate}" Format="d" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />
                         <Label Grid.Column="1" Text="-" VerticalOptions="Center" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
-                        <DatePicker Grid.Column="2" Date="{Binding EndDate}" Format="d" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />
+                        <!--<DatePicker Grid.Column="2" Date="{Binding EndDate}" Format="d" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />-->
+                        <controls:AppDatePicker Grid.Column="2" Date="{Binding EndDate}" Format="d" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />
                     </Grid>
 
                     <Label Text="{Binding CustomDateError}" IsVisible="{Binding CustomDateError, Converter={StaticResource StringNotEmptyConverter}}" TextColor="#D9534F" FontSize="13" HorizontalTextAlignment="Center" />

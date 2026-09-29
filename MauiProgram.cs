@@ -1,10 +1,14 @@
 ﻿using CommunityToolkit.Maui;
 using ExpenseTracker.Data;
+#if ANDROID
+using ExpenseTracker.Platforms.Android.Handlers;
+#endif
 using ExpenseTracker.Services;
 using ExpenseTracker.Services.Interfaces;
 using ExpenseTracker.Validators;
 using ExpenseTracker.ViewModels;
 using ExpenseTracker.Views;
+using ExpenseTracker.Views.Controls;
 using FluentValidation;
 using LiveChartsCore.SkiaSharpView.Maui;
 using Microsoft.Extensions.Logging;
@@ -27,6 +31,12 @@ namespace ExpenseTracker
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                })
+                .ConfigureMauiHandlers(handlers =>
+                {
+#if ANDROID
+                    handlers.AddHandler(typeof(AppPlatformDatePicker), typeof(AppDatePickerHandler));
+#endif
                 });
 
 #if DEBUG
