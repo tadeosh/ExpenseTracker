@@ -127,7 +127,44 @@
     <value>Accounts</value>
   </data>
   <data name="AddAccountBtn" xml:space="preserve">
-    <value>Add Account</value>
+    <value>Add account</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountValidationMissingInitialBalanceDate" xml:space="preserve">
+    <value>Select the opening balance date.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountValidationFutureInitialBalanceDate" xml:space="preserve">
+    <value>The opening balance date cannot be later than today.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountHistoryWarningTitle" xml:space="preserve">
+    <value>Previous transactions detected</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountHistoryWarningMessage" xml:space="preserve">
+    <value>The oldest transaction for this account dates back to {0:d}. Transactions predating the opening balance date will not be included in the calculation of the balance or asset history.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountUseEarliestDateBtn" xml:space="preserve">
+    <value>Set the earliest date</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountSaveAnywayBtn" xml:space="preserve">
+    <value>Save anyway</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="SaveAccountBtn" xml:space="preserve">
+    <value>Save account</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="CancelEditBtn" xml:space="preserve">
+    <value>Cancel editing</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="EditAccountHint" xml:space="preserve">
+    <value>Click an account to edit it.</value>
+    <comment>AccountsPage</comment>
   </data>
   <data name="AddCategoryBtn" xml:space="preserve">
     <value>Add Category</value>
@@ -350,12 +387,15 @@
   </data>
   <data name="AccountValidationMissingData" xml:space="preserve">
     <value>Enter the account name and select a currency.</value>
+    <comment>AccountsPage</comment>
   </data>
   <data name="AccountValidationInvalidAmount" xml:space="preserve">
     <value>Enter a valid amount (e.g., 100.00).</value>
+    <comment>AccountsPage</comment>
   </data>
   <data name="AccountAddedSuccess" xml:space="preserve">
     <value>Account has been added!</value>
+    <comment>AccountsPage</comment>
   </data>
   <data name="WarningTitle" xml:space="preserve">
     <value>Warning</value>
@@ -795,5 +835,12 @@
   <data name="Reports_GenerateReport" xml:space="preserve">
     <value>Generate report</value>
     <comment>ReportsPage</comment>
+  </data>
+  <data name="InitialBalanceDateLabel" xml:space="preserve">
+    <value>Saldo początkowe na dzień</value>
+  </data>
+  <data name="SelectDatePlaceholder" xml:space="preserve">
+    <value>Select date</value>
+    <comment>AppDatePicker</comment>
   </data>
 </root>

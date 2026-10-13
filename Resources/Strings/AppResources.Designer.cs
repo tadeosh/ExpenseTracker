@@ -70,6 +70,24 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The oldest transaction for this account dates back to {0:d}. Transactions predating the opening balance date will not be included in the calculation of the balance or asset history..
+        /// </summary>
+        internal static string AccountHistoryWarningMessage {
+            get {
+                return ResourceManager.GetString("AccountHistoryWarningMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Previous transactions detected.
+        /// </summary>
+        internal static string AccountHistoryWarningTitle {
+            get {
+                return ResourceManager.GetString("AccountHistoryWarningTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Account.
         /// </summary>
         internal static string AccountLabel {
@@ -97,11 +115,38 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Save anyway.
+        /// </summary>
+        internal static string AccountSaveAnywayBtn {
+            get {
+                return ResourceManager.GetString("AccountSaveAnywayBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Accounts.
         /// </summary>
         internal static string AccountsPageTitle {
             get {
                 return ResourceManager.GetString("AccountsPageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Set the earliest date.
+        /// </summary>
+        internal static string AccountUseEarliestDateBtn {
+            get {
+                return ResourceManager.GetString("AccountUseEarliestDateBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The opening balance date cannot be later than today..
+        /// </summary>
+        internal static string AccountValidationFutureInitialBalanceDate {
+            get {
+                return ResourceManager.GetString("AccountValidationFutureInitialBalanceDate", resourceCulture);
             }
         }
         
@@ -124,7 +169,16 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
-        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Add Account.
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Select the opening balance date..
+        /// </summary>
+        internal static string AccountValidationMissingInitialBalanceDate {
+            get {
+                return ResourceManager.GetString("AccountValidationMissingInitialBalanceDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Add account.
         /// </summary>
         internal static string AddAccountBtn {
             get {
@@ -228,6 +282,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string CancelBtn {
             get {
                 return ResourceManager.GetString("CancelBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Cancel editing.
+        /// </summary>
+        internal static string CancelEditBtn {
+            get {
+                return ResourceManager.GetString("CancelEditBtn", resourceCulture);
             }
         }
         
@@ -619,6 +682,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Click an account to edit it..
+        /// </summary>
+        internal static string EditAccountHint {
+            get {
+                return ResourceManager.GetString("EditAccountHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Edit.
         /// </summary>
         internal static string EditBtn {
@@ -786,6 +858,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string HomePageTitle {
             get {
                 return ResourceManager.GetString("HomePageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Saldo początkowe na dzień.
+        /// </summary>
+        internal static string InitialBalanceDateLabel {
+            get {
+                return ResourceManager.GetString("InitialBalanceDateLabel", resourceCulture);
             }
         }
         
@@ -1339,6 +1420,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Save account.
+        /// </summary>
+        internal static string SaveAccountBtn {
+            get {
+                return ResourceManager.GetString("SaveAccountBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Save.
         /// </summary>
         internal static string SaveBtn {
@@ -1371,6 +1461,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string SearchPlaceholder {
             get {
                 return ResourceManager.GetString("SearchPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Select date.
+        /// </summary>
+        internal static string SelectDatePlaceholder {
+            get {
+                return ResourceManager.GetString("SelectDatePlaceholder", resourceCulture);
             }
         }
         

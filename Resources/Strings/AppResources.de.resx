@@ -129,6 +129,42 @@
   <data name="AddAccountBtn" xml:space="preserve">
     <value>Konto hinzunfügen</value>
   </data>
+  <data name="AccountValidationMissingInitialBalanceDate" xml:space="preserve">
+    <value>Wählen Sie das Datum für den Anfangssaldo aus.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountValidationFutureInitialBalanceDate" xml:space="preserve">
+    <value>Das Datum des Anfangssaldos darf nicht nach dem heutigen Tag liegen.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountHistoryWarningTitle" xml:space="preserve">
+    <value>Frühere Transaktionen wurden erkannt.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountHistoryWarningMessage" xml:space="preserve">
+    <value>Die älteste Transaktion dieses Kontos stammt vom {0:d}. Transaktionen, die vor dem Datum des Anfangssaldos liegen, werden bei der Berechnung des Saldos oder der Vermögenshistorie nicht berücksichtigt.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountUseEarliestDateBtn" xml:space="preserve">
+    <value>Stelle das älteste Datum ein</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountSaveAnywayBtn" xml:space="preserve">
+    <value>Trotzdem speichern</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="SaveAccountBtn" xml:space="preserve">
+    <value>Konto speichern</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="CancelEditBtn" xml:space="preserve">
+    <value>Bearbeitung abbrechen</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="EditAccountHint" xml:space="preserve">
+    <value>Klicken Sie auf das Konto, um es zu bearbeiten.</value>
+    <comment>AccountsPage</comment>
+  </data>
   <data name="AddCategoryBtn" xml:space="preserve">
     <value>Kaegorie hinzufügen</value>
   </data>
@@ -718,5 +754,12 @@
   </data>
   <data name="Reports_GenerateReport" xml:space="preserve">
     <value>Bericht generieren</value>
+  </data>
+  <data name="InitialBalanceDateLabel" xml:space="preserve">
+    <value>Saldo początkowe na dzień</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="SelectDatePlaceholder" xml:space="preserve">
+    <value>Datum auswählen</value>
   </data>
 </root>

@@ -7,14 +7,25 @@
              x:Class="ExpenseTracker.Views.Controls.AppDatePicker" 
              x:Name="Root">
     <Grid>
-        <local:AppPlatformDatePicker Date="{Binding Date, Source={x:Reference Root}, Mode=TwoWay}" MinimumDate="{Binding MinimumDate, Source={x:Reference Root}}" 
-                                     MaximumDate="{Binding MaximumDate, Source={x:Reference Root}}" Format="{Binding Format, Source={x:Reference Root}}"
-                                     TextColor="{Binding TextColor, Source={x:Reference Root}}" BackgroundColor="Transparent" HorizontalOptions="Fill" />
-        <Image Source="calendar_days.png" WidthRequest="18" HeightRequest="18" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" 
-               InputTransparent="True" IsVisible="{OnPlatform Android=True, WinUI=False}">
-            <Image.Behaviors>
-                <toolkit:IconTintColorBehavior TintColor="{Binding IconColor, Source={x:Reference Root}}" />
-            </Image.Behaviors>
-        </Image>
+        <local:AppPlatformDatePicker Date="{Binding Date, Source={x:Reference Root}, Mode=TwoWay}" IsOpen="{Binding IsOpen, Source={x:Reference Root}, Mode=TwoWay}" 
+                                     MinimumDate="{Binding MinimumDate, Source={x:Reference Root}}" MaximumDate="{Binding MaximumDate, Source={x:Reference Root}}" 
+                                     Format="{Binding Format, Source={x:Reference Root}}" BackgroundColor="Transparent" HorizontalOptions="Fill" Opacity="0" 
+                                     InputTransparent="True" />
+
+        <Grid ColumnDefinitions="*,Auto" Padding="8,0">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding OpenPickerCommand, Source={x:Reference Root}}" />
+            </Grid.GestureRecognizers>
+
+            <Label Grid.Column="0" Text="{Binding DisplayText, Source={x:Reference Root}}" TextColor="{Binding TextColor, Source={x:Reference Root}}" 
+                   VerticalOptions="Center" LineBreakMode="TailTruncation" InputTransparent="True" />
+
+            <Image Grid.Column="1" Source="calendar_days.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" Margin="12,0,7,0" InputTransparent="True">
+                <Image.Behaviors>
+                    <toolkit:IconTintColorBehavior TintColor="{Binding IconColor, Source={x:Reference Root}}" />
+                </Image.Behaviors>
+            </Image>
+        </Grid>
     </Grid>
+
 </ContentView>

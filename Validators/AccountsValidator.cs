@@ -1,6 +1,6 @@
-﻿using FluentValidation;
+﻿using ExpenseTracker.Resources.Strings;
 using ExpenseTracker.ViewModels;
-using ExpenseTracker.Resources.Strings;
+using FluentValidation;
 using System.Globalization;
 
 namespace ExpenseTracker.Validators
@@ -9,29 +9,34 @@ namespace ExpenseTracker.Validators
     {
         public AccountsValidator()
         {
-            // Walidacja nazwy konta
             RuleFor(x => x.AccountName)
                 .NotEmpty()
                 .WithMessage(AppResources.AccountValidationMissingData ?? "Wprowadź nazwę konta.");
 
-            // Walidacja waluty
             RuleFor(x => x.AccountCurrency)
                 .NotEmpty()
                 .WithMessage(AppResources.AccountValidationMissingData ?? "Wybierz walutę.");
 
-            // Walidacja salda początkowego
-            // W przeciwieństwie do transakcji saldo konta może być zerowe lub ujemne (np. karta kredytowa)
             RuleFor(x => x.AccountBalance)
                 .Must(BeAValidDecimal)
                 .WithMessage(AppResources.AccountValidationInvalidAmount ?? "Wprowadź prawidłową kwotę początkową.");
+
+            RuleFor(x => x.InitialBalanceDate)
+                .NotNull()
+                .WithMessage(AppResources.AccountValidationMissingInitialBalanceDate ?? "Wybierz datę salda początkowego.");
+
+            RuleFor(x => x.InitialBalanceDate)
+                .Must(date => !date.HasValue || date.Value.Date <= DateTime.Today)
+                .WithMessage(AppResources.AccountValidationFutureInitialBalanceDate ?? "Data salda początkowego nie może być późniejsza niż dzisiaj.");
         }
 
-        private bool BeAValidDecimal(string? text)
+        private static bool BeAValidDecimal(string? text)
         {
-            if (string.IsNullOrWhiteSpace(text)) return false;
+            if (string.IsNullOrWhiteSpace(text))
+                return false;
 
-            string normalized = text.Replace(',', '.');
-            // Zauważ brak "&& value > 0" - saldo może być ujemne!
+            var normalized = text.Replace(',', '.');
+
             return decimal.TryParse(normalized, NumberStyles.Any, CultureInfo.InvariantCulture, out _);
         }
     }

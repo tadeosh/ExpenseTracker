@@ -24,6 +24,8 @@ namespace ExpenseTracker.Services.Interfaces
                 string? searchText, string sortColumn, bool isAscending, DateTime? startDate = null, DateTime? endDate = null);
         Task<List<TransactionDetailDto>> GetRecentTransactionsWithDetailsAsync(int limit = 30);
 
+        Task<DateTime?> GetEarliestAccountTransactionDateAsync(int accountId);
+
         //Transakcje Cykliczne
 
         Task<List<RecurringTransaction>> GetActiveRecurringTransactionsAsync();

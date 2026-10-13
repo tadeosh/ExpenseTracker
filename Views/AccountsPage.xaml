@@ -1,68 +1,108 @@
 <?xml version="1.0" encoding="utf-8" ?>
+
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
              xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
+             xmlns:models="clr-namespace:ExpenseTracker.Models"
              xmlns:controls="clr-namespace:ExpenseTracker.Views.Controls"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              x:Class="ExpenseTracker.Views.AccountsPage"
+             x:DataType="viewmodels:AccountsViewModel"
              Title="{x:Static strings:AppResources.AccountsPageTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}">
-    
-    <Grid RowDefinitions="Auto, *">
 
-        <VerticalStackLayout Grid.Row="0" Padding="20" Spacing="10" BackgroundColor="{DynamicResource SectionBackgroundColor}">
-            <!-- NAZWA KONTA -->
-            <VerticalStackLayout Spacing="0">
-                <Entry Placeholder="{x:Static strings:AppResources.AccountNameLabel}" Text="{Binding AccountName}" TextColor="{DynamicResource AppTextColor}" />
-                <Label Text="{Binding AccountNameError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0">
-                    <Label.Triggers>
-                        <DataTrigger TargetType="Label" Binding="{Binding AccountNameError}" Value="{x:Null}">
-                            <Setter Property="IsVisible" Value="False" />
-                        </DataTrigger>
-                    </Label.Triggers>
-                </Label>
+    <Grid RowDefinitions="Auto,*">
+
+        <ScrollView Grid.Row="0" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Padding="20" Spacing="10" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+
+                <!-- Nazwa konta -->
+                <VerticalStackLayout Spacing="0">
+                    <Entry Placeholder="{x:Static strings:AppResources.AccountNameLabel}" Text="{Binding AccountName}" TextColor="{DynamicResource AppTextColor}" />
+                    <Label Text="{Binding AccountNameError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0" IsVisible="{Binding AccountNameError, Converter={StaticResource StringNotEmptyConverter}}" />
+                </VerticalStackLayout>
+
+                <!-- Waluta -->
+                <VerticalStackLayout Spacing="0">
+                    <controls:AppCurrencyPicker Title="{x:Static strings:AppResources.CurrencyLabel}" SelectedItem="{Binding AccountCurrency}" />
+                    <Label Text="{Binding AccountCurrencyError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0" IsVisible="{Binding AccountCurrencyError, Converter={StaticResource StringNotEmptyConverter}}" />
+                </VerticalStackLayout>
+
+                <!-- Saldo początkowe -->
+                <VerticalStackLayout Spacing="0">
+                    <Entry Placeholder="{x:Static strings:AppResources.BalanceLabel}" Text="{Binding AccountBalance}" Keyboard="Numeric" TextColor="{DynamicResource AppTextColor}" />
+                    <Label Text="{Binding AccountBalanceError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0" IsVisible="{Binding AccountBalanceError, Converter={StaticResource StringNotEmptyConverter}}" />
+                </VerticalStackLayout>
+
+                <!-- Data salda początkowego -->
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{x:Static strings:AppResources.InitialBalanceDateLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
+
+                    <controls:AppDatePicker Date="{Binding InitialBalanceDate, Mode=TwoWay}" Placeholder="{x:Static strings:AppResources.SelectDatePlaceholder}" HorizontalOptions="Fill" />
+
+                    <Label Text="{Binding InitialBalanceDateError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0" IsVisible="{Binding InitialBalanceDateError, Converter={StaticResource StringNotEmptyConverter}}" />
+                </VerticalStackLayout>
+
+                <!-- Ostrzeżenie o starszych transakcjach -->
+                <Border Padding="12" Stroke="#F9A825" StrokeThickness="1" StrokeShape="RoundRectangle 8" BackgroundColor="{DynamicResource AppBackgroundColor}" IsVisible="{Binding IsHistoryWarningVisible}">
+                    <VerticalStackLayout Spacing="8">
+
+                        <Label Text="{x:Static strings:AppResources.AccountHistoryWarningTitle}" FontAttributes="Bold" FontSize="14" TextColor="#F9A825" />
+
+                        <Label Text="{Binding HistoryWarningMessage}" FontSize="13" TextColor="{DynamicResource AppTextColor}" LineBreakMode="WordWrap" />
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Button Grid.Column="0" Text="{x:Static strings:AppResources.AccountUseEarliestDateBtn}" Command="{Binding UseEarliestTransactionDateCommand}" BackgroundColor="Transparent" BorderColor="#F9A825" BorderWidth="1" TextColor="{DynamicResource AppTextColor}" />
+                            <Button Grid.Column="1" Text="{x:Static strings:AppResources.AccountSaveAnywayBtn}" Command="{Binding SaveDespiteHistoryWarningCommand}" BackgroundColor="#F9A825" TextColor="Black" />
+                        </Grid>
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Zapis / dodanie -->
+                <Button Text="{Binding SaveButtonText}" Command="{Binding AddAccountCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource AppBackgroundColor}" />
+
+                <Button Text="{x:Static strings:AppResources.CancelEditBtn}" Command="{Binding CancelEditCommand}" BackgroundColor="Transparent" BorderColor="{DynamicResource PrimaryColor}" BorderWidth="1" TextColor="{DynamicResource AppTextColor}" IsVisible="{Binding IsEditing}" />
+
             </VerticalStackLayout>
+        </ScrollView>
 
-            <!-- WALUTA -->
-            <VerticalStackLayout Spacing="0">                
-                <controls:AppCurrencyPicker Title="{x:Static strings:AppResources.CurrencyLabel}" SelectedItem="{Binding AccountCurrency}" />
-                <Label Text="{Binding AccountCurrencyError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0">
-                    <Label.Triggers>
-                        <DataTrigger TargetType="Label" Binding="{Binding AccountCurrencyError}" Value="{x:Null}">
-                            <Setter Property="IsVisible" Value="False" />
-                        </DataTrigger>
-                    </Label.Triggers>
-                </Label>
-            </VerticalStackLayout>
-            
-            <!-- SALDO -->
-            <VerticalStackLayout Spacing="0">
-                <Entry Placeholder="{x:Static strings:AppResources.BalanceLabel}" Text="{Binding AccountBalance}" Keyboard="Numeric" TextColor="{DynamicResource AppTextColor}" />
-                <Label Text="{Binding AccountBalanceError}" TextColor="#D32F2F" FontSize="12" Margin="5,0,0,0">
-                    <Label.Triggers>
-                        <DataTrigger TargetType="Label" Binding="{Binding AccountBalanceError}" Value="{x:Null}">
-                            <Setter Property="IsVisible" Value="False" />
-                        </DataTrigger>
-                    </Label.Triggers>
-                </Label>
-            </VerticalStackLayout>
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Accounts}" Margin="20" SelectionMode="None">
 
-            <Button Text="{x:Static strings:AppResources.AddAccountBtn}" Command="{Binding AddAccountCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource AppBackgroundColor}" />
-        </VerticalStackLayout>
+            <CollectionView.Header>
+                <Label Text="{x:Static strings:AppResources.EditAccountHint}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" Margin="0,0,0,10" />
+            </CollectionView.Header>
 
-        <CollectionView Grid.Row="1" ItemsSource="{Binding Accounts}" Margin="20">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="models:Account">
                     <Border Margin="0,0,0,10" Padding="15" StrokeShape="RoundRectangle 8" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
-                        <HorizontalStackLayout Spacing="10">
-                            <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="18" TextColor="{DynamicResource AppTextColor}" />
-                            <Label Text="-" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
-                            <Label Text="{Binding InitialBalance}" FontSize="16" TextColor="{DynamicResource AppTextColor}" />
-                            <Label Text="{Binding Currency}" FontSize="16" TextColor="{DynamicResource AppTextColor}" />
-                        </HorizontalStackLayout>
+
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AccountsViewModel}}, Path=EditAccountCommand}" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="10">
+
+                            <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="10">
+                                <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="18" TextColor="{DynamicResource AppTextColor}" />
+                                <Label Text="-" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
+                                <Label Text="{Binding InitialBalance, StringFormat='{0:N2}'}" FontSize="16" TextColor="{DynamicResource AppTextColor}" />
+                                <Label Text="{Binding Currency}" FontSize="16" TextColor="{DynamicResource AppTextColor}" />
+                            </HorizontalStackLayout>
+
+                            <Label Grid.Row="1" Grid.Column="0" Text="{Binding InitialBalanceDate, StringFormat='{0:d}'}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.65" />
+
+                            <Label Grid.RowSpan="2" Grid.Column="1" Text="›" FontSize="26" TextColor="{DynamicResource PrimaryColor}" VerticalOptions="Center" InputTransparent="True" />
+
+                        </Grid>
+
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
+
         </CollectionView>
+
     </Grid>
+
 </ContentPage>

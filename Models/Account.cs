@@ -13,5 +13,9 @@ namespace ExpenseTracker.Models
 
         // Stan konta w momencie jego dodania do aplikacji
         public decimal InitialBalance { get; set; }
+
+        // Data, od której InitialBalance rozpoczyna historię salda konta.
+        // Null oznacza stare konto wymagające świadomego uzupełnienia danych.
+        public DateTime? InitialBalanceDate { get; set; }
     }
 }

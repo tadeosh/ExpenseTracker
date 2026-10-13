@@ -77,20 +77,29 @@ namespace ExpenseTracker.Data
             return await _database.Table<Account>().FirstOrDefaultAsync(a => a.Id == id) ?? throw new Exception($"Nie znaleziono konta o Id {id}");
         }
 
+        public async Task<DateTime?> GetEarliestAccountTransactionDateAsync(int accountId)
+        {
+            await InitAsync();
+
+            var earliestTransaction = await _database.Table<Transaction>()
+                .Where(t => t.AccountId == accountId || t.DestinationAccountId == accountId)
+                .OrderBy(t => t.Date)
+                .FirstOrDefaultAsync();
+
+            return earliestTransaction?.Date.Date;
+        }
+
         public async Task<int> SaveAccountAsync(Account account)
         {
             await InitAsync();
 
-            // Jeśli obiekt ma Id większe od 0, to znaczy, że już istnieje w bazie (Aktualizacja)
+            //// Jeśli obiekt ma Id większe od 0, to znaczy, że już istnieje w bazie (Aktualizacja)
+            await InitAsync();
+
             if (account.Id != 0)
-            {
                 return await _database.UpdateAsync(account);
-            }
-            // W przeciwnym razie jest to nowy obiekt (Tworzenie)
-            else
-            {
-                return await _database.InsertAsync(account);
-            }
+
+            return await _database.InsertAsync(account);
         }
 
         public async Task<int> DeleteAccountAsync(Account account)

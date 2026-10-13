@@ -129,6 +129,42 @@
   <data name="AddAccountBtn" xml:space="preserve">
     <value>Dodaj konto</value>
   </data>
+  <data name="AccountValidationMissingInitialBalanceDate" xml:space="preserve">
+    <value>Wybierz datę salda początkowego.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountValidationFutureInitialBalanceDate" xml:space="preserve">
+    <value>Data salda początkowego nie może być późniejsza niż dzisiaj.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountHistoryWarningTitle" xml:space="preserve">
+    <value>Wykryto wcześniejsze transakcje</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountHistoryWarningMessage" xml:space="preserve">
+    <value>Najstarsza transakcja tego konta pochodzi z {0:d}. Transakcje wcześniejsze niż data salda początkowego nie będą uwzględniane przy obliczaniu salda ani historii majątku.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountUseEarliestDateBtn" xml:space="preserve">
+    <value>Ustaw najstarszą datę</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="AccountSaveAnywayBtn" xml:space="preserve">
+    <value>Zapisz mimo to</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="SaveAccountBtn" xml:space="preserve">
+    <value>Zapisz konto</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="CancelEditBtn" xml:space="preserve">
+    <value>Anuluj edycję</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="EditAccountHint" xml:space="preserve">
+    <value>Kliknij konto, aby je edytować.</value>
+    <comment>AccountsPage</comment>
+  </data>
   <data name="AddCategoryBtn" xml:space="preserve">
     <value>Dodaj kategorię</value>
   </data>
@@ -718,5 +754,12 @@
   </data>
   <data name="Reports_GenerateReport" xml:space="preserve">
     <value>Generuj raport</value>
+  </data>
+  <data name="InitialBalanceDateLabel" xml:space="preserve">
+    <value>Saldo początkowe na dzień</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="SelectDatePlaceholder" xml:space="preserve">
+    <value>Wybierz datę</value>
   </data>
 </root>
