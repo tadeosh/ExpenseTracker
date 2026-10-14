@@ -81,7 +81,7 @@ namespace ExpenseTracker.Services
                     return new CategorySummary(
                         CategoryId: kvp.Key,
                         CategoryName: cat?.Name ?? AppResources.CategoryNone,
-                       // ProjectName = proj?.Name ?? AppResources.NoProject,
+                        // ProjectName = proj?.Name ?? AppResources.NoProject,
                         ColorHex: cat?.ColorHex ?? "#808080",
                         TotalAmount: kvp.Value,
                         Percentage: (double)(kvp.Value / totalAmount * 100)
@@ -104,7 +104,7 @@ namespace ExpenseTracker.Services
             if (!transactions.Any()) return new List<ProjectSummary>();
 
             var projects = await _databaseService.GetProjectsAsync(includeArchived: true);
-            var accounts = await _databaseService.GetAccountsAsync();
+            var accounts = await _databaseService.GetAccountsAsync(includeClosed: true);
             var accountDict = accounts.ToDictionary(a => a.Id, a => a.Currency);
 
             decimal totalAmount = 0;
@@ -217,7 +217,7 @@ namespace ExpenseTracker.Services
                 .Where(x => x.Type == TransactionType.Income || x.Type == TransactionType.Expense)
                 .ToList();
 
-            var accounts = await _databaseService.GetAccountsAsync();
+            var accounts = await _databaseService.GetAccountsAsync(includeClosed: true);
             var accountCurrencies = accounts.ToDictionary(x => x.Id, x => x.Currency);
 
             var grouping = GetTrendGrouping(startDate, endDate);
@@ -310,5 +310,307 @@ namespace ExpenseTracker.Services
                 };
             }
         }
-    }
+
+        // =================== Majątek ==========================
+        public async Task<List<BalanceHistoryPoint>> GetBalanceHistoryAsync(ReportFilterContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+
+            var startDate = context.StartDate.Date;
+            var endDate = context.EndDate.Date;
+
+            if (startDate > endDate)
+                throw new ArgumentException(
+                    "Data początkowa nie może być późniejsza niż data końcowa.",
+                    nameof(context));
+
+            var allAccounts = await _databaseService.GetAccountsAsync(includeClosed: true);
+
+            var accounts = context.AccountId.HasValue
+                ? allAccounts
+                    .Where(account => account.Id == context.AccountId.Value)
+                    .ToList()
+                : allAccounts;
+
+            if (accounts.Count == 0)
+                return new List<BalanceHistoryPoint>();
+
+            var accountsWithoutInitialBalanceDate = accounts
+                .Where(account => !account.InitialBalanceDate.HasValue)
+                .ToList();
+
+            if (accountsWithoutInitialBalanceDate.Count > 0)
+            {
+                var accountNames = string.Join(
+                    ", ",
+                    accountsWithoutInitialBalanceDate.Select(account => account.Name));
+
+                throw new InvalidOperationException(
+                    $"Nie można wygenerować historii majątku. " +
+                    $"Następujące konta nie mają określonej daty salda początkowego: {accountNames}.");
+            }
+
+            var accountById = accounts.ToDictionary(account => account.Id);
+
+            var allTransactions = await _databaseService.GetTransactionsAsync();
+
+            // Musimy pobrać również transakcje wcześniejsze niż StartDate,
+            // ponieważ wpływają one na saldo pierwszego punktu raportu.
+            var transactions = allTransactions
+                .Where(transaction => transaction.Date.Date <= endDate)
+                .Where(transaction =>
+                    accountById.ContainsKey(transaction.AccountId) ||
+                    (
+                        transaction.DestinationAccountId.HasValue &&
+                        accountById.ContainsKey(transaction.DestinationAccountId.Value)
+                    ))
+                .OrderBy(transaction => transaction.Date)
+                .ThenBy(transaction => transaction.Id)
+                .ToList();
+
+            var grouping = GetTrendGrouping(startDate, endDate);
+
+            var balances = accounts.ToDictionary(
+                account => account.Id,
+                _ => 0m);
+
+            var activatedAccountIds = new HashSet<int>();
+            var transactionIndex = 0;
+
+            var points = new List<BalanceHistoryPoint>();
+
+            var exchangeRateCache = new Dictionary<
+                (string SourceCurrency, string TargetCurrency, DateTime Date),
+                decimal?>();
+
+            foreach (var bucketDate in GenerateBucketDates(startDate, endDate, grouping))
+            {
+                var snapshotDate = GetBalanceSnapshotDate(bucketDate, endDate, grouping);
+
+                ActivateAccounts(
+                    accounts,
+                    balances,
+                    activatedAccountIds,
+                    snapshotDate);
+
+                while (
+                    transactionIndex < transactions.Count &&
+                    transactions[transactionIndex].Date.Date <= snapshotDate)
+                {
+                    ApplyTransactionToBalances(
+                        transactions[transactionIndex],
+                        accountById,
+                        balances,
+                        activatedAccountIds);
+
+                    transactionIndex++;
+                }
+
+                var totalBalance = await CalculateTotalBalanceAsync(
+                    accounts,
+                    balances,
+                    activatedAccountIds,
+                    context.BaseCurrency,
+                    snapshotDate,
+                    exchangeRateCache);
+
+                points.Add(new BalanceHistoryPoint(
+                    bucketDate,
+                    totalBalance));
+            }
+
+            return points;
+        }
+
+        private static DateTime GetBalanceSnapshotDate(DateTime bucketDate, DateTime reportEndDate, TrendGrouping grouping)
+        {
+            var bucketEndDate = grouping switch
+            {
+                TrendGrouping.Day => bucketDate.Date,
+
+                TrendGrouping.Week => bucketDate.Date.AddDays(6),
+
+                TrendGrouping.Month => bucketDate.Date
+                    .AddMonths(1)
+                    .AddDays(-1),
+
+                _ => throw new ArgumentOutOfRangeException(
+                    nameof(grouping),
+                    grouping,
+                    null)
+            };
+
+            return bucketEndDate > reportEndDate
+                ? reportEndDate.Date
+                : bucketEndDate;
+        }
+
+        private static void ActivateAccounts(IEnumerable<Account> accounts, IDictionary<int, decimal> balances, ISet<int> activatedAccountIds, DateTime snapshotDate)
+        {
+            foreach (var account in accounts)
+            {
+                if (activatedAccountIds.Contains(account.Id))
+                    continue;
+
+                if (!account.InitialBalanceDate.HasValue)
+                    continue;
+
+                if (account.InitialBalanceDate.Value.Date > snapshotDate.Date)
+                    continue;
+
+                balances[account.Id] = account.InitialBalance;
+                activatedAccountIds.Add(account.Id);
+            }
+        }
+
+        private static void ApplyTransactionToBalances(Transaction transaction, IReadOnlyDictionary<int, Account> accountById, IDictionary<int, decimal> balances, ISet<int> activatedAccountIds)
+        {
+            switch (transaction.Type)
+            {
+                case TransactionType.Income:
+                    ApplyAmountToAccount(
+                        transaction.AccountId,
+                        transaction.Date,
+                        transaction.Amount,
+                        accountById,
+                        balances,
+                        activatedAccountIds);
+
+                    break;
+
+                case TransactionType.Expense:
+                    ApplyAmountToAccount(
+                        transaction.AccountId,
+                        transaction.Date,
+                        -transaction.Amount,
+                        accountById,
+                        balances,
+                        activatedAccountIds);
+
+                    break;
+
+                case TransactionType.Transfer:
+                    ApplyAmountToAccount(
+                        transaction.AccountId,
+                        transaction.Date,
+                        -transaction.Amount,
+                        accountById,
+                        balances,
+                        activatedAccountIds);
+
+                    if (transaction.DestinationAccountId.HasValue)
+                    {
+                        var destinationAmount =
+                            transaction.ExchangeRate.HasValue &&
+                            transaction.ExchangeRate.Value > 0
+                                ? transaction.Amount *
+                                  (1.0m / transaction.ExchangeRate.Value)
+                                : transaction.Amount;
+
+                        ApplyAmountToAccount(
+                            transaction.DestinationAccountId.Value,
+                            transaction.Date,
+                            destinationAmount,
+                            accountById,
+                            balances,
+                            activatedAccountIds);
+                    }
+
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(transaction.Type), transaction.Type, "Nieobsługiwany typ transakcji.");
+            }
+        }
+
+        private static void ApplyAmountToAccount(int accountId, DateTime transactionDate, decimal amount, IReadOnlyDictionary<int, Account> accountById, IDictionary<int, decimal> balances, ISet<int> activatedAccountIds)
+        {
+            if (!accountById.TryGetValue(accountId, out var account))
+                return;
+
+            if (!account.InitialBalanceDate.HasValue)
+                return;
+
+            if (transactionDate.Date < account.InitialBalanceDate.Value.Date)
+                return;
+
+            if (!activatedAccountIds.Contains(accountId))
+                return;
+
+            balances[accountId] += amount;
+        }
+
+        private async Task<decimal> CalculateTotalBalanceAsync( IEnumerable<Account> accounts,
+                                                                IReadOnlyDictionary<int, decimal> balances,
+                                                                ISet<int> activatedAccountIds,
+                                                                string baseCurrency,
+                                                                DateTime snapshotDate,
+                                                                IDictionary<(string SourceCurrency, string TargetCurrency, DateTime Date), decimal?> exchangeRateCache)
+        {
+            ArgumentNullException.ThrowIfNull(accounts);
+            ArgumentNullException.ThrowIfNull(balances);
+            ArgumentNullException.ThrowIfNull(activatedAccountIds);
+            ArgumentNullException.ThrowIfNull(exchangeRateCache);
+            ArgumentException.ThrowIfNullOrWhiteSpace(baseCurrency);
+
+            var normalizedBaseCurrency = baseCurrency
+                .Trim()
+                .ToUpperInvariant();
+
+            decimal totalBalance = 0m;
+
+            foreach (var account in accounts)
+            {
+                if (!activatedAccountIds.Contains(account.Id))
+                    continue;
+
+                if (!balances.TryGetValue(account.Id, out var accountBalance))
+                    continue;
+
+                var accountCurrency = account.Currency
+                    .Trim()
+                    .ToUpperInvariant();
+
+                if (string.Equals(
+                        accountCurrency,
+                        normalizedBaseCurrency,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    totalBalance += accountBalance;
+                    continue;
+                }
+
+                var cacheKey = (
+                    SourceCurrency: accountCurrency,
+                    TargetCurrency: normalizedBaseCurrency,
+                    Date: snapshotDate.Date);
+
+                if (!exchangeRateCache.TryGetValue(cacheKey, out var exchangeRate))
+                {
+                    exchangeRate =
+                        await _databaseService.GetApplicableExchangeRateAsync(
+                            accountCurrency,
+                            normalizedBaseCurrency,
+                            snapshotDate.Date);
+
+                    exchangeRateCache[cacheKey] = exchangeRate;
+                }
+
+                if (!exchangeRate.HasValue || exchangeRate.Value <= 0m)
+                {
+                    throw new InvalidOperationException(
+                        $"Brak kursu wymiany {accountCurrency} → " +
+                        $"{normalizedBaseCurrency} dla dnia " +
+                        $"{snapshotDate.Date:d}.");
+                }
+
+                var convertedBalance =
+                    accountBalance * (1.0m / exchangeRate.Value);
+
+                totalBalance += convertedBalance;
+            }
+
+            return totalBalance;
+        }
+    }   
 }

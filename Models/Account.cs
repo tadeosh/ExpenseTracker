@@ -17,5 +17,13 @@ namespace ExpenseTracker.Models
         // Data, od której InitialBalance rozpoczyna historię salda konta.
         // Null oznacza stare konto wymagające świadomego uzupełnienia danych.
         public DateTime? InitialBalanceDate { get; set; }
+
+        public DateTime? ClosedDate { get; set; }
+
+        [Ignore]
+        public bool IsClosed => ClosedDate.HasValue;
+
+        [Ignore]
+        public bool IsActive => !ClosedDate.HasValue;
     }
 }

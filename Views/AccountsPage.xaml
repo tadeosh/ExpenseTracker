@@ -12,7 +12,7 @@
              Title="{x:Static strings:AppResources.AccountsPageTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}">
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
 
         <ScrollView Grid.Row="0" VerticalScrollBarVisibility="Never">
             <VerticalStackLayout Padding="20" Spacing="10" BackgroundColor="{DynamicResource SectionBackgroundColor}">
@@ -67,8 +67,13 @@
 
             </VerticalStackLayout>
         </ScrollView>
+        
+        <HorizontalStackLayout Grid.Row="1" HorizontalOptions="End" Spacing="6" Margin="20,10,20,0">
+            <CheckBox IsChecked="{Binding ShowClosedAccounts}" Color="{DynamicResource PrimaryColor}" />  
+            <Label Text="{x:Static strings:AppResources.Accounts_ShowClosed}" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
+        </HorizontalStackLayout>
 
-        <CollectionView Grid.Row="1" ItemsSource="{Binding Accounts}" Margin="20" SelectionMode="None">
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Accounts}" Margin="20" SelectionMode="None">
 
             <CollectionView.Header>
                 <Label Text="{x:Static strings:AppResources.EditAccountHint}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" Margin="0,0,0,10" />

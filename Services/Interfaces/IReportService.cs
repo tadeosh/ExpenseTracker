@@ -10,5 +10,7 @@ namespace ExpenseTracker.Services.Interfaces
         Task<List<ProjectSummary>> GetProjectBreakdownAsync(ReportFilterContext context);
         Task<List<TrendDataPoint>> GetTrendAsync(ReportFilterContext context);
         Task<List<TransactionDetailDto>> GetTopTransactionsAsync(ReportFilterContext context, int limit = 10);
+
+        Task<List<BalanceHistoryPoint>> GetBalanceHistoryAsync(ReportFilterContext context);
     }
 }

@@ -65,10 +65,30 @@ namespace ExpenseTracker.Data
         // OPERACJE DLA KONT (ACCOUNTS)
         // ==========================================
 
-        public async Task<List<Account>> GetAccountsAsync()
+        public async Task<List<Account>> GetAccountsAsync(bool includeClosed = false)
         {
             await InitAsync();
-            return await _database.Table<Account>().ToListAsync();
+            var query = _database.Table<Account>();
+
+            if (!includeClosed)
+                query = query.Where(account => account.ClosedDate == null);
+
+            return await query.ToListAsync();
+            //return await _database.Table<Account>().ToListAsync();
+        }
+
+        public async Task<bool> HasAccountTransactionsAsync(int accountId)
+        {
+            await InitAsync();
+
+            var transaction = await _database
+                .Table<Transaction>()
+                .Where(t =>
+                    t.AccountId == accountId ||
+                    t.DestinationAccountId == accountId)
+                .FirstOrDefaultAsync();
+
+            return transaction is not null;
         }
 
         public async Task<Account> GetAccountAsync(int id)
@@ -104,8 +124,113 @@ namespace ExpenseTracker.Data
 
         public async Task<int> DeleteAccountAsync(Account account)
         {
+            ArgumentNullException.ThrowIfNull(account);
+
             await InitAsync();
+
+            var hasTransactions = await HasAccountTransactionsAsync(account.Id);
+
+            if (hasTransactions)
+            {
+                throw new InvalidOperationException(
+                    "Nie można usunąć konta posiadającego historię transakcji.");
+            }
+
             return await _database.DeleteAsync(account);
+        }
+
+
+        public async Task<AccountCloseCheckResult> CanCloseAccountAsync(int accountId)
+        {
+            await InitAsync();
+
+            var account = await _database
+                .Table<Account>()
+                .FirstOrDefaultAsync(x => x.Id == accountId);
+
+            if (account is null)
+                throw new InvalidOperationException($"Nie znaleziono konta o Id {accountId}.");
+
+            var balances = await GetAllAccountBalancesAsync();
+
+            if (!balances.TryGetValue(accountId, out var currentBalance))
+                throw new InvalidOperationException($"Nie udało się obliczyć salda konta o Id {accountId}.");
+
+            return new AccountCloseCheckResult(
+                CanClose: currentBalance == 0m,
+                CurrentBalance: currentBalance,
+                Currency: account.Currency);
+        }
+
+        public async Task<int> CloseAccountAsync(Account account, DateTime closedDate)
+        {
+            ArgumentNullException.ThrowIfNull(account);
+
+            await InitAsync();
+
+            if (account.Id <= 0)
+                throw new ArgumentException(
+                    "Nie można zamknąć konta, które nie zostało zapisane.",
+                    nameof(account));
+
+            var storedAccount = await _database
+                .Table<Account>()
+                .FirstOrDefaultAsync(x => x.Id == account.Id);
+
+            if (storedAccount is null)
+                throw new InvalidOperationException(
+                    $"Nie znaleziono konta o Id {account.Id}.");
+
+            if (storedAccount.ClosedDate.HasValue)
+                throw new InvalidOperationException(
+                    "Konto jest już zamknięte.");
+
+            if (!storedAccount.InitialBalanceDate.HasValue)
+                throw new InvalidOperationException(
+                    "Nie można zamknąć konta bez określonej daty salda początkowego.");
+
+            var normalizedClosedDate = closedDate.Date;
+
+            if (normalizedClosedDate < storedAccount.InitialBalanceDate.Value.Date)
+            {
+                throw new InvalidOperationException(
+                    "Data zamknięcia konta nie może być wcześniejsza niż data salda początkowego.");
+            }
+
+            if (normalizedClosedDate > DateTime.Today)
+            {
+                throw new InvalidOperationException(
+                    "Data zamknięcia konta nie może być późniejsza niż dzisiaj.");
+            }
+
+            var closeCheck = await CanCloseAccountAsync(storedAccount.Id);
+
+            if (!closeCheck.CanClose)
+            {
+                throw new InvalidOperationException(
+                    $"Nie można zamknąć konta z niezerowym saldem: " +
+                    $"{closeCheck.CurrentBalance:N2} {closeCheck.Currency}.");
+            }
+
+            storedAccount.ClosedDate = normalizedClosedDate;
+
+            var result = await _database.UpdateAsync(storedAccount);
+
+            // Synchronizujemy również obiekt przekazany przez wywołującego.
+            account.ClosedDate = storedAccount.ClosedDate;
+
+            return result;
+        }
+
+        public async Task<int> ReopenAccountAsync(Account account)
+        {
+            ArgumentNullException.ThrowIfNull(account);
+
+            await InitAsync();
+
+            account.ClosedDate = null;
+
+            return await _database.UpdateAsync(account);
         }
 
         // ==========================================
@@ -228,20 +353,33 @@ namespace ExpenseTracker.Data
         public async Task<Dictionary<int, decimal>> GetAllAccountBalancesAsync()
         {
             await InitAsync();
-            var result = new Dictionary<int, decimal>();
 
             try
             {
-                // 1. Pobieramy początkowe salda kont
                 var accounts = await _database.Table<Account>().ToListAsync();
-                result = accounts.ToDictionary(a => a.Id, a => a.InitialBalance);
 
-                // UWAGA: Tabela nazywa się "Transaction", co w SQL jest słowem kluczowym, 
-                // dlatego w surowych zapytaniach zabezpieczamy ją cudzysłowami: \"Transaction\"
+                var result = accounts.ToDictionary(
+                    account => account.Id,
+                    account => account.InitialBalance);
 
-                // 2. Sumujemy Przychody (+)
+                // 1. Przychody.
+                // Jeśli InitialBalanceDate jest null, zachowujemy dotychczasowe
+                // zachowanie i uwzględniamy całą historię.
+                var incomesQuery = @"
+                                SELECT
+                                    t.AccountId,
+                                    SUM(t.Amount) AS Total
+                                FROM ""Transaction"" t
+                                INNER JOIN Account a ON a.Id = t.AccountId
+                                WHERE t.Type = ?
+                                  AND (
+                                        a.InitialBalanceDate IS NULL
+                                        OR t.Date >= a.InitialBalanceDate
+                                      )
+                                GROUP BY t.AccountId";
+
                 var incomes = await _database.QueryAsync<BalanceResult>(
-                    "SELECT AccountId, SUM(Amount) as Total FROM \"Transaction\" WHERE Type = ? GROUP BY AccountId",
+                    incomesQuery,
                     (int)TransactionType.Income);
 
                 foreach (var income in incomes)
@@ -250,9 +388,22 @@ namespace ExpenseTracker.Data
                         result[income.AccountId] += income.Total;
                 }
 
-                // 3. Sumujemy Wydatki (-)
+                // 2. Wydatki.
+                var expensesQuery = @"
+                                SELECT
+                                    t.AccountId,
+                                    SUM(t.Amount) AS Total
+                                FROM ""Transaction"" t
+                                INNER JOIN Account a ON a.Id = t.AccountId
+                                WHERE t.Type = ?
+                                  AND (
+                                        a.InitialBalanceDate IS NULL
+                                        OR t.Date >= a.InitialBalanceDate
+                                      )
+                                GROUP BY t.AccountId";
+
                 var expenses = await _database.QueryAsync<BalanceResult>(
-                    "SELECT AccountId, SUM(Amount) as Total FROM \"Transaction\" WHERE Type = ? GROUP BY AccountId",
+                    expensesQuery,
                     (int)TransactionType.Expense);
 
                 foreach (var expense in expenses)
@@ -261,9 +412,23 @@ namespace ExpenseTracker.Data
                         result[expense.AccountId] -= expense.Total;
                 }
 
-                // 4. Sumujemy Transfery wychodzące z danego konta (-)
+                // 3. Transfery wychodzące.
+                // Datę porównujemy względem konta źródłowego.
+                var transfersOutQuery = @"
+                                SELECT
+                                    t.AccountId,
+                                    SUM(t.Amount) AS Total
+                                FROM ""Transaction"" t
+                                INNER JOIN Account a ON a.Id = t.AccountId
+                                WHERE t.Type = ?
+                                  AND (
+                                        a.InitialBalanceDate IS NULL
+                                        OR t.Date >= a.InitialBalanceDate
+                                      )
+                                GROUP BY t.AccountId";
+
                 var transfersOut = await _database.QueryAsync<BalanceResult>(
-                    "SELECT AccountId, SUM(Amount) as Total FROM \"Transaction\" WHERE Type = ? GROUP BY AccountId",
+                    transfersOutQuery,
                     (int)TransactionType.Transfer);
 
                 foreach (var transferOut in transfersOut)
@@ -272,36 +437,47 @@ namespace ExpenseTracker.Data
                         result[transferOut.AccountId] -= transferOut.Total;
                 }
 
-                // 5. Sumujemy Transfery przychodzące na dane konto (+) z uwzględnieniem kursu (ExchangeRate)
-                // Logika matematyczna (1 / ExchangeRate) jest wykonywana w locie przez silnik SQLite!
+                // 4. Transfery przychodzące.
+                // Datę porównujemy OSOBNO względem konta docelowego.
                 var transfersInQuery = @"
-                    SELECT DestinationAccountId as AccountId, 
-                           SUM(
-                               CASE 
-                                   WHEN ExchangeRate IS NOT NULL AND ExchangeRate > 0 THEN Amount * (1.0 / ExchangeRate)
-                                   ELSE Amount 
-                               END
-                           ) as Total 
-                    FROM ""Transaction"" 
-                    WHERE Type = ? AND DestinationAccountId IS NOT NULL 
-                    GROUP BY DestinationAccountId";
+            SELECT
+                t.DestinationAccountId AS AccountId,
+                SUM(
+                    CASE
+                        WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0
+                            THEN t.Amount * (1.0 / t.ExchangeRate)
+                        ELSE t.Amount
+                    END
+                ) AS Total
+            FROM ""Transaction"" t
+            INNER JOIN Account a ON a.Id = t.DestinationAccountId
+            WHERE t.Type = ?
+              AND t.DestinationAccountId IS NOT NULL
+              AND (
+                    a.InitialBalanceDate IS NULL
+                    OR t.Date >= a.InitialBalanceDate
+                  )
+            GROUP BY t.DestinationAccountId";
 
-                var transfersIn = await _database.QueryAsync<BalanceResult>(transfersInQuery, (int)TransactionType.Transfer);
+                var transfersIn = await _database.QueryAsync<BalanceResult>(
+                    transfersInQuery,
+                    (int)TransactionType.Transfer);
 
                 foreach (var transferIn in transfersIn)
                 {
                     if (result.ContainsKey(transferIn.AccountId))
                         result[transferIn.AccountId] += transferIn.Total;
                 }
+
+                return result;
             }
             catch (Exception ex)
             {
-                // Tutaj docelowo powinno znaleźć się wstrzyknięte ILogger<DatabaseService>
-                Console.WriteLine($"[CRITICAL] Błąd podczas obliczania sald: {ex.Message}");
-                throw; // Rzucamy dalej, aby ViewModel mógł pokazać błąd użytkownikowi
-            }
+                Console.WriteLine(
+                    $"[CRITICAL] Błąd podczas obliczania sald: {ex.Message}");
 
-            return result;
+                throw;
+            }
         }
 
         public async Task<List<Transaction>> GetFilteredTransactionsAsync(

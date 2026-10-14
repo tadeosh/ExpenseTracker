@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:local="clr-namespace:ExpenseTracker.Views.Controls"
-             x:Class="ExpenseTracker.Views.Controls.AppDatePicker" 
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+             x:Class="ExpenseTracker.Views.Controls.AppDatePicker"
              x:Name="Root">
-    <Grid>
-        <local:AppPlatformDatePicker Date="{Binding Date, Source={x:Reference Root}, Mode=TwoWay}" IsOpen="{Binding IsOpen, Source={x:Reference Root}, Mode=TwoWay}" 
-                                     MinimumDate="{Binding MinimumDate, Source={x:Reference Root}}" MaximumDate="{Binding MaximumDate, Source={x:Reference Root}}" 
-                                     Format="{Binding Format, Source={x:Reference Root}}" BackgroundColor="Transparent" HorizontalOptions="Fill" Opacity="0" 
-                                     InputTransparent="True" />
 
-        <Grid ColumnDefinitions="*,Auto" Padding="8,0">
+    <Grid>
+
+        <local:AppPlatformDatePicker x:Name="InnerDatePicker" Date="{Binding Date, Source={x:Reference Root}, Mode=TwoWay}" MinimumDate="{Binding MinimumDate, Source={x:Reference Root}}" 
+                                     MaximumDate="{x:Static sys:DateTime.Today}" Format="{Binding Format, Source={x:Reference Root}}" 
+                                     BackgroundColor="Transparent" HorizontalOptions="Fill" Opacity="0" InputTransparent="True" />
+
+        <Grid ColumnDefinitions="*,Auto" Padding="8,10">
             <Grid.GestureRecognizers>
                 <TapGestureRecognizer Command="{Binding OpenPickerCommand, Source={x:Reference Root}}" />
             </Grid.GestureRecognizers>
@@ -26,6 +28,7 @@
                 </Image.Behaviors>
             </Image>
         </Grid>
+
     </Grid>
 
 </ContentView>

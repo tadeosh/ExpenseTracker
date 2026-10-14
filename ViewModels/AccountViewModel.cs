@@ -15,6 +15,7 @@ namespace ExpenseTracker.ViewModels
         private readonly IDatabaseService _databaseService;
         private readonly IValidator<AccountsViewModel> _validator;
         private readonly ISettingsService _settingsService;
+        private readonly IDialogService _dialogService;
 
         private Account? _editedAccount;
         private Account? _pendingAccount;
@@ -44,6 +45,9 @@ namespace ExpenseTracker.ViewModels
         public partial string? AccountBalanceError { get; set; }
 
         [ObservableProperty]
+        public partial bool ShowClosedAccounts { get; set; }
+
+        [ObservableProperty]
         public partial string? InitialBalanceDateError { get; set; }
 
         [ObservableProperty]
@@ -59,13 +63,19 @@ namespace ExpenseTracker.ViewModels
             ? AppResources.SaveAccountBtn
             : AppResources.AddAccountBtn;
 
-        public AccountsViewModel(IDatabaseService databaseService, IValidator<AccountsViewModel> validator, ISettingsService settingsService)
+        public AccountsViewModel(IDatabaseService databaseService, IValidator<AccountsViewModel> validator, ISettingsService settingsService, IDialogService dialogService)
         {
             _databaseService = databaseService;
             _validator = validator;
             _settingsService = settingsService;
+            _dialogService = dialogService;
 
             ResetForm();
+        }
+
+        partial void OnShowClosedAccountsChanged(bool value)
+        {
+            _ = LoadAccountsAsync();
         }
 
         partial void OnIsEditingChanged(bool value)
@@ -269,9 +279,157 @@ namespace ExpenseTracker.ViewModels
             ResetForm();
         }
 
+        [RelayCommand]
+        private async Task CloseAccountAsync(Account? account)
+        {
+            if (account is null)
+                return;
+
+            try
+            {
+                var closeCheck =
+                    await _databaseService.CanCloseAccountAsync(
+                        account.Id);
+
+                if (!closeCheck.CanClose)
+                {
+                    await _dialogService.ShowAlertAsync(
+                        AppResources.Accounts_CloseTitle,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            AppResources.Accounts_CloseNonZeroBalance,
+                            account.Name,
+                            closeCheck.CurrentBalance,
+                            closeCheck.Currency),
+                        AppResources.Common_OK);
+
+                    return;
+                }
+
+                var confirmed =
+                    await _dialogService.ConfirmAsync(
+                        AppResources.Accounts_CloseTitle,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            AppResources.Accounts_CloseConfirmation,
+                            account.Name),
+                        AppResources.Accounts_Close,
+                        AppResources.CancelBtn);
+
+                if (!confirmed)
+                    return;
+
+                await _databaseService.CloseAccountAsync(
+                    account,
+                    DateTime.Today);
+
+                await LoadAccountsAsync();
+
+                if (_editedAccount?.Id == account.Id)
+                    ResetForm();
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowAlertAsync(
+                    AppResources.Accounts_CloseTitle,
+                    ex.Message,
+                    AppResources.OkBtn);
+            }
+        }
+
+        [RelayCommand]
+        private async Task ReopenAccountAsync(Account? account)
+        {
+            if (account is null)
+                return;
+
+            try
+            {
+                var confirmed =
+                    await _dialogService.ConfirmAsync(
+                        AppResources.Accounts_ReopenTitle,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            AppResources.Accounts_ReopenConfirmation,
+                            account.Name),
+                        AppResources.Accounts_Reopen,
+                        AppResources.CancelBtn);
+
+                if (!confirmed)
+                    return;
+
+                await _databaseService.ReopenAccountAsync(account);
+
+                await LoadAccountsAsync();
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowAlertAsync(
+                    AppResources.Accounts_ReopenTitle,
+                    ex.Message,
+                    AppResources.OkBtn);
+            }
+        }
+
+        [RelayCommand]
+        private async Task DeleteAccountAsync(Account? account)
+        {
+            if (account is null)
+                return;
+
+            try
+            {
+                var hasTransactions =
+                    await _databaseService.HasAccountTransactionsAsync(
+                        account.Id);
+
+                if (hasTransactions)
+                {
+                    await _dialogService.ShowAlertAsync(
+                        AppResources.Accounts_DeleteTitle,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            AppResources.Accounts_DeleteHasHistory,
+                            account.Name),
+                        AppResources.Common_OK);
+
+                    return;
+                }
+
+                var confirmed =
+                    await _dialogService.ConfirmAsync(
+                        AppResources.Accounts_DeleteTitle,
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            AppResources.Accounts_DeleteConfirmation,
+                            account.Name),
+                        AppResources.Accounts_Delete,
+                        AppResources.CancelBtn);
+
+                if (!confirmed)
+                    return;
+
+                await _databaseService.DeleteAccountAsync(account);
+
+                if (_editedAccount?.Id == account.Id)
+                    ResetForm();
+
+                await LoadAccountsAsync();
+            }
+            catch (Exception ex)
+            {
+                await _dialogService.ShowAlertAsync(
+                    AppResources.Accounts_DeleteTitle,
+                    ex.Message,
+                    AppResources.OkBtn);
+            }
+        }
+
         public async Task LoadAccountsAsync()
         {
-            var accountsFromDb = await _databaseService.GetAccountsAsync();
+            var accountsFromDb =
+                await _databaseService.GetAccountsAsync(
+                    includeClosed: ShowClosedAccounts);
 
             Accounts.Clear();
 

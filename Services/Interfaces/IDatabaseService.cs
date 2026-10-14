@@ -5,11 +5,16 @@ namespace ExpenseTracker.Services.Interfaces
     public interface IDatabaseService
     {
         // Konta
-        Task<List<Account>> GetAccountsAsync();
+        //Task<List<Account>> GetAccountsAsync();
         Task<Account> GetAccountAsync(int accountId);
         Task<int> SaveAccountAsync(Account account);
         Task<int> DeleteAccountAsync(Account account);
         Task<Dictionary<int, decimal>> GetAllAccountBalancesAsync();
+        Task<List<Account>> GetAccountsAsync(bool includeClosed = false);
+        Task<bool> HasAccountTransactionsAsync(int accountId);
+        Task<int> CloseAccountAsync(Account account, DateTime closedDate);
+        Task<int> ReopenAccountAsync(Account account);
+        Task<AccountCloseCheckResult> CanCloseAccountAsync(int accountId);
 
         // Transakcje
         Task<Transaction?> GetTransactionAsync(int transactionId);

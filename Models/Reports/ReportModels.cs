@@ -7,5 +7,7 @@
     public record TrendDataPoint(DateTime Date, decimal Income, decimal Expense);
 
     public record AccountBalanceSummary(int AccountId, string AccountName, decimal StartBalance, decimal EndBalance, decimal Difference);
-        
+
+    public record BalanceHistoryPoint(DateTime Date, decimal Balance);
+
 }

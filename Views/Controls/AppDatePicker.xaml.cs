@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Windows.Input;
 
 namespace ExpenseTracker.Views.Controls;
 
@@ -6,21 +7,17 @@ public partial class AppDatePicker : ContentView
 {
     public AppDatePicker()
     {
+        OpenPickerCommand = new Command(OpenPicker);
+
         InitializeComponent();
 
         SetDynamicResource(TextColorProperty, "AppTextColor");
         SetDynamicResource(IconColorProperty, "AppTextColor");
-
-        OpenPickerCommand = new Command(() =>
-        {
-            if (IsEnabled)
-                IsOpen = true;
-        });
     }
 
-    public Command OpenPickerCommand { get; }
+    public ICommand OpenPickerCommand { get; }
 
-    public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime?), typeof(AppDatePicker), defaultValue: null, defaultBindingMode: BindingMode.TwoWay, propertyChanged: OnDateChanged);
+    public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime?), typeof(AppDatePicker), defaultValue: null, defaultBindingMode: BindingMode.TwoWay, propertyChanged: OnDisplayPropertyChanged);
 
     public DateTime? Date
     {
@@ -28,31 +25,23 @@ public partial class AppDatePicker : ContentView
         set => SetValue(DateProperty, value);
     }
 
-    public static readonly BindableProperty IsOpenProperty = BindableProperty.Create(nameof(IsOpen), typeof(bool), typeof(AppDatePicker), false, defaultBindingMode: BindingMode.TwoWay);
+    public static readonly BindableProperty MinimumDateProperty = BindableProperty.Create(nameof(MinimumDate), typeof(DateTime?), typeof(AppDatePicker), new DateTime(1900, 1, 1));
 
-    public bool IsOpen
+    public DateTime? MinimumDate
     {
-        get => (bool)GetValue(IsOpenProperty);
-        set => SetValue(IsOpenProperty, value);
-    }
-
-    public static readonly BindableProperty MinimumDateProperty = BindableProperty.Create(nameof(MinimumDate), typeof(DateTime), typeof(AppDatePicker), new DateTime(1900, 1, 1));
-
-    public DateTime MinimumDate
-    {
-        get => (DateTime)GetValue(MinimumDateProperty);
+        get => (DateTime?)GetValue(MinimumDateProperty);
         set => SetValue(MinimumDateProperty, value);
     }
 
-    public static readonly BindableProperty MaximumDateProperty = BindableProperty.Create(nameof(MaximumDate), typeof(DateTime), typeof(AppDatePicker), new DateTime(2100, 12, 31));
+    public static readonly BindableProperty MaximumDateProperty = BindableProperty.Create(nameof(MaximumDate), typeof(DateTime?), typeof(AppDatePicker), new DateTime(2100, 12, 31));
 
-    public DateTime MaximumDate
+    public DateTime? MaximumDate
     {
-        get => (DateTime)GetValue(MaximumDateProperty);
+        get => (DateTime?)GetValue(MaximumDateProperty);
         set => SetValue(MaximumDateProperty, value);
     }
 
-    public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(AppDatePicker), "d", propertyChanged: OnFormatChanged);
+    public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(AppDatePicker), "d", propertyChanged: OnDisplayPropertyChanged);
 
     public string Format
     {
@@ -60,7 +49,7 @@ public partial class AppDatePicker : ContentView
         set => SetValue(FormatProperty, value);
     }
 
-    public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create(nameof(Placeholder), typeof(string), typeof(AppDatePicker), string.Empty, propertyChanged: OnPlaceholderChanged);
+    public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create(nameof(Placeholder), typeof(string), typeof(AppDatePicker), string.Empty, propertyChanged: OnDisplayPropertyChanged);
 
     public string Placeholder
     {
@@ -84,21 +73,28 @@ public partial class AppDatePicker : ContentView
         set => SetValue(IconColorProperty, value);
     }
 
-    public string DisplayText => Date.HasValue ? Date.Value.ToString(Format, CultureInfo.CurrentCulture) : Placeholder;
-
-    private static void OnDateChanged(BindableObject bindable, object oldValue, object newValue)
+    public string DisplayText
     {
-        var control = (AppDatePicker)bindable;
-        control.OnPropertyChanged(nameof(DisplayText));
+        get
+        {
+            if (!Date.HasValue)
+                return Placeholder;
+
+            var culture = ExpenseTracker.Resources.Strings.AppResources.Culture ?? CultureInfo.CurrentCulture;
+
+            return Date.Value.ToString(Format, culture);
+        }
     }
 
-    private static void OnFormatChanged(BindableObject bindable, object oldValue, object newValue)
+    private void OpenPicker()
     {
-        var control = (AppDatePicker)bindable;
-        control.OnPropertyChanged(nameof(DisplayText));
+        if (!IsEnabled)
+            return;
+
+        InnerDatePicker.IsOpen = true;
     }
 
-    private static void OnPlaceholderChanged(BindableObject bindable, object oldValue, object newValue)
+    private static void OnDisplayPropertyChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var control = (AppDatePicker)bindable;
         control.OnPropertyChanged(nameof(DisplayText));
