@@ -39,7 +39,7 @@
                     </Border>
                 </Grid>
                 <!-- Przycisk do czyszczenia filtrów -->
-                <Button Text="X" BackgroundColor="Transparent" TextColor="#D32F2F" Command="{Binding ClearFiltersCommand}" />
+                <Button Text="X" BackgroundColor="Transparent" TextColor="{DynamicResource ErrorMsgColor}" Command="{Binding ClearFiltersCommand}" />
             </HorizontalStackLayout>
         </ScrollView>
 
@@ -53,7 +53,7 @@
             </Style>
         </Grid.Resources>
 
-        <!-- ================= WIERZ 1 ================= -->
+        <!-- ================= WIERSZ 1 ================= -->
         
         <!-- Kategoria (Kolumna 0) -->
         <HorizontalStackLayout Grid.Row="0" Grid.Column="0">

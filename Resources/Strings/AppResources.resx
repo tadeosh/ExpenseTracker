@@ -126,7 +126,7 @@
   <data name="AccountsPageTitle" xml:space="preserve">
     <value>Accounts</value>
   </data>
-  <data name="AddAccountBtn" xml:space="preserve">
+  <data name="Accounts_NewAccount" xml:space="preserve">
     <value>Add account</value>
     <comment>AccountsPage</comment>
   </data>
@@ -163,8 +163,72 @@
     <comment>AccountsPage</comment>
   </data>
   <data name="EditAccountHint" xml:space="preserve">
-    <value>Click an account to edit it.</value>
+    <value>Swipe left/right-click for options</value>
     <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_ShowClosed" xml:space="preserve">
+    <value>Show closed accounts</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Closed" xml:space="preserve">
+    <value>Closed</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Close" xml:space="preserve">
+    <value>Close</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Reopen" xml:space="preserve">
+    <value>Reopen</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Delete" xml:space="preserve">
+    <value>Delete</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Edit" xml:space="preserve">
+    <value>Edit</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_CloseTitle" xml:space="preserve">
+    <value>Close account</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_CloseConfirmation" xml:space="preserve">
+    <value>Are you sure you want to close the account “{0}”? The account history will be preserved.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_CloseNonZeroBalance" xml:space="preserve">
+    <value>The account “{0}” cannot be closed. Its current balance is {1:N2} {2}. Transfer or settle the remaining funds before closing the account.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_DeleteTitle" xml:space="preserve">
+    <value>Delete account</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_DeleteConfirmation" xml:space="preserve">
+    <value>Are you sure you want to permanently delete the account “{0}”? This action cannot be undone.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_DeleteHasHistory" xml:space="preserve">
+    <value>The account “{0}” cannot be deleted because it has transaction history. You can close the account instead.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_ReopenTitle" xml:space="preserve">
+    <value>Reopen account</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_ReopenConfirmation" xml:space="preserve">
+    <value>Do you want to reopen the account “{0}”?</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Common</comment>
+  </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+    <comment>Common</comment>
   </data>
   <data name="AddCategoryBtn" xml:space="preserve">
     <value>Add Category</value>

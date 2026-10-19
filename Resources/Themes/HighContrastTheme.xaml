@@ -8,4 +8,10 @@
     <Color x:Key="PrimaryColor">#00FFFF</Color>
     <Color x:Key="HeaderTextColor">#000000</Color>
     <Color x:Key="WarningMsgColor">#E89B43</Color>
+    <Color x:Key="ErrorMsgColor">#D9534F</Color>
+
+    <Color x:Key="EditActionColor">#1E88E5</Color>
+    <Color x:Key="DeleteActionColor">#D9534F</Color>
+    <Color x:Key="ActivateActionColor">#2E8B57</Color>
+    <Color x:Key="DeactivateActionColor">#F9A825</Color>
 </ResourceDictionary>

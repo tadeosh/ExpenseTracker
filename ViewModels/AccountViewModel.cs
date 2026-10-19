@@ -59,9 +59,12 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial string HistoryWarningMessage { get; set; } = string.Empty;
 
+        [ObservableProperty]
+        public partial bool IsFormVisible { get; set; }
+
         public string SaveButtonText => IsEditing
             ? AppResources.SaveAccountBtn
-            : AppResources.AddAccountBtn;
+            : AppResources.Accounts_NewAccount;
 
         public AccountsViewModel(IDatabaseService databaseService, IValidator<AccountsViewModel> validator, ISettingsService settingsService, IDialogService dialogService)
         {
@@ -113,6 +116,13 @@ namespace ExpenseTracker.ViewModels
 
             ClearErrors();
             ClearHistoryWarning();
+        }
+
+        [RelayCommand]
+        private void ShowNewAccountForm()
+        {
+            ResetForm();
+            IsFormVisible = true;
         }
 
         [RelayCommand]
@@ -190,12 +200,14 @@ namespace ExpenseTracker.ViewModels
 
             ClearErrors();
             ClearHistoryWarning();
+            IsFormVisible = true;
         }
 
         [RelayCommand]
         private void CancelEdit()
         {
             ResetForm();
+            IsFormVisible = false;
         }
 
         [RelayCommand]
@@ -244,7 +256,8 @@ namespace ExpenseTracker.ViewModels
                 Name = AccountName.Trim(),
                 Currency = currencyCode,
                 InitialBalance = initialBalance,
-                InitialBalanceDate = InitialBalanceDate?.Date
+                InitialBalanceDate = InitialBalanceDate?.Date,
+                ClosedDate = _editedAccount?.ClosedDate
             };
         }
 
@@ -277,6 +290,7 @@ namespace ExpenseTracker.ViewModels
             }
 
             ResetForm();
+            IsFormVisible = false;
         }
 
         [RelayCommand]
@@ -314,7 +328,7 @@ namespace ExpenseTracker.ViewModels
                             AppResources.Accounts_CloseConfirmation,
                             account.Name),
                         AppResources.Accounts_Close,
-                        AppResources.CancelBtn);
+                        AppResources.Common_Cancel);
 
                 if (!confirmed)
                     return;
@@ -333,7 +347,7 @@ namespace ExpenseTracker.ViewModels
                 await _dialogService.ShowAlertAsync(
                     AppResources.Accounts_CloseTitle,
                     ex.Message,
-                    AppResources.OkBtn);
+                    AppResources.Common_OK);
             }
         }
 
@@ -353,7 +367,7 @@ namespace ExpenseTracker.ViewModels
                             AppResources.Accounts_ReopenConfirmation,
                             account.Name),
                         AppResources.Accounts_Reopen,
-                        AppResources.CancelBtn);
+                        AppResources.Common_Cancel);
 
                 if (!confirmed)
                     return;
@@ -367,7 +381,7 @@ namespace ExpenseTracker.ViewModels
                 await _dialogService.ShowAlertAsync(
                     AppResources.Accounts_ReopenTitle,
                     ex.Message,
-                    AppResources.OkBtn);
+                    AppResources.Common_OK);
             }
         }
 
@@ -404,7 +418,7 @@ namespace ExpenseTracker.ViewModels
                             AppResources.Accounts_DeleteConfirmation,
                             account.Name),
                         AppResources.Accounts_Delete,
-                        AppResources.CancelBtn);
+                        AppResources.Common_Cancel);
 
                 if (!confirmed)
                     return;
@@ -421,7 +435,7 @@ namespace ExpenseTracker.ViewModels
                 await _dialogService.ShowAlertAsync(
                     AppResources.Accounts_DeleteTitle,
                     ex.Message,
-                    AppResources.OkBtn);
+                    AppResources.Common_OK);
             }
         }
 

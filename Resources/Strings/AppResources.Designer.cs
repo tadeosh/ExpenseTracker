@@ -115,6 +115,141 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Close.
+        /// </summary>
+        internal static string Accounts_Close {
+            get {
+                return ResourceManager.GetString("Accounts_Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Are you sure you want to close the account “{0}”? The account history will be preserved..
+        /// </summary>
+        internal static string Accounts_CloseConfirmation {
+            get {
+                return ResourceManager.GetString("Accounts_CloseConfirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Closed.
+        /// </summary>
+        internal static string Accounts_Closed {
+            get {
+                return ResourceManager.GetString("Accounts_Closed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The account “{0}” cannot be closed. Its current balance is {1:N2} {2}. Transfer or settle the remaining funds before closing the account..
+        /// </summary>
+        internal static string Accounts_CloseNonZeroBalance {
+            get {
+                return ResourceManager.GetString("Accounts_CloseNonZeroBalance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Close account.
+        /// </summary>
+        internal static string Accounts_CloseTitle {
+            get {
+                return ResourceManager.GetString("Accounts_CloseTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Delete.
+        /// </summary>
+        internal static string Accounts_Delete {
+            get {
+                return ResourceManager.GetString("Accounts_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Are you sure you want to permanently delete the account “{0}”? This action cannot be undone..
+        /// </summary>
+        internal static string Accounts_DeleteConfirmation {
+            get {
+                return ResourceManager.GetString("Accounts_DeleteConfirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The account “{0}” cannot be deleted because it has transaction history. You can close the account instead..
+        /// </summary>
+        internal static string Accounts_DeleteHasHistory {
+            get {
+                return ResourceManager.GetString("Accounts_DeleteHasHistory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Delete account.
+        /// </summary>
+        internal static string Accounts_DeleteTitle {
+            get {
+                return ResourceManager.GetString("Accounts_DeleteTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Edit.
+        /// </summary>
+        internal static string Accounts_Edit {
+            get {
+                return ResourceManager.GetString("Accounts_Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Add account.
+        /// </summary>
+        internal static string Accounts_NewAccount {
+            get {
+                return ResourceManager.GetString("Accounts_NewAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Reopen.
+        /// </summary>
+        internal static string Accounts_Reopen {
+            get {
+                return ResourceManager.GetString("Accounts_Reopen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Do you want to reopen the account “{0}”?.
+        /// </summary>
+        internal static string Accounts_ReopenConfirmation {
+            get {
+                return ResourceManager.GetString("Accounts_ReopenConfirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Reopen account.
+        /// </summary>
+        internal static string Accounts_ReopenTitle {
+            get {
+                return ResourceManager.GetString("Accounts_ReopenTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Show closed accounts.
+        /// </summary>
+        internal static string Accounts_ShowClosed {
+            get {
+                return ResourceManager.GetString("Accounts_ShowClosed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Save anyway.
         /// </summary>
         internal static string AccountSaveAnywayBtn {
@@ -174,15 +309,6 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string AccountValidationMissingInitialBalanceDate {
             get {
                 return ResourceManager.GetString("AccountValidationMissingInitialBalanceDate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Add account.
-        /// </summary>
-        internal static string AddAccountBtn {
-            get {
-                return ResourceManager.GetString("AddAccountBtn", resourceCulture);
             }
         }
         
@@ -345,6 +471,24 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string CategoryParentLabel {
             get {
                 return ResourceManager.GetString("CategoryParentLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Cancel.
+        /// </summary>
+        internal static string Common_Cancel {
+            get {
+                return ResourceManager.GetString("Common_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu OK.
+        /// </summary>
+        internal static string Common_OK {
+            get {
+                return ResourceManager.GetString("Common_OK", resourceCulture);
             }
         }
         
@@ -682,7 +826,7 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
-        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Click an account to edit it..
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Swipe left/right-click for options.
         /// </summary>
         internal static string EditAccountHint {
             get {

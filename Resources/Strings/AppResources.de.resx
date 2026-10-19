@@ -126,7 +126,7 @@
   <data name="AccountsPageTitle" xml:space="preserve">
     <value>Konten</value>
   </data>
-  <data name="AddAccountBtn" xml:space="preserve">
+  <data name="Accounts_NewAccount" xml:space="preserve">
     <value>Konto hinzunfügen</value>
   </data>
   <data name="AccountValidationMissingInitialBalanceDate" xml:space="preserve">
@@ -162,8 +162,72 @@
     <comment>AccountsPage</comment>
   </data>
   <data name="EditAccountHint" xml:space="preserve">
-    <value>Klicken Sie auf das Konto, um es zu bearbeiten.</value>
+    <value>Nach links wischen / Rechtsklick für Optionen</value>
     <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_ShowClosed" xml:space="preserve">
+    <value>Geschlossene Konten anzeigen</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Closed" xml:space="preserve">
+    <value>Geschlossen</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Close" xml:space="preserve">
+    <value>Schließen</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Reopen" xml:space="preserve">
+    <value>Wieder öffnen</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Delete" xml:space="preserve">
+    <value>Löschen</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Edit" xml:space="preserve">
+    <value>Bearbeiten</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_CloseTitle" xml:space="preserve">
+    <value>Konto schließen</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_CloseConfirmation" xml:space="preserve">
+    <value>Möchtest du das Konto „{0}“ wirklich schließen? Der Kontoverlauf bleibt erhalten.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_CloseNonZeroBalance" xml:space="preserve">
+    <value>Das Konto „{0}“ kann nicht geschlossen werden. Der aktuelle Kontostand beträgt {1:N2} {2}. Übertrage oder gleiche das verbleibende Guthaben aus, bevor du das Konto schließt.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_DeleteTitle" xml:space="preserve">
+    <value>Konto löschen</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_DeleteConfirmation" xml:space="preserve">
+    <value>Möchtest du das Konto „{0}“ wirklich dauerhaft löschen? Diese Aktion kann nicht rückgängig gemacht werden.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_DeleteHasHistory" xml:space="preserve">
+    <value>Das Konto „{0}“ kann nicht gelöscht werden, da Transaktionen vorhanden sind. Du kannst das Konto stattdessen schließen.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_ReopenTitle" xml:space="preserve">
+    <value>Konto wieder öffnen</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_ReopenConfirmation" xml:space="preserve">
+    <value>Möchtest du das Konto „{0}“ wieder öffnen?</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+    <comment>Common</comment>
+  </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+    <comment>Common</comment>
   </data>
   <data name="AddCategoryBtn" xml:space="preserve">
     <value>Kaegorie hinzufügen</value>

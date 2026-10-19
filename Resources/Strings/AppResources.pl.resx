@@ -126,7 +126,7 @@
   <data name="AccountsPageTitle" xml:space="preserve">
     <value>Konta</value>
   </data>
-  <data name="AddAccountBtn" xml:space="preserve">
+  <data name="Accounts_NewAccount" xml:space="preserve">
     <value>Dodaj konto</value>
   </data>
   <data name="AccountValidationMissingInitialBalanceDate" xml:space="preserve">
@@ -162,8 +162,72 @@
     <comment>AccountsPage</comment>
   </data>
   <data name="EditAccountHint" xml:space="preserve">
-    <value>Kliknij konto, aby je edytować.</value>
+    <value>Przesuń w lewo/kliknij prawym przyciskiem myszy, aby wyświetlić opcje</value>
     <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_ShowClosed" xml:space="preserve">
+    <value>Pokaż zamknięte konta</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Closed" xml:space="preserve">
+    <value>Zamknięte</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Close" xml:space="preserve">
+    <value>Zamknij</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Reopen" xml:space="preserve">
+    <value>Otwórz ponownie</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Delete" xml:space="preserve">
+    <value>Usuń</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_Edit" xml:space="preserve">
+    <value>Edytuj</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_CloseTitle" xml:space="preserve">
+    <value>Zamknij konto</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_CloseConfirmation" xml:space="preserve">
+    <value>Czy na pewno chcesz zamknąć konto „{0}”? Historia konta zostanie zachowana.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_CloseNonZeroBalance" xml:space="preserve">
+    <value>Nie można zamknąć konta „{0}”. Aktualne saldo wynosi {1:N2} {2}. Przenieś lub rozlicz pozostałe środki przed zamknięciem konta.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_DeleteTitle" xml:space="preserve">
+    <value>Usuń konto</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_DeleteConfirmation" xml:space="preserve">
+    <value>Czy na pewno chcesz trwale usunąć konto „{0}”? Tej operacji nie można cofnąć.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_DeleteHasHistory" xml:space="preserve">
+    <value>Nie można usunąć konta „{0}”, ponieważ posiada historię transakcji. Konto możesz zamiast tego zamknąć.</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_ReopenTitle" xml:space="preserve">
+    <value>Otwórz konto ponownie</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Accounts_ReopenConfirmation" xml:space="preserve">
+    <value>Czy chcesz ponownie otworzyć konto „{0}”?</value>
+    <comment>AccountsPage</comment>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Anuluj</value>
+    <comment>Common</comment>
+  </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+    <comment>Common</comment>
   </data>
   <data name="AddCategoryBtn" xml:space="preserve">
     <value>Dodaj kategorię</value>

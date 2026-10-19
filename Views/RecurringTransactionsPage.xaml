@@ -18,17 +18,17 @@
                         <SwipeView.RightItems>
                             <SwipeItems Mode="Reveal">
                                 <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.EditTemplateCommand}" CommandParameter="{Binding .}">
-                                    <Grid BackgroundColor="#1E88E5" WidthRequest="60">
+                                    <Grid BackgroundColor="{DynamicResource EditActionColor}" WidthRequest="60">
                                         <Image Source="pencil_line.png" WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" VerticalOptions="Center"/>
                                     </Grid>
                                 </SwipeItemView>
                                 <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.ToggleActiveStatusCommand}" CommandParameter="{Binding .}">
-                                    <Grid BackgroundColor="#F9A825"  WidthRequest="60">
+                                    <Grid BackgroundColor="{DynamicResource DeactivateActionColor}"  WidthRequest="60">
                                         <Image Source="circle_power.png" WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" VerticalOptions="Center"/>
                                     </Grid>
                                 </SwipeItemView>
                                 <SwipeItemView Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.DeleteTemplateCommand}" CommandParameter="{Binding .}">
-                                    <Grid BackgroundColor="#E53935" WidthRequest="60">
+                                    <Grid BackgroundColor="{DynamicResource DeleteActionColor}" WidthRequest="60">
                                         <Image Source="trash.png" WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" VerticalOptions="Center"/>
                                     </Grid>
                                 </SwipeItemView>
