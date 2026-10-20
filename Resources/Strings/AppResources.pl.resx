@@ -776,6 +776,10 @@
     <value>Wszystkie</value>
     <comment>ReportsPage</comment>
   </data>
+  <data name="Reports_BackToMainCategories" xml:space="preserve">
+    <value>Wróć do kategorii głównych</value>
+    <comment>ReportsPage</comment>
+  </data>
   <data name="Reports_ShowRoundedAmounts" xml:space="preserve">
     <value>Zaokrąglone kwoty</value>
   </data>

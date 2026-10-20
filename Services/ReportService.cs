@@ -22,72 +22,314 @@ namespace ExpenseTracker.Services
             _databaseService = databaseService;
         }
 
-        public async Task<List<CategorySummary>> GetCategoryBreakdownAsync(ReportFilterContext context)
+        private static int ResolveTopLevelCategoryId(int? categoryId, IReadOnlyDictionary<int, Category> categoryById)
         {
-            // 1. Pobieramy wyłącznie przefiltrowane rekordy (operacja we/wy ograniczona do minimum)
-            var transactions = await _databaseService.GetFilteredTransactionsAsync(
-                context.AccountId, context.CategoryId, context.ProjectId,
-                null, null, context.StartDate, context.EndDate);
-
-            // Filtrujemy tylko typ z kontekstu (domyślnie Expense)
-            var targetType = context.TransactionType ?? TransactionType.Expense;
-            transactions = transactions.Where(t => t.Type == targetType).ToList();
-
-            if (!transactions.Any()) return new List<CategorySummary>();
-
-            // 2. Pobieramy słowniki referencyjne z IDatabaseService
-            var categories = await _databaseService.GetCategoriesAsync(includeArchived: true);
-            var accounts = await _databaseService.GetAccountsAsync();
-            var accountDict = accounts.ToDictionary(a => a.Id, a => a.Currency);
-
-            decimal totalAmount = 0;
-            var categoryTotals = new ConcurrentDictionary<int, decimal>();
-            object syncRoot = new();
-
-            // 3. Równoległe przeliczanie z użyciem Twojego mechanizmu walut
-            // Dla optymalizacji < 2 sekund nie używamy Task.WhenAll w pętli. 
-            // Zamiast tego zrobimy pre-fetch kursów lub konwersję liniową, 
-            // ale dzięki małemu zbiorowi po filtrze, asynchroniczna pętla wystarczy.
-            foreach (var t in transactions)
+            if (!categoryId.HasValue ||
+                categoryId.Value == 0)
             {
-                var currency = accountDict.TryGetValue(t.AccountId, out var curr) ? curr : context.BaseCurrency;
-                decimal convertedAmount = t.Amount;
-
-                // Użycie Twojej metody z DatabaseService.cs
-                if (currency != context.BaseCurrency)
-                {
-                    var rate = await _databaseService.GetApplicableExchangeRateAsync(currency, context.BaseCurrency, t.Date);
-                    if (rate.HasValue && rate.Value > 0)
-                    {
-                        convertedAmount = convertedAmount * (1.0m / rate.Value);
-                    }
-                }
-
-                categoryTotals.AddOrUpdate(t.CategoryId ?? 0, convertedAmount, (_, current) => current + convertedAmount);
-
-                lock (syncRoot)
-                {
-                    totalAmount += convertedAmount;
-                }
+                return 0;
             }
 
-            if (totalAmount == 0) return new List<CategorySummary>();
+            if (!categoryById.TryGetValue(categoryId.Value,out var category))
+            {
+                // Transakcja wskazuje nieistniejącą kategorię.
+                // Zachowujemy ją jako "Bez kategorii", zamiast
+                // przypisywać do przypadkowego rodzica.
+                return 0;
+            }
 
-            // 4. Mapowanie
-            return categoryTotals
-                .Select(kvp =>
+            if (!category.ParentId.HasValue)
+                return category.Id;
+
+            if (categoryById.ContainsKey(category.ParentId.Value))
+            {
+                return category.ParentId.Value;
+            }
+
+            // Osierocona podkategoria: jej ParentId wskazuje rekord,
+            // którego już nie ma. Nie tracimy jej wydatków, tylko
+            // traktujemy ją jako samodzielną kategorię główną.
+            return category.Id;
+        }
+
+        private async Task<decimal> ConvertReportAmountAsync(decimal amount,int accountId,DateTime transactionDate,string baseCurrency,IReadOnlyDictionary<int, string> accountCurrencyById,
+            IDictionary<(string SourceCurrency,string TargetCurrency,DateTime Date),decimal?> exchangeRateCache)
+        {
+            var normalizedBaseCurrency =
+                baseCurrency
+                    .Trim()
+                    .ToUpperInvariant();
+
+            var sourceCurrency =
+                accountCurrencyById.TryGetValue(
+                    accountId,
+                    out var accountCurrency)
+                    ? accountCurrency
+                        .Trim()
+                        .ToUpperInvariant()
+                    : normalizedBaseCurrency;
+
+            if (string.Equals(
+                    sourceCurrency,
+                    normalizedBaseCurrency,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return amount;
+            }
+
+            var cacheKey = (
+                SourceCurrency: sourceCurrency,
+                TargetCurrency: normalizedBaseCurrency,
+                Date: transactionDate.Date);
+
+            if (!exchangeRateCache.TryGetValue(
+                    cacheKey,
+                    out var exchangeRate))
+            {
+                exchangeRate =
+                    await _databaseService
+                        .GetApplicableExchangeRateAsync(
+                            sourceCurrency,
+                            normalizedBaseCurrency,
+                            transactionDate.Date);
+
+                exchangeRateCache[cacheKey] =
+                    exchangeRate;
+            }
+
+            if (!exchangeRate.HasValue ||
+                exchangeRate.Value <= 0m)
+            {
+                // Zachowujemy dotychczasowe zachowanie raportu:
+                // brak kursu nie usuwa transakcji z zestawienia.
+                // Osobny kontrakt błędów kursowych uporządkujemy
+                // wspólnie dla wszystkich raportów.
+                return amount;
+            }
+
+            return amount *
+                   (1m / exchangeRate.Value);
+        }
+
+        public async Task<List<CategorySummary>> GetCategoryBreakdownAsync(ReportFilterContext context)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentException.ThrowIfNullOrWhiteSpace(context.BaseCurrency);
+
+            var transactions =
+                await _databaseService.GetFilteredTransactionsAsync(context.AccountId,context.CategoryId,context.ProjectId,null,null,context.StartDate,context.EndDate);
+
+            var targetType =
+                context.TransactionType ??
+                TransactionType.Expense;
+
+            var relevantTransactions = transactions
+                .Where(transaction =>
+                    transaction.Type == targetType)
+                .ToList();
+
+            if (relevantTransactions.Count == 0)
+                return [];
+
+            // Pobieramy również kategorie archiwalne, ponieważ archiwizacja
+            // nie może zmienić historycznych raportów.
+            var categories =
+                await _databaseService.GetCategoriesAsync(
+                    includeArchived: true);
+
+            // Zamknięte konto również może posiadać historyczne operacje.
+            // Potrzebujemy jego waluty do prawidłowego przewalutowania.
+            var accounts =
+                await _databaseService.GetAccountsAsync(
+                    includeClosed: true);
+
+            var categoryById = categories.ToDictionary(
+                category => category.Id);
+
+            var accountCurrencyById = accounts.ToDictionary(
+                account => account.Id,
+                account => account.Currency);
+
+            var categoryTotals =
+                new Dictionary<int, decimal>();
+
+            var exchangeRateCache =
+                new Dictionary<
+                    (
+                        string SourceCurrency,
+                        string TargetCurrency,
+                        DateTime Date
+                    ),
+                    decimal?>();
+
+            decimal totalAmount = 0m;
+
+            foreach (var transaction in relevantTransactions)
+            {
+                var convertedAmount =
+                    await ConvertReportAmountAsync(
+                        transaction.Amount,
+                        transaction.AccountId,
+                        transaction.Date,
+                        context.BaseCurrency,
+                        accountCurrencyById,
+                        exchangeRateCache);
+
+                var topLevelCategoryId =
+                    ResolveTopLevelCategoryId(
+                        transaction.CategoryId,
+                        categoryById);
+
+                if (categoryTotals.TryGetValue(
+                        topLevelCategoryId,
+                        out var currentTotal))
                 {
-                    var cat = categories.FirstOrDefault(c => c.Id == kvp.Key);
+                    categoryTotals[topLevelCategoryId] =
+                        currentTotal + convertedAmount;
+                }
+                else
+                {
+                    categoryTotals[topLevelCategoryId] =
+                        convertedAmount;
+                }
+
+                totalAmount += convertedAmount;
+            }
+
+            if (totalAmount == 0m)
+                return [];
+
+            return categoryTotals
+                .Where(item => item.Value != 0m)
+                .Select(item =>
+                {
+                    if (item.Key == 0)
+                    {
+                        return new CategorySummary(
+                            CategoryId: 0,
+                            CategoryName: AppResources.CategoryNone,
+                            ColorHex: "#808080",
+                            TotalAmount: item.Value,
+                            Percentage:
+                                (double)(
+                                    item.Value /
+                                    totalAmount *
+                                    100m));
+                    }
+
+                    if (!categoryById.TryGetValue(
+                            item.Key,
+                            out var category))
+                    {
+                        return new CategorySummary(
+                            CategoryId: item.Key,
+                            CategoryName:
+                                AppResources.CategoryNone,
+                            ColorHex: "#808080",
+                            TotalAmount: item.Value,
+                            Percentage:
+                                (double)(
+                                    item.Value /
+                                    totalAmount *
+                                    100m));
+                    }
+
                     return new CategorySummary(
-                        CategoryId: kvp.Key,
-                        CategoryName: cat?.Name ?? AppResources.CategoryNone,
-                        // ProjectName = proj?.Name ?? AppResources.NoProject,
-                        ColorHex: cat?.ColorHex ?? "#808080",
-                        TotalAmount: kvp.Value,
-                        Percentage: (double)(kvp.Value / totalAmount * 100)
-                    );
+                        CategoryId: category.Id,
+                        CategoryName: category.Name,
+                        ColorHex: category.ColorHex,
+                        TotalAmount: item.Value,
+                        Percentage:
+                            (double)(
+                                item.Value /
+                                totalAmount *
+                                100m));
                 })
-                .OrderByDescending(x => x.TotalAmount)
+                .OrderByDescending(item =>
+                    item.TotalAmount)
+                .ToList();
+        }
+
+        public async Task<List<CategorySummary>> GetCategoryDrillDownAsync(ReportFilterContext context, int parentCategoryId)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentException.ThrowIfNullOrWhiteSpace(context.BaseCurrency);
+
+            var categories = await _databaseService.GetCategoriesAsync(includeArchived: true);
+            var parentCategory = categories.FirstOrDefault(category => category.Id == parentCategoryId);
+
+            if (parentCategory is null)
+                return [];
+
+            var childCategories = categories.Where(category => category.ParentId == parentCategoryId).ToList();
+            var relevantCategoryIds = childCategories.Select(category => category.Id).ToHashSet();
+            relevantCategoryIds.Add(parentCategoryId);
+
+            // Celowo nie przekazujemy context.CategoryId.
+            // Drill-down sam kontroluje, które elementy drzewa kategorii należą do wyniku.
+            var transactions = await _databaseService.GetFilteredTransactionsAsync(context.AccountId, null, context.ProjectId, null, null, context.StartDate, context.EndDate);
+
+            var targetType = context.TransactionType ?? TransactionType.Expense;
+
+            var relevantTransactions = transactions
+                .Where(transaction => transaction.Type == targetType)
+                .Where(transaction => transaction.CategoryId.HasValue && relevantCategoryIds.Contains(transaction.CategoryId.Value))
+                .ToList();
+
+            if (relevantTransactions.Count == 0)
+                return [];
+
+            var accounts = await _databaseService.GetAccountsAsync(includeClosed: true);
+            var accountCurrencyById = accounts.ToDictionary(account => account.Id, account => account.Currency);
+            var categoryById = categories.ToDictionary(category => category.Id);
+            var categoryTotals = new Dictionary<int, decimal>();
+            var exchangeRateCache = new Dictionary<(string SourceCurrency, string TargetCurrency, DateTime Date), decimal?>();
+
+            decimal totalAmount = 0m;
+
+            foreach (var transaction in relevantTransactions)
+            {
+                var convertedAmount = await ConvertReportAmountAsync(transaction.Amount, transaction.AccountId, transaction.Date, context.BaseCurrency, accountCurrencyById, exchangeRateCache);
+
+                // Transakcja przypisana bezpośrednio do rodzica trafia
+                // do syntetycznej pozycji "Bez podkategorii" (Id = 0).
+                var resultCategoryId = transaction.CategoryId == parentCategoryId ? 0 : transaction.CategoryId!.Value;
+
+                if (categoryTotals.TryGetValue(resultCategoryId, out var currentTotal))
+                    categoryTotals[resultCategoryId] = currentTotal + convertedAmount;
+                else
+                    categoryTotals[resultCategoryId] = convertedAmount;
+
+                totalAmount += convertedAmount;
+            }
+
+            if (totalAmount == 0m)
+                return [];
+
+            return categoryTotals
+                .Where(item => item.Value != 0m)
+                .Select(item =>
+                {
+                    if (item.Key == 0)
+                    {
+                        return new CategorySummary(
+                            CategoryId: 0,
+                            CategoryName: AppResources.Reports_NoSubcategory,
+                            ColorHex: "#808080",
+                            TotalAmount: item.Value,
+                            Percentage: (double)(item.Value / totalAmount * 100m));
+                    }
+
+                    var category = categoryById[item.Key];
+
+                    return new CategorySummary(
+                        CategoryId: category.Id,
+                        CategoryName: category.Name,
+                        ColorHex: category.ColorHex,
+                        TotalAmount: item.Value,
+                        Percentage: (double)(item.Value / totalAmount * 100m));
+                })
+                .OrderByDescending(item => item.TotalAmount)
                 .ToList();
         }
 

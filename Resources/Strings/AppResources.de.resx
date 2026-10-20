@@ -776,6 +776,10 @@
     <value>Alle</value>
     <comment>ReportsPage</comment>
   </data>
+  <data name="Reports_BackToMainCategories" xml:space="preserve">
+    <value>Zurück zu den Hauptkategorien</value>
+    <comment>ReportsPage</comment>
+  </data>
   <data name="Reports_ShowRoundedAmounts" xml:space="preserve">
     <value>Gerundete Beträge</value>
   </data>

@@ -7,6 +7,8 @@ namespace ExpenseTracker.Services.Interfaces
     {
      
         Task<List<CategorySummary>> GetCategoryBreakdownAsync(ReportFilterContext context);
+        Task<List<CategorySummary>> GetCategoryDrillDownAsync(ReportFilterContext context,int parentCategoryId);
+
         Task<List<ProjectSummary>> GetProjectBreakdownAsync(ReportFilterContext context);
         Task<List<TrendDataPoint>> GetTrendAsync(ReportFilterContext context);
         Task<List<TransactionDetailDto>> GetTopTransactionsAsync(ReportFilterContext context, int limit = 10);

@@ -856,6 +856,10 @@
     <value>All</value>
     <comment>ReportsPage</comment>
   </data>
+  <data name="Reports_BackToMainCategories" xml:space="preserve">
+    <value>Back to main categories</value>
+    <comment>ReportsPage</comment>
+  </data>
   <data name="Reports_ShowRoundedAmounts" xml:space="preserve">
     <value>Rounded amounts</value>
     <comment>ReportsPage</comment>

@@ -133,13 +133,28 @@
 
             <!-- Kategorie -->
             <Border Margin="10,0" Padding="10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsCategoriesTabVisible}">
-                <Grid>
-                    <lvc:PieChart Series="{Binding CategorySeries}" LegendPosition="Right" IsVisible="{Binding HasCategoryData}" />
+                <Grid RowDefinitions="Auto,*" RowSpacing="6">
 
-                    <VerticalStackLayout IsVisible="{Binding HasCategoryData, Converter={StaticResource InvertedBoolConverter}}" VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
-                        <Label Text="{x:Static resources:AppResources.NoTransactionsLabel}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
-                        <Label Text="{x:Static resources:AppResources.NoTransactionsDescription}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
-                    </VerticalStackLayout>
+                    <!-- Nagłówek drill-downu -->
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="10" IsVisible="{Binding IsCategoryDrillDownActive}">
+                        <Button Grid.Column="0" Text="←" Command="{Binding CloseCategoryDrillDownCommand}" WidthRequest="44" HeightRequest="40" Padding="0" FontSize="20" BackgroundColor="Transparent" BorderColor="{DynamicResource PrimaryColor}" BorderWidth="1" TextColor="{DynamicResource PrimaryColor}" />
+
+                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="0">
+                            <Label Text="{Binding CategoryDrillDownTitle}" FontSize="17" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
+                            <Label Text="{x:Static resources:AppResources.Reports_BackToMainCategories}" FontSize="11" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" LineBreakMode="TailTruncation" />
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Wykres i empty state -->
+                    <Grid Grid.Row="1">
+                        <lvc:PieChart Series="{Binding CategorySeries}" LegendPosition="Right" IsVisible="{Binding HasCategoryData}" />
+
+                        <VerticalStackLayout IsVisible="{Binding HasCategoryData, Converter={StaticResource InvertedBoolConverter}}" VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
+                            <Label Text="{x:Static resources:AppResources.NoTransactionsLabel}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
+                            <Label Text="{x:Static resources:AppResources.NoTransactionsDescription}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Grid>
+
                 </Grid>
             </Border>
 

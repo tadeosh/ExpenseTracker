@@ -134,6 +134,15 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial string CustomDateError { get; set; } = string.Empty;
 
+        [ObservableProperty]
+        public partial bool IsCategoryDrillDownActive { get; set; }
+
+        [ObservableProperty]
+        public partial string CategoryDrillDownTitle { get; set; } = string.Empty;
+
+        private int? _selectedParentCategoryId;
+        private IReadOnlyList<CategorySummary> _mainCategoryData = [];
+
 
         public bool IsProjectEmptyStateVisible => !HasProjectData;
         public bool IsProjectChartActuallyVisible => HasProjectData;
@@ -386,6 +395,56 @@ namespace ExpenseTracker.ViewModels
             return char.ToUpper(text[0]) + text.Substring(1);
         }
 
+        private void BuildCategorySeries(IReadOnlyList<CategorySummary> data, bool allowDrillDown)
+        {
+            CategorySeries.Clear();
+
+            double innerRadius = DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.iOS ? 30 : 60;
+
+            var separatorColor = GetChartColor("ChartSegmentSeparatorColor", "#FFFFFF");
+
+            var separatorPaint = new SolidColorPaint(separatorColor)
+            {
+                StrokeThickness = 2,
+                IsAntialias = true
+            };
+
+            foreach (var item in data)
+            {
+                SKColor.TryParse(item.ColorHex, out var skColor);
+
+                var series = new PieSeries<double>
+                {
+                    Values = [(double)item.TotalAmount],
+                    Name = item.CategoryName,
+                    Fill = new SolidColorPaint(skColor),
+                    Stroke = separatorPaint,
+                    InnerRadius = innerRadius,
+                    MaxRadialColumnWidth = 70,
+                    HoverPushout = allowDrillDown && item.CategoryId != 0 ? 15 : 10,
+                    ToolTipLabelFormatter = point => $"{point.Context.Series.Name}: {point.Model:N2} ({item.Percentage:F1}%)"
+                };
+
+                if (allowDrillDown && item.CategoryId != 0)
+                {
+                    series.ChartPointPointerDown += (_, _) =>
+                    {
+                        _ = OpenCategoryDrillDownCommand.ExecuteAsync(item);
+                    };
+                }
+
+                CategorySeries.Add(series);
+            }
+        }
+
+        private async Task LoadCategoryDrillDownAsync(ReportFilterContext context, int parentCategoryId)
+        {
+            var drillDownData = await _reportService.GetCategoryDrillDownAsync(context, parentCategoryId);
+
+            HasCategoryData = drillDownData.Count > 0;
+            BuildCategorySeries(drillDownData,allowDrillDown: false);
+        }
+
         private async Task LoadReportDataAsync()
         {
             double innerRadius = DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.iOS ? 30 : 60;
@@ -413,27 +472,21 @@ namespace ExpenseTracker.ViewModels
             await LoadTrendAsync(trendContext, SelectedScope?.Scope == ReportScope.Custom);
             await LoadWealthAsync(trendContext, SelectedScope?.Scope == ReportScope.Custom);
 
-            CategorySeries.Clear();
+            _mainCategoryData = categoryData;
+
             ProjectSeries.Clear();
             TopExpenses.Clear();
-
-            HasCategoryData = categoryData.Any();
+                        
             HasProjectData = projectData.Any(x => x.ProjectId != 0);
-
-            foreach (var item in categoryData)
+            
+            if (IsCategoryDrillDownActive && _selectedParentCategoryId.HasValue)
             {
-                SKColor.TryParse(item.ColorHex, out var skColor);
-
-                CategorySeries.Add(new PieSeries<double>
-                {
-                    Values = [(double)item.TotalAmount],
-                    Name = item.CategoryName,
-                    Fill = new SolidColorPaint(skColor),
-                    InnerRadius = innerRadius,
-                    MaxRadialColumnWidth = 70,
-                    HoverPushout = 10,
-                    ToolTipLabelFormatter = point => $"{point.Context.Series.Name}: {point.Model:N2} ({item.Percentage:F1}%)"
-                });
+                await LoadCategoryDrillDownAsync(expenseContext, _selectedParentCategoryId.Value);
+            }
+            else
+            {
+                BuildCategorySeries(categoryData,allowDrillDown:true);
+                HasCategoryData = categoryData.Count > 0;
             }
 
             if (HasProjectData)
@@ -461,6 +514,52 @@ namespace ExpenseTracker.ViewModels
             HasData = categoryData.Any() || projectData.Any(x => x.ProjectId != 0) || topTransactions.Any() || HasTrendData || HasWealthData;
         }
 
+        [RelayCommand]
+        private async Task OpenCategoryDrillDownAsync(CategorySummary? category)
+        {
+            if (category is null || category.CategoryId == 0)
+                return;
+
+            var context = new ReportFilterContext
+            {
+                StartDate = StartDate,
+                EndDate = EndDate,
+                TransactionType = TransactionType.Expense,
+                BaseCurrency = _settingsService.DefaultCurrency
+            };
+
+            var drillDownData = await _reportService.GetCategoryDrillDownAsync(context, category.CategoryId);
+
+            if (drillDownData.Count == 0)
+                return;
+
+            var hasRealSubcategory = drillDownData.Any(item => item.CategoryId != 0);
+
+            if (!hasRealSubcategory)
+                return;
+
+            _selectedParentCategoryId = category.CategoryId;
+
+            IsCategoryDrillDownActive = true;
+            CategoryDrillDownTitle = category.CategoryName;
+
+            HasCategoryData = true;
+            BuildCategorySeries(drillDownData,allowDrillDown: false);
+        }
+
+        [RelayCommand]
+        private void CloseCategoryDrillDown()
+        {
+            _selectedParentCategoryId = null;
+
+            IsCategoryDrillDownActive = false;
+            CategoryDrillDownTitle = string.Empty;
+
+            HasCategoryData = _mainCategoryData.Count > 0;
+
+            BuildCategorySeries(_mainCategoryData, allowDrillDown: true);
+        }
+
         // ================ TRENDY ==========================
         partial void OnShowIncomeTrendChanged(bool value)
         {
@@ -485,16 +584,18 @@ namespace ExpenseTracker.ViewModels
 
         private static SKColor GetChartColor(string resourceKey, string fallbackHex)
         {
-            if (Application.Current?.Resources.TryGetValue(resourceKey, out var resource) == true &&
-                resource is Color color)
-            {
-                return new SKColor(
-                    (byte)(color.Red * 255),
-                    (byte)(color.Green * 255),
-                    (byte)(color.Blue * 255),
-                    (byte)(color.Alpha * 255));
+            if (Application.Current is not null &&
+                Application.Current.Resources.TryGetValue(resourceKey, out var resource))
+            {                
+                if (resource is Color color)
+                {
+                    return new SKColor(
+                        (byte)(color.Red * 255),
+                        (byte)(color.Green * 255),
+                        (byte)(color.Blue * 255),
+                        (byte)(color.Alpha * 255));
+                }
             }
-
             return SKColor.Parse(fallbackHex);
         }
 

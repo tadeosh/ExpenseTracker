@@ -22,4 +22,6 @@
 
     <Color x:Key="WealthChartColor">#1E88E5</Color>
     <Color x:Key="WealthChangeChartColor">#8E44AD</Color>
+
+    <Color x:Key="ChartSegmentSeparatorColor">#202020</Color>
 </ResourceDictionary>
