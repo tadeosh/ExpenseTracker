@@ -1258,7 +1258,7 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
-        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Trend.
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Automatic Y-axis scale.
         /// </summary>
         internal static string Reports_AutoScaleYAxis {
             get {
@@ -1429,7 +1429,7 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
-        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Show rounded amounts.
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Rounded amounts.
         /// </summary>
         internal static string Reports_ShowRoundedAmounts {
             get {
@@ -1537,11 +1537,74 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Net worth change.
+        /// </summary>
+        internal static string Reports_WealthChange {
+            get {
+                return ResourceManager.GetString("Reports_WealthChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Wealth history will be available here..
         /// </summary>
         internal static string Reports_WealthComingSoon {
             get {
                 return ResourceManager.GetString("Reports_WealthComingSoon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu It is not possible to generate the asset history. The following accounts do not have a specified opening balance date: .
+        /// </summary>
+        internal static string Reports_WealthErrorMessage {
+            get {
+                return ResourceManager.GetString("Reports_WealthErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Missing exchange rate .
+        /// </summary>
+        internal static string Reports_WealthMissingExchangeRate1 {
+            get {
+                return ResourceManager.GetString("Reports_WealthMissingExchangeRate1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu for date: .
+        /// </summary>
+        internal static string Reports_WealthMissingExchangeRate2 {
+            get {
+                return ResourceManager.GetString("Reports_WealthMissingExchangeRate2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu No data available for the net worth history..
+        /// </summary>
+        internal static string Reports_WealthNoData {
+            get {
+                return ResourceManager.GetString("Reports_WealthNoData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Complete the account data to generate the net worth history..
+        /// </summary>
+        internal static string Reports_WealthSetupAccounts {
+            get {
+                return ResourceManager.GetString("Reports_WealthSetupAccounts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Net worth.
+        /// </summary>
+        internal static string Reports_WealthValue {
+            get {
+                return ResourceManager.GetString("Reports_WealthValue", resourceCulture);
             }
         }
         

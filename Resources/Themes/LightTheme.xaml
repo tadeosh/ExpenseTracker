@@ -14,4 +14,12 @@
     <Color x:Key="DeleteActionColor">#D9534F</Color>
     <Color x:Key="ActivateActionColor">#2E8B57</Color>
     <Color x:Key="DeactivateActionColor">#F9A825</Color>
+
+    <!-- Kolory wykresów raportowych -->
+    <Color x:Key="IncomeChartColor">#2E8B57</Color>
+    <Color x:Key="ExpenseChartColor">#D9534F</Color>
+    <Color x:Key="NetChartColor">#1E88E5</Color>
+
+    <Color x:Key="WealthChartColor">#1E88E5</Color>
+    <Color x:Key="WealthChangeChartColor">#8E44AD</Color>
 </ResourceDictionary>

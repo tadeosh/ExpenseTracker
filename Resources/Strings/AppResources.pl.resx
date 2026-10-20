@@ -750,8 +750,7 @@
     <comment>ReportsPage</comment>
   </data>
   <data name="Reports_AutoScaleYAxis" xml:space="preserve">
-    <value>Automatyczna skala osi Y</value>
-    <comment>ReportsPage</comment>
+    <value>Automatyczna skala Y</value>
   </data>
   <data name="Reports_TabWealth" xml:space="preserve">
     <value>Majątek</value>
@@ -778,8 +777,7 @@
     <comment>ReportsPage</comment>
   </data>
   <data name="Reports_ShowRoundedAmounts" xml:space="preserve">
-    <value>Pokaz zaokrąglone kwoty</value>
-    <comment>ReportsPage</comment>
+    <value>Zaokrąglone kwoty</value>
   </data>
   <data name="Reports_BackToAllCategories" xml:space="preserve">
     <value>Wszystkie kategorie</value>
@@ -825,5 +823,26 @@
   </data>
   <data name="SelectDatePlaceholder" xml:space="preserve">
     <value>Wybierz datę</value>
+  </data>
+  <data name="Reports_WealthValue" xml:space="preserve">
+    <value>Wartość majątku</value>
+  </data>
+  <data name="Reports_WealthMissingExchangeRate1" xml:space="preserve">
+    <value>Brak kursu wymiany </value>
+  </data>
+  <data name="Reports_WealthMissingExchangeRate2" xml:space="preserve">
+    <value>dla daty:</value>
+  </data>
+  <data name="Reports_WealthChange" xml:space="preserve">
+    <value>Zmiana majątku</value>
+  </data>
+  <data name="Reports_WealthNoData" xml:space="preserve">
+    <value>Brak danych do wyświetlenia historii majątku.</value>
+  </data>
+  <data name="Reports_WealthSetupAccounts" xml:space="preserve">
+    <value>Uzupełnij dane kont, aby wygenerować historię majątku.</value>
+  </data>
+  <data name="Reports_WealthErrorMessage" xml:space="preserve">
+    <value>Nie można wygenerować historii majątku. Następujące konta nie mają określonej daty salda początkowego: </value>
   </data>
 </root>

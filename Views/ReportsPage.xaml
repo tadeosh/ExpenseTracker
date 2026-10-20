@@ -211,12 +211,48 @@
             </Border>
 
             <!-- Majątek -->
-            <Border Margin="10,0" Padding="20" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsWealthTabVisible}">
-                <Grid>
-                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
-                        <Label Text="{x:Static resources:AppResources.Reports_TabWealth}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
-                        <Label Text="{x:Static resources:AppResources.Reports_WealthComingSoon}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.65" HorizontalTextAlignment="Center" />
+            <Border Margin="10,0" Padding="10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsWealthTabVisible}">
+                <Grid RowDefinitions="*,Auto" RowSpacing="8">
+
+                    <Grid Grid.Row="0">
+
+                        <lvc:CartesianChart Series="{Binding WealthSeries}" XAxes="{Binding WealthXAxes}" YAxes="{Binding WealthYAxes}" ZoomMode="X" IsVisible="{Binding HasWealthData}" />
+
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8" IsVisible="{Binding WealthRequiresAccountSetup}">
+                            <Label Text="{x:Static resources:AppResources.Reports_WealthSetupAccounts}" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalTextAlignment="Center" />
+                            <Label Text="{Binding WealthErrorMessage}" FontSize="13" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+
+                    </Grid>
+
+                    <VerticalStackLayout Grid.Row="1" Spacing="4">
+
+                        <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                            <HorizontalStackLayout Spacing="4">
+                                <CheckBox IsChecked="{Binding ShowWealthValue}" />
+                                <Label Text="{x:Static resources:AppResources.Reports_WealthValue}" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
+                            </HorizontalStackLayout>
+
+                            <HorizontalStackLayout Spacing="4">
+                                <CheckBox IsChecked="{Binding ShowWealthChange}" />
+                                <Label Text="{x:Static resources:AppResources.Reports_WealthChange}" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
+                            </HorizontalStackLayout>
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                            <HorizontalStackLayout Spacing="4">
+                                <CheckBox IsChecked="{Binding ShowRoundedWealthAmounts}" />
+                                <Label Text="{x:Static resources:AppResources.Reports_ShowRoundedAmounts}" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
+                            </HorizontalStackLayout>
+
+                            <HorizontalStackLayout Spacing="4">
+                                <CheckBox IsChecked="{Binding AutoScaleWealthYAxis}" />
+                                <Label Text="{x:Static resources:AppResources.Reports_AutoScaleYAxis}" VerticalOptions="Center" TextColor="{DynamicResource AppTextColor}" />
+                            </HorizontalStackLayout>
+                        </HorizontalStackLayout>
+
                     </VerticalStackLayout>
+
                 </Grid>
             </Border>
 

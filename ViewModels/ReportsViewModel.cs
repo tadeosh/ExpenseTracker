@@ -77,7 +77,7 @@ namespace ExpenseTracker.ViewModels
         public partial bool IsCustomDateVisible { get; set; }
         public ObservableCollection<ReportScopeItem> Scopes { get; } = new()
         {
-            new ReportScopeItem { Scope = ReportScope.Monthly, DisplayName = AppResources.Reports_ScopeMonthly },            
+            new ReportScopeItem { Scope = ReportScope.Monthly, DisplayName = AppResources.Reports_ScopeMonthly },
             new ReportScopeItem { Scope = ReportScope.Last3Months, DisplayName = AppResources.Reports_ScopeLast3Months },
             new ReportScopeItem { Scope = ReportScope.Last6Months, DisplayName = AppResources.Reports_ScopeLast6Months },
             new ReportScopeItem { Scope = ReportScope.Yearly, DisplayName = AppResources.Reports_ScopeYearly },
@@ -180,15 +180,57 @@ namespace ExpenseTracker.ViewModels
         private bool _isCustomTrendRange;
 
         // koniec Trendów
+        // ============================ MAJĄTEK ============================
+
+        [ObservableProperty]
+        public partial ObservableCollection<ISeries> WealthSeries { get; set; } = new();
+
+        [ObservableProperty]
+        public partial Axis[] WealthXAxes { get; set; } = [new Axis()];
+
+        [ObservableProperty]
+        public partial Axis[] WealthYAxes { get; set; } = [new Axis()];
+
+        [ObservableProperty]
+        public partial bool ShowWealthValue { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool ShowWealthChange { get; set; }
+
+        [ObservableProperty]
+        public partial bool ShowRoundedWealthAmounts { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool AutoScaleWealthYAxis { get; set; } = true;
+
+        [ObservableProperty]
+        public partial bool HasWealthData { get; set; }
+
+        [ObservableProperty]
+        public partial bool WealthRequiresAccountSetup { get; set; }
+
+        [ObservableProperty]
+        public partial string WealthErrorMessage { get; set; } = string.Empty;
+
+        private LineSeries<double>? _wealthValueSeries;
+        private LineSeries<double>? _wealthChangeSeries;
+
+        private IReadOnlyList<BalanceHistoryPoint> _wealthData = [];
+
+        private TrendGrouping _currentWealthGrouping = TrendGrouping.Day;
+
+        private bool _isCustomWealthRange;
+
+        // ======================== KONIEC MAJĄTKU =========================
 
         public ReportsViewModel(IReportService reportService, ISettingsService settingsService)
         {
             _reportService = reportService;
             _settingsService = settingsService;
-        
+
         }
 
-        
+
         public async Task InitializeAsync()
         {
             // Jeśli wracamy na stronę (nawigacja wstecz), tylko odświeżamy dane
@@ -369,6 +411,7 @@ namespace ExpenseTracker.ViewModels
             var topTransactions = await _reportService.GetTopTransactionsAsync(expenseContext, 10);
 
             await LoadTrendAsync(trendContext, SelectedScope?.Scope == ReportScope.Custom);
+            await LoadWealthAsync(trendContext, SelectedScope?.Scope == ReportScope.Custom);
 
             CategorySeries.Clear();
             ProjectSeries.Clear();
@@ -392,7 +435,7 @@ namespace ExpenseTracker.ViewModels
                     ToolTipLabelFormatter = point => $"{point.Context.Series.Name}: {point.Model:N2} ({item.Percentage:F1}%)"
                 });
             }
-                        
+
             if (HasProjectData)
             {
                 foreach (var item in projectData.Where(x => x.ProjectId != 0))
@@ -415,7 +458,7 @@ namespace ExpenseTracker.ViewModels
             foreach (var transaction in topTransactions)
                 TopExpenses.Add(transaction);
 
-            HasData = categoryData.Any() || projectData.Any(x => x.ProjectId != 0) || topTransactions.Any() || HasTrendData;
+            HasData = categoryData.Any() || projectData.Any(x => x.ProjectId != 0) || topTransactions.Any() || HasTrendData || HasWealthData;
         }
 
         // ================ TRENDY ==========================
@@ -437,6 +480,22 @@ namespace ExpenseTracker.ViewModels
         partial void OnShowWeekNumbersChanged(bool value)
         {
             RefreshTrendAxes();
+            RefreshWealthAxes();
+        }
+
+        private static SKColor GetChartColor(string resourceKey, string fallbackHex)
+        {
+            if (Application.Current?.Resources.TryGetValue(resourceKey, out var resource) == true &&
+                resource is Color color)
+            {
+                return new SKColor(
+                    (byte)(color.Red * 255),
+                    (byte)(color.Green * 255),
+                    (byte)(color.Blue * 255),
+                    (byte)(color.Alpha * 255));
+            }
+
+            return SKColor.Parse(fallbackHex);
         }
 
         partial void OnShowRoundedTrendAmountsChanged(bool value)
@@ -459,9 +518,9 @@ namespace ExpenseTracker.ViewModels
             IsWeeklyTrend = _currentTrendGrouping == TrendGrouping.Week;
             HasTrendData = trendData.Any(x => x.Income != 0m || x.Expense != 0m);
 
-            var incomeColor = SKColor.Parse("#2E8B57");
-            var expenseColor = SKColor.Parse("#D9534F");
-            var netColor = SKColor.Parse("#1E88E5");
+            var incomeColor = GetChartColor("IncomeChartColor","#2E8B57");
+            var expenseColor = GetChartColor("ExpenseChartColor","#D9534F");
+            var netColor = GetChartColor("NetChartColor","#1E88E5");
 
             _incomeTrendSeries = new LineSeries<double>
             {
@@ -610,5 +669,359 @@ namespace ExpenseTracker.ViewModels
 
             return $"{weekStart:dd}-{weekEnd:dd.MM}";
         }
+
+        // ============================ MAJĄTEK ============================
+
+        private async Task LoadWealthAsync(
+            ReportFilterContext context,
+            bool isCustomRange)
+        {
+            WealthErrorMessage = string.Empty;
+            WealthRequiresAccountSetup = false;
+
+            try
+            {
+                var wealthData =
+                    await _reportService.GetBalanceHistoryAsync(context);
+
+                _wealthData = wealthData;
+
+                _isCustomWealthRange = isCustomRange;
+
+                _currentWealthGrouping =
+                    ReportService.GetTrendGrouping(
+                        context.StartDate,
+                        context.EndDate);
+
+                HasWealthData = wealthData.Count > 0;
+
+                if (!HasWealthData)
+                {
+                    _wealthValueSeries = null;
+                    _wealthChangeSeries = null;
+
+                    WealthSeries.Clear();
+
+                    RefreshWealthAxes();
+
+                    return;
+                }
+
+                var balanceValues = wealthData
+                    .Select(point => (double)point.Balance)
+                    .ToArray();
+
+                var changeValues = new double[wealthData.Count];
+
+                for (var i = 0; i < wealthData.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        changeValues[i] = 0d;
+                        continue;
+                    }
+
+                    changeValues[i] =
+                        (double)(
+                            wealthData[i].Balance -
+                            wealthData[i - 1].Balance);
+                }
+
+                var wealthColor = GetChartColor("WealthChartColor","#1E88E5");
+                var changeColor = GetChartColor("WealthChangeChartColor","#8E44AD");
+
+                _wealthValueSeries = new LineSeries<double>
+                {
+                    Name = AppResources.Reports_WealthValue,
+                    Values = balanceValues,
+
+                    Stroke = new SolidColorPaint(wealthColor)
+                    {
+                        StrokeThickness = 3
+                    },
+
+                    GeometryStroke = new SolidColorPaint(wealthColor)
+                    {
+                        StrokeThickness = 2
+                    },
+
+                    GeometryFill = new SolidColorPaint(wealthColor),
+
+                    GeometrySize = 7,
+
+                    Fill = null,
+
+                    LineSmoothness = 0.25
+                };
+
+                _wealthChangeSeries = new LineSeries<double>
+                {
+                    Name = AppResources.Reports_WealthChange,
+                    Values = changeValues,
+
+                    Stroke = new SolidColorPaint(changeColor)
+                    {
+                        StrokeThickness = 3
+                    },
+
+                    GeometryStroke = new SolidColorPaint(changeColor)
+                    {
+                        StrokeThickness = 2
+                    },
+
+                    GeometryFill = new SolidColorPaint(changeColor),
+
+                    GeometrySize = 7,
+
+                    Fill = null,
+
+                    LineSmoothness = 0.25
+                };
+
+                RefreshVisibleWealthSeries();
+                RefreshWealthAxes();
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Obecnie GetBalanceHistoryAsync rzuca
+                // InvalidOperationException m.in. gdy konto nie ma
+                // InitialBalanceDate albo brakuje kursu historycznego.
+
+                _wealthData = [];
+
+                _wealthValueSeries = null;
+                _wealthChangeSeries = null;
+
+                HasWealthData = false;
+
+                WealthSeries.Clear();
+
+                WealthRequiresAccountSetup = true;
+                WealthErrorMessage = ex.Message;
+
+                RefreshWealthAxes();
+            }
+        }
+
+        partial void OnShowWealthValueChanged(bool value)
+        {
+            RefreshVisibleWealthSeries();
+        }
+
+        partial void OnShowWealthChangeChanged(bool value)
+        {
+            RefreshVisibleWealthSeries();
+        }
+
+        partial void OnShowRoundedWealthAmountsChanged(bool value)
+        {
+            RefreshWealthAxes();
+        }
+
+        partial void OnAutoScaleWealthYAxisChanged(bool value)
+        {
+            RefreshWealthAxes();
+        }
+
+        private void RefreshVisibleWealthSeries()
+        {
+            WealthSeries.Clear();
+
+            if (ShowWealthValue &&
+                _wealthValueSeries is not null)
+            {
+                WealthSeries.Add(_wealthValueSeries);
+            }
+
+            if (ShowWealthChange &&
+                _wealthChangeSeries is not null)
+            {
+                WealthSeries.Add(_wealthChangeSeries);
+            }
+        }
+
+        private string CreateWealthLabel(BalanceHistoryPoint point)
+        {
+            return _currentWealthGrouping switch
+            {
+                TrendGrouping.Day when _isCustomWealthRange =>
+                    CreateWealthCustomDayLabel(point.Date),
+
+                TrendGrouping.Day =>
+                    point.Date.Day.ToString(
+                        CultureInfo.CurrentCulture),
+
+                TrendGrouping.Week when ShowWeekNumbers =>
+                    $"W{ISOWeek.GetWeekOfYear(point.Date):00}",
+
+                TrendGrouping.Week =>
+                    CreateWealthWeekRangeLabel(point.Date),
+
+                TrendGrouping.Month when _isCustomWealthRange =>
+                    point.Date.ToString(
+                        "MMM yy",
+                        CultureInfo.CurrentCulture),
+
+                TrendGrouping.Month =>
+                    point.Date.ToString(
+                        "MMM",
+                        CultureInfo.CurrentCulture),
+
+                _ => point.Date.ToShortDateString()
+            };
+        }
+
+        private string CreateWealthCustomDayLabel(DateTime date)
+        {
+            var crossesYears =
+                _wealthData.Count > 0 &&
+                _wealthData.First().Date.Year !=
+                _wealthData.Last().Date.Year;
+
+            return date.ToString(
+                crossesYears
+                    ? "dd.MM.yy"
+                    : "dd.MM",
+                CultureInfo.CurrentCulture);
+        }
+
+        private string CreateWealthWeekRangeLabel(DateTime weekStart)
+        {
+            var weekEnd = weekStart.AddDays(6);
+
+            var crossesYears =
+                weekStart.Year != weekEnd.Year ||
+                (
+                    _wealthData.Count > 0 &&
+                    _wealthData.First().Date.Year !=
+                    _wealthData.Last().Date.Year
+                );
+
+            if (crossesYears)
+            {
+                return
+                    $"{weekStart:dd.MM.yy}-" +
+                    $"{weekEnd:dd.MM.yy}";
+            }
+
+            if (weekStart.Month != weekEnd.Month)
+            {
+                return
+                    $"{weekStart:dd.MM}-" +
+                    $"{weekEnd:dd.MM}";
+            }
+
+            return
+                $"{weekStart:dd}-" +
+                $"{weekEnd:dd.MM}";
+        }
+
+        private void RefreshWealthAxes()
+        {
+            var labels = _wealthData
+                .Select(CreateWealthLabel)
+                .ToArray();
+
+            WealthXAxes =
+            [
+               new Axis
+                {
+                    Labels = labels,
+                    LabelsRotation = 90,
+                    TextSize = 10,
+                    MinStep = 1,
+                    ForceStepToMin = true
+                }
+            ];
+
+            var maxAbsoluteValue = GetWealthMaxAbsoluteValue();
+
+            WealthYAxes =
+            [
+                new Axis
+        {
+            TextSize = 10,
+
+            Labeler = FormatWealthAmount,
+
+            MinLimit = AutoScaleWealthYAxis
+                ? null
+                : GetFixedWealthMinLimit(
+                    maxAbsoluteValue),
+
+            MaxLimit = AutoScaleWealthYAxis
+                ? null
+                : Math.Ceiling(
+                    maxAbsoluteValue * 1.1)
+        }
+            ];
+        }
+
+        private double GetWealthMaxAbsoluteValue()
+        {
+            if (_wealthData.Count == 0)
+                return 10d;
+
+            var maxBalance = _wealthData
+                .Max(point =>
+                    Math.Abs((double)point.Balance));
+
+            var maxChange = 0d;
+
+            for (var i = 1; i < _wealthData.Count; i++)
+            {
+                var change = Math.Abs(
+                    (double)(
+                        _wealthData[i].Balance -
+                        _wealthData[i - 1].Balance));
+
+                if (change > maxChange)
+                    maxChange = change;
+            }
+
+            var maxValue = Math.Max(
+                maxBalance,
+                maxChange);
+
+            return maxValue <= 0d
+                ? 10d
+                : maxValue;
+        }
+
+        private double GetFixedWealthMinLimit(double maxAbsoluteValue)
+        {
+            var hasNegativeValue =
+                _wealthData.Any(point =>
+                    point.Balance < 0m);
+
+            if (!hasNegativeValue)
+            {
+                for (var i = 1; i < _wealthData.Count; i++)
+                {
+                    if (
+                        _wealthData[i].Balance -
+                        _wealthData[i - 1].Balance < 0m)
+                    {
+                        hasNegativeValue = true;
+                        break;
+                    }
+                }
+            }
+
+            return hasNegativeValue
+                ? -Math.Ceiling(maxAbsoluteValue * 1.1)
+                : 0d;
+        }
+
+        private string FormatWealthAmount(double value)
+        {
+            return value.ToString(
+                ShowRoundedWealthAmounts
+                    ? "N0"
+                    : "N2",
+                CultureInfo.CurrentCulture);
+        }
+
+
     }
 }

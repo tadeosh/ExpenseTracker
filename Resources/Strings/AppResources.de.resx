@@ -750,8 +750,7 @@
     <comment>ReportsPage</comment>
   </data>
   <data name="Reports_AutoScaleYAxis" xml:space="preserve">
-    <value>Automatische Skalierung der Y-Achse</value>
-    <comment>ReportsPage</comment>
+    <value>Automatische Y-Achsen-Skalierung</value>
   </data>
   <data name="Reports_TabWealth" xml:space="preserve">
     <value>Vermögen</value>
@@ -778,8 +777,7 @@
     <comment>ReportsPage</comment>
   </data>
   <data name="Reports_ShowRoundedAmounts" xml:space="preserve">
-    <value>Gerundete Beträge anzeigen</value>
-    <comment>ReportsPage</comment>
+    <value>Gerundete Beträge</value>
   </data>
   <data name="Reports_BackToAllCategories" xml:space="preserve">
     <value>Alle Kategorien</value>
@@ -825,5 +823,26 @@
   </data>
   <data name="SelectDatePlaceholder" xml:space="preserve">
     <value>Datum auswählen</value>
+  </data>
+  <data name="Reports_WealthValue" xml:space="preserve">
+    <value>Vermögenswert</value>
+  </data>
+  <data name="Reports_WealthMissingExchangeRate1" xml:space="preserve">
+    <value>Fehlender Wechselkurs </value>
+  </data>
+  <data name="Reports_WealthMissingExchangeRate2" xml:space="preserve">
+    <value>für Datum:</value>
+  </data>
+  <data name="Reports_WealthChange" xml:space="preserve">
+    <value>Vermögensänderung</value>
+  </data>
+  <data name="Reports_WealthNoData" xml:space="preserve">
+    <value>Keine Daten für den Vermögensverlauf verfügbar.</value>
+  </data>
+  <data name="Reports_WealthSetupAccounts" xml:space="preserve">
+    <value>Vervollständige die Kontodaten, um den Vermögensverlauf zu erstellen.</value>
+  </data>
+  <data name="Reports_WealthErrorMessage" xml:space="preserve">
+    <value>Die Vermögenshistorie kann nicht generiert werden. Für die folgenden Konten ist kein Datum für den Anfangssaldo festgelegt: </value>
   </data>
 </root>

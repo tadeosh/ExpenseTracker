@@ -830,8 +830,7 @@
     <comment>ReportsPage</comment>
   </data>
   <data name="Reports_AutoScaleYAxis" xml:space="preserve">
-    <value>Trend</value>
-    <comment>ReportsPage</comment>
+    <value>Automatic Y-axis scale</value>
   </data>
   <data name="Reports_TabWealth" xml:space="preserve">
     <value>Wealth</value>
@@ -858,7 +857,7 @@
     <comment>ReportsPage</comment>
   </data>
   <data name="Reports_ShowRoundedAmounts" xml:space="preserve">
-    <value>Show rounded amounts</value>
+    <value>Rounded amounts</value>
     <comment>ReportsPage</comment>
   </data>
   <data name="Reports_BackToAllCategories" xml:space="preserve">
@@ -906,5 +905,33 @@
   <data name="SelectDatePlaceholder" xml:space="preserve">
     <value>Select date</value>
     <comment>AppDatePicker</comment>
+  </data>
+  <data name="Reports_WealthValue" xml:space="preserve">
+    <value>Net worth</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_WealthMissingExchangeRate1" xml:space="preserve">
+    <value>Missing exchange rate </value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_WealthMissingExchangeRate2" xml:space="preserve">
+    <value>for date: </value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_WealthChange" xml:space="preserve">
+    <value>Net worth change</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_WealthNoData" xml:space="preserve">
+    <value>No data available for the net worth history.</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_WealthSetupAccounts" xml:space="preserve">
+    <value>Complete the account data to generate the net worth history.</value>
+    <comment>ReportsPage</comment>
+  </data>
+  <data name="Reports_WealthErrorMessage" xml:space="preserve">
+    <value>It is not possible to generate the asset history. The following accounts do not have a specified opening balance date: </value>
+    <comment>ReportsPage</comment>
   </data>
 </root>

@@ -345,9 +345,7 @@ namespace ExpenseTracker.Services
                     ", ",
                     accountsWithoutInitialBalanceDate.Select(account => account.Name));
 
-                throw new InvalidOperationException(
-                    $"Nie można wygenerować historii majątku. " +
-                    $"Następujące konta nie mają określonej daty salda początkowego: {accountNames}.");
+                throw new InvalidOperationException(AppResources.Reports_WealthErrorMessage+$"{accountNames}.");
             }
 
             var accountById = accounts.ToDictionary(account => account.Id);
@@ -540,12 +538,13 @@ namespace ExpenseTracker.Services
             balances[accountId] += amount;
         }
 
-        private async Task<decimal> CalculateTotalBalanceAsync( IEnumerable<Account> accounts,
-                                                                IReadOnlyDictionary<int, decimal> balances,
-                                                                ISet<int> activatedAccountIds,
-                                                                string baseCurrency,
-                                                                DateTime snapshotDate,
-                                                                IDictionary<(string SourceCurrency, string TargetCurrency, DateTime Date), decimal?> exchangeRateCache)
+        private async Task<decimal> CalculateTotalBalanceAsync(
+            IEnumerable<Account> accounts,
+            IReadOnlyDictionary<int, decimal> balances,
+            ISet<int> activatedAccountIds,
+            string baseCurrency,
+            DateTime snapshotDate,
+            IDictionary<(string SourceCurrency, string TargetCurrency, DateTime Date), decimal?> exchangeRateCache)
         {
             ArgumentNullException.ThrowIfNull(accounts);
             ArgumentNullException.ThrowIfNull(balances);
@@ -565,6 +564,11 @@ namespace ExpenseTracker.Services
                     continue;
 
                 if (!balances.TryGetValue(account.Id, out var accountBalance))
+                    continue;
+
+                // Zerowe saldo nie wymaga kursu walutowego.
+                // 0 jednostek dowolnej waluty zawsze wnosi 0 do majątku.
+                if (accountBalance == 0m)
                     continue;
 
                 var accountCurrency = account.Currency
@@ -587,8 +591,8 @@ namespace ExpenseTracker.Services
 
                 if (!exchangeRateCache.TryGetValue(cacheKey, out var exchangeRate))
                 {
-                    exchangeRate =
-                        await _databaseService.GetApplicableExchangeRateAsync(
+                    exchangeRate = await _databaseService
+                        .GetApplicableExchangeRateAsync(
                             accountCurrency,
                             normalizedBaseCurrency,
                             snapshotDate.Date);
@@ -598,10 +602,8 @@ namespace ExpenseTracker.Services
 
                 if (!exchangeRate.HasValue || exchangeRate.Value <= 0m)
                 {
-                    throw new InvalidOperationException(
-                        $"Brak kursu wymiany {accountCurrency} → " +
-                        $"{normalizedBaseCurrency} dla dnia " +
-                        $"{snapshotDate.Date:d}.");
+                    throw new InvalidOperationException(AppResources.Reports_WealthMissingExchangeRate1 + $" {accountCurrency} → " + $"{normalizedBaseCurrency} " 
+                        + AppResources.Reports_WealthMissingExchangeRate2 + $" {snapshotDate.Date:d}.");
                 }
 
                 var convertedBalance =
