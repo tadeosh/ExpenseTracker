@@ -780,6 +780,10 @@
     <value>Wróć do kategorii głównych</value>
     <comment>ReportsPage</comment>
   </data>
+  <data name="Reports_BackToMainProjects" xml:space="preserve">
+    <value>Wróć do projektów głównych</value>
+    <comment>ReportsPage</comment>
+  </data>
   <data name="Reports_ShowRoundedAmounts" xml:space="preserve">
     <value>Zaokrąglone kwoty</value>
   </data>

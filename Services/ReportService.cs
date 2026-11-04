@@ -3,7 +3,6 @@ using ExpenseTracker.Models;
 using ExpenseTracker.Models.Reports;
 using ExpenseTracker.Resources.Strings;
 using ExpenseTracker.Services.Interfaces;
-using System.Collections.Concurrent;
 
 namespace ExpenseTracker.Services
 {
@@ -334,73 +333,176 @@ namespace ExpenseTracker.Services
         }
 
         // ================= Projekty==========================
+        private static int ResolveTopLevelProjectId(int? projectId, IReadOnlyDictionary<int, Project> projectById)
+        {
+            if (!projectId.HasValue || projectId.Value == 0)
+                return 0;
+
+            if (!projectById.TryGetValue(projectId.Value, out var project))
+                return 0;
+
+            if (!project.ParentId.HasValue)
+                return project.Id;
+
+            if (projectById.ContainsKey(project.ParentId.Value))
+                return project.ParentId.Value;
+
+            // Osierocony podprojekt. Nie tracimy jego wydatków,
+            // tylko traktujemy go jako samodzielny projekt główny.
+            return project.Id;
+        }
+
+
         public async Task<List<ProjectSummary>> GetProjectBreakdownAsync(ReportFilterContext context)
         {
-            var transactions = await _databaseService.GetFilteredTransactionsAsync(
-                context.AccountId, context.CategoryId, context.ProjectId,
-                null, null, context.StartDate, context.EndDate);
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentException.ThrowIfNullOrWhiteSpace(context.BaseCurrency);
 
+            var transactions = await _databaseService.GetFilteredTransactionsAsync(context.AccountId, context.CategoryId, context.ProjectId, null, null, context.StartDate, context.EndDate);
             var targetType = context.TransactionType ?? TransactionType.Expense;
-            transactions = transactions.Where(t => t.Type == targetType).ToList();
+            var relevantTransactions = transactions.Where(transaction => transaction.Type == targetType).ToList();
 
-            if (!transactions.Any()) return new List<ProjectSummary>();
+            if (relevantTransactions.Count == 0)
+                return [];
 
             var projects = await _databaseService.GetProjectsAsync(includeArchived: true);
             var accounts = await _databaseService.GetAccountsAsync(includeClosed: true);
-            var accountDict = accounts.ToDictionary(a => a.Id, a => a.Currency);
 
-            decimal totalAmount = 0;
-            var projectTotals = new ConcurrentDictionary<int, decimal>();
-            object syncRoot = new();
+            var projectById = projects.ToDictionary(project => project.Id);
+            var accountCurrencyById = accounts.ToDictionary(account => account.Id, account => account.Currency);
+            var projectTotals = new Dictionary<int, decimal>();
+            var exchangeRateCache = new Dictionary<(string SourceCurrency, string TargetCurrency, DateTime Date), decimal?>();
 
-            foreach (var t in transactions)
+            decimal totalAmount = 0m;
+
+            foreach (var transaction in relevantTransactions)
             {
-                var currency = accountDict.TryGetValue(t.AccountId, out var curr) ? curr : context.BaseCurrency;
-                decimal convertedAmount = t.Amount;
+                var convertedAmount = await ConvertReportAmountAsync(transaction.Amount, transaction.AccountId, transaction.Date, context.BaseCurrency, accountCurrencyById, exchangeRateCache);
+                var topLevelProjectId = ResolveTopLevelProjectId(transaction.ProjectId, projectById);
 
-                if (currency != context.BaseCurrency)
-                {
-                    var rate = await _databaseService.GetApplicableExchangeRateAsync(currency, context.BaseCurrency, t.Date);
-                    if (rate.HasValue && rate.Value > 0)
-                    {
-                        convertedAmount = convertedAmount * (1.0m / rate.Value);
-                    }
-                }
+                if (projectTotals.TryGetValue(topLevelProjectId, out var currentTotal))
+                    projectTotals[topLevelProjectId] = currentTotal + convertedAmount;
+                else
+                    projectTotals[topLevelProjectId] = convertedAmount;
 
-                // Agregacja po ProjectId (null traktujemy jako 0 - "Brak projektu")
-                projectTotals.AddOrUpdate(t.ProjectId ?? 0, convertedAmount, (_, current) => current + convertedAmount);
-
-                lock (syncRoot)
-                {
-                    totalAmount += convertedAmount;
-                }
+                totalAmount += convertedAmount;
             }
 
-            if (totalAmount == 0) return new List<ProjectSummary>();
+            if (totalAmount == 0m)
+                return [];
 
-            var sortedProjectTotals = projectTotals
-                .OrderByDescending(kvp => kvp.Value)
-                .ToList();
-
+            var sortedProjectTotals = projectTotals.Where(item => item.Value != 0m).OrderByDescending(item => item.Value).ToList();
             var result = new List<ProjectSummary>();
-            int colorIndex = 0;
+            var colorIndex = 0;
 
-            // 2. Mapujemy na DTO i przypisujemy dynamiczny kolor
-            foreach (var kvp in sortedProjectTotals)
+            foreach (var item in sortedProjectTotals)
             {
-                var proj = projects.FirstOrDefault(p => p.Id == kvp.Key);
+                var projectName = item.Key == 0
+                    ? AppResources.NoProject
+                    : projectById.TryGetValue(item.Key, out var project)
+                        ? project.Name
+                        : AppResources.NoProject;
 
                 result.Add(new ProjectSummary(
-                    ProjectId: kvp.Key,
-                    ProjectName: proj?.Name ?? AppResources.NoProject,
-                    ColorHex: ColorPaletteHelper.GetColor(colorIndex++), // NOWOŚĆ: Zewnętrzny generator
-                    TotalAmount: kvp.Value,
-                    Percentage: (double)(kvp.Value / totalAmount * 100)
-                ));
+                    ProjectId: item.Key,
+                    ProjectName: projectName,
+                    ColorHex: ColorPaletteHelper.GetColor(colorIndex++),
+                    TotalAmount: item.Value,
+                    Percentage: (double)(item.Value / totalAmount * 100m)));
             }
 
             return result;
         }
+
+        public async Task<List<ProjectSummary>> GetProjectDrillDownAsync(ReportFilterContext context, int parentProjectId)
+        {
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentException.ThrowIfNullOrWhiteSpace(context.BaseCurrency);
+
+            var projects = await _databaseService.GetProjectsAsync(includeArchived: true);
+            var parentProject = projects.FirstOrDefault(project => project.Id == parentProjectId);
+
+            if (parentProject is null)
+                return [];
+
+            var childProjects = projects.Where(project => project.ParentId == parentProjectId).ToList();
+            var relevantProjectIds = childProjects.Select(project => project.Id).ToHashSet();
+
+            relevantProjectIds.Add(parentProjectId);
+
+            // Celowo nie przekazujemy context.ProjectId.
+            // Drill-down sam wybiera rodzica i jego bezpośrednie podprojekty.
+            var transactions = await _databaseService.GetFilteredTransactionsAsync(context.AccountId, context.CategoryId, null, null, null, context.StartDate, context.EndDate);
+
+            var targetType = context.TransactionType ?? TransactionType.Expense;
+
+            var relevantTransactions = transactions
+                .Where(transaction => transaction.Type == targetType)
+                .Where(transaction => transaction.ProjectId.HasValue && relevantProjectIds.Contains(transaction.ProjectId.Value))
+                .ToList();
+
+            if (relevantTransactions.Count == 0)
+                return [];
+
+            var accounts = await _databaseService.GetAccountsAsync(includeClosed: true);
+            var accountCurrencyById = accounts.ToDictionary(account => account.Id, account => account.Currency);
+            var projectById = projects.ToDictionary(project => project.Id);
+            var projectTotals = new Dictionary<int, decimal>();
+            var exchangeRateCache = new Dictionary<(string SourceCurrency, string TargetCurrency, DateTime Date), decimal?>();
+
+            decimal totalAmount = 0m;
+
+            foreach (var transaction in relevantTransactions)
+            {
+                var convertedAmount = await ConvertReportAmountAsync(transaction.Amount, transaction.AccountId, transaction.Date, context.BaseCurrency, accountCurrencyById, exchangeRateCache);
+
+                // Bezpośrednia transakcja projektu głównego trafia do
+                // syntetycznej pozycji "Bez podprojektu" (ProjectId = 0).
+                var resultProjectId = transaction.ProjectId == parentProjectId ? 0 : transaction.ProjectId!.Value;
+
+                if (projectTotals.TryGetValue(resultProjectId, out var currentTotal))
+                    projectTotals[resultProjectId] = currentTotal + convertedAmount;
+                else
+                    projectTotals[resultProjectId] = convertedAmount;
+
+                totalAmount += convertedAmount;
+            }
+
+            if (totalAmount == 0m)
+                return [];
+
+            var sortedProjectTotals = projectTotals.Where(item => item.Value != 0m).OrderByDescending(item => item.Value).ToList();
+            var result = new List<ProjectSummary>();
+            var colorIndex = 0;
+
+            foreach (var item in sortedProjectTotals)
+            {
+                if (item.Key == 0)
+                {
+                    result.Add(new ProjectSummary(
+                        ProjectId: 0,
+                        ProjectName: AppResources.Reports_NoSubproject,
+                        ColorHex: "#808080",
+                        TotalAmount: item.Value,
+                        Percentage: (double)(item.Value / totalAmount * 100m)));
+
+                    continue;
+                }
+
+                if (!projectById.TryGetValue(item.Key, out var project))
+                    continue;
+
+                result.Add(new ProjectSummary(
+                    ProjectId: project.Id,
+                    ProjectName: project.Name,
+                    ColorHex: ColorPaletteHelper.GetColor(colorIndex++),
+                    TotalAmount: item.Value,
+                    Percentage: (double)(item.Value / totalAmount * 100m)));
+            }
+
+            return result;
+        }
+
         // ===================Top transactions==========================
         public async Task<List<TransactionDetailDto>> GetTopTransactionsAsync(ReportFilterContext context, int limit = 10)
         {

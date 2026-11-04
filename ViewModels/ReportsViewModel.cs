@@ -147,6 +147,16 @@ namespace ExpenseTracker.ViewModels
         public bool IsProjectEmptyStateVisible => !HasProjectData;
         public bool IsProjectChartActuallyVisible => HasProjectData;
 
+        //============================== PROJEKTY =========================================================================================================
+        [ObservableProperty]
+        public partial bool IsProjectDrillDownActive { get; set; }
+
+        [ObservableProperty]
+        public partial string ProjectDrillDownTitle { get; set; } = string.Empty;
+
+        private int? _selectedParentProjectId;
+        private IReadOnlyList<ProjectSummary> _mainProjectData = [];
+        
         //============================koniec deklaracji pól i właściwości========================================================
         // TRENDY
         [ObservableProperty]
@@ -445,17 +455,66 @@ namespace ExpenseTracker.ViewModels
             BuildCategorySeries(drillDownData,allowDrillDown: false);
         }
 
-        private async Task LoadReportDataAsync()
+        private void BuildProjectSeries(IReadOnlyList<ProjectSummary> data, bool allowDrillDown)
         {
+            ProjectSeries.Clear();
+
             double innerRadius = DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.iOS ? 30 : 60;
 
-            var expenseContext = new ReportFilterContext
+            var separatorColor = GetChartColor("ChartSegmentSeparatorColor", "#FFFFFF");
+            var separatorPaint = new SolidColorPaint(separatorColor) { StrokeThickness = 2 };
+
+            foreach (var item in data)
+            {
+                SKColor.TryParse(item.ColorHex, out var seriesColor);
+
+                var series = new PieSeries<double>
+                {
+                    Values = [(double)item.TotalAmount],
+                    Name = item.ProjectName,
+                    Fill = new SolidColorPaint(seriesColor),
+                    Stroke = separatorPaint,
+                    InnerRadius = innerRadius,
+                    MaxRadialColumnWidth = 70,
+                    HoverPushout = allowDrillDown && item.ProjectId != 0 ? 15 : 10,
+                    ToolTipLabelFormatter = point => $"{point.Context.Series.Name}: {point.Model:N2} ({item.Percentage:F1}%)"
+                };
+
+                if (allowDrillDown && item.ProjectId != 0)
+                {
+                    series.ChartPointPointerDown += (_, _) =>
+                    {
+                        _ = OpenProjectDrillDownCommand.ExecuteAsync(item);
+                    };
+                }
+
+                ProjectSeries.Add(series);
+            }
+        }
+
+        private async Task LoadProjectDrillDownAsync(ReportFilterContext context, int parentProjectId)
+        {
+            var drillDownData = await _reportService.GetProjectDrillDownAsync(context, parentProjectId);
+
+            HasProjectData = drillDownData.Count > 0;
+            BuildProjectSeries(drillDownData, allowDrillDown: false);
+        }
+
+        private ReportFilterContext CreateExpenseReportContext()
+        {
+            return new ReportFilterContext
             {
                 StartDate = StartDate,
                 EndDate = EndDate,
                 TransactionType = TransactionType.Expense,
                 BaseCurrency = _settingsService.DefaultCurrency
             };
+        }
+        private async Task LoadReportDataAsync()
+        {
+            double innerRadius = DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.iOS ? 30 : 60;
+
+            var expenseContext = CreateExpenseReportContext();
 
             var trendContext = new ReportFilterContext
             {
@@ -473,12 +532,11 @@ namespace ExpenseTracker.ViewModels
             await LoadWealthAsync(trendContext, SelectedScope?.Scope == ReportScope.Custom);
 
             _mainCategoryData = categoryData;
+           // _currentProjectContext = expenseContext;
+            _mainProjectData = projectData;
 
-            ProjectSeries.Clear();
             TopExpenses.Clear();
-                        
-            HasProjectData = projectData.Any(x => x.ProjectId != 0);
-            
+                          
             if (IsCategoryDrillDownActive && _selectedParentCategoryId.HasValue)
             {
                 await LoadCategoryDrillDownAsync(expenseContext, _selectedParentCategoryId.Value);
@@ -489,23 +547,14 @@ namespace ExpenseTracker.ViewModels
                 HasCategoryData = categoryData.Count > 0;
             }
 
-            if (HasProjectData)
+            if (IsProjectDrillDownActive && _selectedParentProjectId.HasValue)
             {
-                foreach (var item in projectData.Where(x => x.ProjectId != 0))
-                {
-                    SKColor.TryParse(item.ColorHex, out var skColor);
-
-                    ProjectSeries.Add(new PieSeries<double>
-                    {
-                        Values = [(double)item.TotalAmount],
-                        Name = item.ProjectName,
-                        Fill = new SolidColorPaint(skColor),
-                        InnerRadius = innerRadius,
-                        MaxRadialColumnWidth = 70,
-                        HoverPushout = 10,
-                        ToolTipLabelFormatter = point => $"{point.Context.Series.Name}: {point.Model:N2} ({item.Percentage:F1}%)"
-                    });
-                }
+                await LoadProjectDrillDownAsync(expenseContext, _selectedParentProjectId.Value);
+            }
+            else
+            {
+                HasProjectData = projectData.Count > 0;
+                BuildProjectSeries(projectData, allowDrillDown: true);
             }
 
             foreach (var transaction in topTransactions)
@@ -558,6 +607,50 @@ namespace ExpenseTracker.ViewModels
             HasCategoryData = _mainCategoryData.Count > 0;
 
             BuildCategorySeries(_mainCategoryData, allowDrillDown: true);
+        }
+
+        [RelayCommand]
+        private async Task OpenProjectDrillDownAsync(ProjectSummary? project)
+        {
+            if (project is null || project.ProjectId == 0)
+                return;
+
+            var context = new ReportFilterContext
+            {
+                StartDate = StartDate,
+                EndDate = EndDate,
+                TransactionType = TransactionType.Expense,
+                BaseCurrency = _settingsService.DefaultCurrency
+            };
+
+            var drillDownData = await _reportService.GetProjectDrillDownAsync(context, project.ProjectId);
+
+            if (drillDownData.Count == 0)
+                return;
+
+            var hasRealSubproject = drillDownData.Any(item => item.ProjectId != 0);
+
+            if (!hasRealSubproject)
+                return;
+
+            _selectedParentProjectId = project.ProjectId;
+            IsProjectDrillDownActive = true;
+            ProjectDrillDownTitle = project.ProjectName;
+            HasProjectData = true;
+
+            BuildProjectSeries(drillDownData, allowDrillDown: false);
+        }
+
+        [RelayCommand]
+        private void CloseProjectDrillDown()
+        {
+            _selectedParentProjectId = null;
+
+            IsProjectDrillDownActive = false;
+            ProjectDrillDownTitle = string.Empty;
+            HasProjectData = _mainProjectData.Count > 0;
+
+            BuildProjectSeries(_mainProjectData, allowDrillDown: true);
         }
 
         // ================ TRENDY ==========================

@@ -1294,6 +1294,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Back to main projects.
+        /// </summary>
+        internal static string Reports_BackToMainProjects {
+            get {
+                return ResourceManager.GetString("Reports_BackToMainProjects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Expenses by Category.
         /// </summary>
         internal static string Reports_ExpensesByCategory {
