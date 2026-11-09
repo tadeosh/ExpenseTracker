@@ -1,8 +1,11 @@
 ﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Storage;
 using ExpenseTracker.Data;
+
 #if ANDROID
 using ExpenseTracker.Platforms.Android.Handlers;
 #endif
+
 using ExpenseTracker.Services;
 using ExpenseTracker.Services.Interfaces;
 using ExpenseTracker.Validators;
@@ -14,85 +17,103 @@ using LiveChartsCore.SkiaSharpView.Maui;
 using Microsoft.Extensions.Logging;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 
+namespace ExpenseTracker;
 
-namespace ExpenseTracker
+public static class MauiProgram
 {
-    public static class MauiProgram
+    public static MauiApp CreateMauiApp()
     {
-        public static MauiApp CreateMauiApp()
-        {
-            var builder = MauiApp.CreateBuilder();
+        var builder = MauiApp.CreateBuilder();
 
-            builder
-                .UseMauiApp<App>()
-                .UseSkiaSharp()
-                .UseLiveCharts() // NOWOŚĆ: Inicjalizacja silnika graficznego
-                .UseMauiCommunityToolkit()
-                .ConfigureFonts(fonts =>
-                {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-                })
-                .ConfigureMauiHandlers(handlers =>
-                {
+        builder
+            .UseMauiApp<App>()
+            .UseSkiaSharp()
+            .UseLiveCharts()
+            .UseMauiCommunityToolkit()
+            .ConfigureFonts(fonts =>
+            {
+                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+            })
+            .ConfigureMauiHandlers(handlers =>
+            {
 #if ANDROID
-                    handlers.AddHandler(typeof(AppPlatformDatePicker), typeof(AppDatePickerHandler));
+                handlers.AddHandler(typeof(AppPlatformDatePicker), typeof(AppDatePickerHandler));
 #endif
-                });
+            });
 
 #if DEBUG
-    		builder.Logging.AddDebug();
+        builder.Logging.AddDebug();
 #endif
-            // NOWOŚĆ: Rejestrujemy nasz serwis bazy danych.
-            // AddSingleton oznacza, że aplikacja stworzy go raz i będzie używać tej samej kopii wszędzie.
-            builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
-            builder.Services.AddSingleton<ISettingsService, SettingsService>();
-            builder.Services.AddSingleton<IRecurringTransactionEngine, RecurringTransactionEngine>();
-            builder.Services.AddSingleton<IReportService, ReportService>();
-            builder.Services.AddSingleton<ITransactionChangeNotifier, TransactionChangeNotifier>();
-            builder.Services.AddSingleton<IDialogService, DialogService>();
 
-            builder.Services.AddTransient<Views.SetupPage>();
+        RegisterServices(builder.Services);
+        RegisterViewModels(builder.Services);
+        RegisterViews(builder.Services);
+        RegisterValidators(builder.Services);
 
-            builder.Services.AddTransient<AccountsViewModel>(); 
-            builder.Services.AddTransient<AccountsPage>();
+        return builder.Build();
+    }
 
-            builder.Services.AddTransient<CategoriesViewModel>();
-            builder.Services.AddTransient<CategoriesPage>();
-            builder.Services.AddTransient<ProjectsViewModel>();
-            builder.Services.AddTransient<ProjectsPage>();
+    private static void RegisterServices(IServiceCollection services)
+    {
+        services.AddSingleton<DatabaseService>();
 
-            builder.Services.AddTransient<AddTransactionViewModel>();
-            builder.Services.AddTransient<AddTransactionPage>();
+        services.AddSingleton<IDatabaseService>(serviceProvider =>
+            serviceProvider.GetRequiredService<DatabaseService>());
 
-            builder.Services.AddTransient<HomeViewModel>();
-            builder.Services.AddTransient<HomePage>();
+        services.AddSingleton<IDatabaseMaintenanceService>(serviceProvider =>
+            serviceProvider.GetRequiredService<DatabaseService>());
 
-            builder.Services.AddTransient<ExchangeRatesViewModel>();
-            builder.Services.AddTransient<ExchangeRatesPage>();
+        services.AddSingleton<ITemporaryDirectoryProvider, MauiTemporaryDirectoryProvider>();
+        services.AddSingleton<IPortableBackupService, PortableBackupService>();
 
-            builder.Services.AddTransient<FavoriteCurrenciesViewModel>();
-            builder.Services.AddTransient<FavoriteCurrenciesPage>();
+        services.AddSingleton<IFileSaver>(FileSaver.Default);
+        services.AddSingleton<IBackupFileService, BackupFileService>();
 
-            builder.Services.AddTransient<Views.TransactionsPage>();
-            builder.Services.AddTransient<ViewModels.TransactionsViewModel>();
+        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton<IRecurringTransactionEngine, RecurringTransactionEngine>();
+        services.AddSingleton<IReportService, ReportService>();
+        services.AddSingleton<ITransactionChangeNotifier, TransactionChangeNotifier>();
+        services.AddSingleton<IDialogService, DialogService>();
+    }
 
-            builder.Services.AddTransient<RecurringTransactionsViewModel>();
-            builder.Services.AddTransient<RecurringTransactionsPage>();
+    private static void RegisterViewModels(IServiceCollection services)
+    {
+        services.AddTransient<AccountsViewModel>();
+        services.AddTransient<CategoriesViewModel>();
+        services.AddTransient<ProjectsViewModel>();
+        services.AddTransient<AddTransactionViewModel>();
+        services.AddTransient<HomeViewModel>();
+        services.AddTransient<ExchangeRatesViewModel>();
+        services.AddTransient<FavoriteCurrenciesViewModel>();
+        services.AddTransient<TransactionsViewModel>();
+        services.AddTransient<RecurringTransactionsViewModel>();
+        services.AddTransient<ReportsViewModel>();
+        services.AddTransient<SettingsViewModel>();
+    }
 
-            builder.Services.AddTransient<ReportsViewModel>();
-            builder.Services.AddTransient<ReportsPage>();
+    private static void RegisterViews(IServiceCollection services)
+    {
+        services.AddTransient<SetupPage>();
+        services.AddTransient<AccountsPage>();
+        services.AddTransient<CategoriesPage>();
+        services.AddTransient<ProjectsPage>();
+        services.AddTransient<AddTransactionPage>();
+        services.AddTransient<HomePage>();
+        services.AddTransient<ExchangeRatesPage>();
+        services.AddTransient<FavoriteCurrenciesPage>();
+        services.AddTransient<TransactionsPage>();
+        services.AddTransient<RecurringTransactionsPage>();
+        services.AddTransient<ReportsPage>();
+        services.AddTransient<SettingsPage>();
+    }
 
-            builder.Services.AddTransient<SettingsViewModel>();
-            builder.Services.AddTransient<SettingsPage>();
-
-            builder.Services.AddTransient<IValidator<AddTransactionViewModel>, AddTransactionValidator>();
-            builder.Services.AddTransient<IValidator<AccountsViewModel>, AccountsValidator>();
-            builder.Services.AddTransient<IValidator<CategoriesViewModel>, CategoriesValidator>();
-            builder.Services.AddTransient<IValidator<ProjectsViewModel>, ProjectsValidator>();
-            builder.Services.AddTransient<IValidator<ExchangeRatesViewModel>, ExchangeRatesValidator>();
-
-            return builder.Build();
-        }
+    private static void RegisterValidators(IServiceCollection services)
+    {
+        services.AddTransient<IValidator<AddTransactionViewModel>, AddTransactionValidator>();
+        services.AddTransient<IValidator<AccountsViewModel>, AccountsValidator>();
+        services.AddTransient<IValidator<CategoriesViewModel>, CategoriesValidator>();
+        services.AddTransient<IValidator<ProjectsViewModel>, ProjectsValidator>();
+        services.AddTransient<IValidator<ExchangeRatesViewModel>, ExchangeRatesValidator>();
     }
 }

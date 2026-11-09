@@ -1,10 +1,12 @@
-﻿using SQLite;
-using ExpenseTracker.Models;
+﻿using ExpenseTracker.Models;
+using ExpenseTracker.Models.Backup;
 using ExpenseTracker.Services.Interfaces;
+using Microsoft.Extensions.Logging;
+using SQLite;
 
 namespace ExpenseTracker.Data
 {
-    public class DatabaseService : IDatabaseService
+    public partial class DatabaseService : IDatabaseService
     {
         // Obiekt reprezentujący połączenie z bazą
         private SQLiteAsyncConnection _database = null!;
@@ -18,47 +20,59 @@ namespace ExpenseTracker.Data
             _database = database ?? throw new ArgumentNullException(nameof(database));
         }
 
+        //do backupu
+        //private readonly SemaphoreSlim _initializationLock = new(1, 1);
+        //private async Task CloseConnectionAsync()
+        //{
+        //    if (_database is null)
+        //        return;
 
+        //    await _database.CloseAsync();
+
+        //    _database = null!;
+        //}
 
         // Inicjalizacja bazy danych (tworzenie pliku i tabel z szyfrowaniem SQLCipher)
         private async Task InitAsync()
         {
-            // Jeśli połączenie już istnieje, nie robimy nic
-            if (_database != null)
+            if (_database is not null)
                 return;
 
-            // Ustalenie bezpiecznej ścieżki do pliku na danym systemie (Android/Windows)
-            var dbPath = Path.Combine(FileSystem.AppDataDirectory, "ExpenseTracker.db3");
+            await _initializationLock.WaitAsync();
 
-            //if (File.Exists(dbPath)) File.Delete(dbPath);
-
-            // NOWOŚĆ: Wyciągamy hasło ze sprzętowego, szyfrowanego schowka telefonu
-            var dbPassword = await SecureStorage.Default.GetAsync("DbPassword");
-
-            if (string.IsNullOrEmpty(dbPassword))
+            try
             {
-                // Ekstremalne zabezpieczenie: jeśli aplikacja jakoś tu dotrze bez hasła, rzucamy wyjątek
-                throw new Exception("Brak głównego hasła do bazy danych!");
+                if (_database is not null)
+                    return;
+
+                var dbPassword = await SecureStorage.Default.GetAsync("DbPassword");
+
+                if (string.IsNullOrWhiteSpace(dbPassword))
+                    throw new InvalidOperationException("Brak głównego hasła do bazy danych.");
+
+                var options = new SQLiteConnectionString(DatabasePath, true, key: dbPassword);
+
+                _database = new SQLiteAsyncConnection(options);
+
+                await InitializeSchemaAsync();
+
+                _logger.LogInformation(
+                    "Baza danych została zainicjalizowana. Ścieżka: {DatabasePath}, wersja schematu: {SchemaVersion}.",
+                    DatabasePath,
+                    CurrentSchemaVersion);
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Nie udało się zainicjalizować bazy danych.");
 
-            // NOWOŚĆ: Konfiguracja SQLCipher z 256-bitowym kluczem AES
-            var options = new SQLiteConnectionString(dbPath, true, key: dbPassword);
+                await ResetConnectionAfterInitializationFailureAsync();
 
-            // Otwarcie połączenia z zaszyfrowaną bazą
-            _database = new SQLiteAsyncConnection(options);
-
-            // Magia SQLite: Automatyczne tworzenie tabel na podstawie naszych klas
-            await _database.CreateTableAsync<Account>();
-            await _database.CreateTableAsync<Category>();
-            await _database.CreateTableAsync<Project>();
-            await _database.CreateTableAsync<Transaction>();
-            await _database.CreateTableAsync<ExchangeRate>();
-            await _database.CreateTableAsync<RecurringTransaction>();
-
-            // 2. NOWOŚĆ: Migracja starych danych
-            // Zamienia wartości NULL w nowej kolumnie na 0 (false), przywracając je na ekrany
-            await _database.ExecuteAsync("UPDATE Category SET IsArchived = 0 WHERE IsArchived IS NULL");
-            await _database.ExecuteAsync("UPDATE Project SET IsArchived = 0 WHERE IsArchived IS NULL");
+                throw;
+            }
+            finally
+            {
+                _initializationLock.Release();
+            }
         }
 
         // ==========================================
@@ -111,9 +125,8 @@ namespace ExpenseTracker.Data
 
         public async Task<int> SaveAccountAsync(Account account)
         {
-            await InitAsync();
+            ArgumentNullException.ThrowIfNull(account);
 
-            //// Jeśli obiekt ma Id większe od 0, to znaczy, że już istnieje w bazie (Aktualizacja)
             await InitAsync();
 
             if (account.Id != 0)
