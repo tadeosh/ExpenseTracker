@@ -77,8 +77,7 @@
                 </Button>
             </Grid>
 
-            <DatePicker Date="{Binding SelectedDate}" 
-            TextColor="{DynamicResource AppTextColor}" />
+            <controls:AppDatePicker Date="{Binding SelectedDate, Mode=TwoWay}" Placeholder="{x:Static strings:AppResources.SelectDatePlaceholder}" Format="d" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />
 
             <Entry x:Name="AmountEntry"
                    Placeholder="{x:Static strings:AppResources.AmountLabel}" 
@@ -208,9 +207,8 @@
                                 <DataTemplate x:DataType="viewmodels:CategoryDisplayItem">
                                     <Grid Padding="10" ColumnSpacing="8" BackgroundColor="Transparent">
                                         <Grid.GestureRecognizers>
-                                            <TapGestureRecognizer 
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AddTransactionViewModel}}, Path=MainCategoryTappedCommand}"
-                                CommandParameter="{Binding .}" />
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AddTransactionViewModel}}, Path=MainCategoryTappedCommand}"
+                                                  CommandParameter="{Binding .}" />
                                         </Grid.GestureRecognizers>
 
                                         <Grid.ColumnDefinitions>
@@ -243,9 +241,7 @@
                                 <DataTemplate x:DataType="viewmodels:CategoryDisplayItem">
                                     <Grid Padding="10" ColumnSpacing="8" BackgroundColor="Transparent">
                                         <Grid.GestureRecognizers>
-                                            <TapGestureRecognizer 
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AddTransactionViewModel}}, Path=SubCategoryTappedCommand}"
-                                CommandParameter="{Binding .}" />
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:AddTransactionViewModel}}, Path=SubCategoryTappedCommand}" CommandParameter="{Binding .}" />
                                         </Grid.GestureRecognizers>
 
                                         <Grid.ColumnDefinitions>
@@ -390,9 +386,9 @@
 
                 <Label Text="{x:Static strings:AppResources.EndDateLabel}" FontSize="12" Opacity="0.7" TextColor="{DynamicResource AppTextColor}"/>
 
-                <Grid ColumnDefinitions="Auto, *">
-                    <CheckBox IsChecked="{Binding HasEndDate}" />
-                    <DatePicker Grid.Column="1" Date="{Binding EndDate}" IsEnabled="{Binding HasEndDate}" IsVisible="{Binding HasEndDate}" />
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <CheckBox Grid.Column="0" IsChecked="{Binding HasEndDate}" VerticalOptions="Center" />
+                    <controls:AppDatePicker Grid.Column="1" Date="{Binding EndDate, Mode=TwoWay}" MinimumDate="{Binding SelectedDate}" Placeholder="{x:Static strings:AppResources.SelectDatePlaceholder}" Format="d" IsEnabled="{Binding HasEndDate}" IsVisible="{Binding HasEndDate}" HorizontalOptions="Fill" />
                 </Grid>
             </VerticalStackLayout>
 

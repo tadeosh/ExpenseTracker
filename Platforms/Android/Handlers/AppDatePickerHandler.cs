@@ -12,8 +12,6 @@ namespace ExpenseTracker.Platforms.Android.Handlers;
 
 public class AppDatePickerHandler : DatePickerHandler
 {
-    private DatePickerDialog? _currentDialog;
-
     protected override DatePickerDialog CreateDatePickerDialog(int year, int month, int day)
     {
         System.Diagnostics.Debug.WriteLine("[AppDatePickerHandler] CreateDatePickerDialog");
@@ -26,17 +24,15 @@ public class AppDatePickerHandler : DatePickerHandler
         ApplyApplicationLocale(activity);
 
         var dialog = new DatePickerDialog(activity, OnDateSelected, year, month, day);
-        _currentDialog = dialog;
+
+        ApplyDateLimits(dialog);
 
         dialog.ShowEvent += OnDialogShown;
+        dialog.DismissEvent += OnDialogDismissed;
 
         dialog.DatePicker.DateChanged += (_, args) =>
         {
-            UpdateLocalizedHeader(
-                dialog,
-                args.Year,
-                args.MonthOfYear,
-                args.DayOfMonth);
+            UpdateLocalizedHeader(dialog, args.Year, args.MonthOfYear, args.DayOfMonth);
         };
 
         return dialog;
@@ -55,12 +51,14 @@ public class AppDatePickerHandler : DatePickerHandler
         if (sender is not DatePickerDialog dialog)
             return;
 
+        // Granice mogły zostać zmienione po utworzeniu dialogu.
+        ApplyDateLimits(dialog);
+
         var positiveButton = dialog.GetButton((int)DialogButtonType.Positive);
         var negativeButton = dialog.GetButton((int)DialogButtonType.Negative);
         var buttonColor = GetDialogButtonColor();
 
-        System.Diagnostics.Debug.WriteLine(
-            $"[AppDatePickerHandler] Positive: {positiveButton is not null}, Negative: {negativeButton is not null}");
+        System.Diagnostics.Debug.WriteLine($"[AppDatePickerHandler] Positive: {positiveButton is not null}, Negative: {negativeButton is not null}");
 
         if (positiveButton is not null)
         {
@@ -74,11 +72,34 @@ public class AppDatePickerHandler : DatePickerHandler
             negativeButton.SetTextColor(buttonColor);
         }
 
-        UpdateLocalizedHeader(
-            dialog,
-            dialog.DatePicker.Year,
-            dialog.DatePicker.Month,
-            dialog.DatePicker.DayOfMonth);
+        UpdateLocalizedHeader(dialog, dialog.DatePicker.Year, dialog.DatePicker.Month, dialog.DatePicker.DayOfMonth);
+    }
+
+    private void OnDialogDismissed(object? sender, EventArgs args)
+    {
+        System.Diagnostics.Debug.WriteLine("[AppDatePickerHandler] OnDialogDismissed");
+
+        if (VirtualView is not null)
+            VirtualView.IsOpen = false;
+    }
+
+    private void ApplyDateLimits(DatePickerDialog dialog)
+    {
+        if (VirtualView?.MinimumDate is DateTime minimumDate)
+            dialog.DatePicker.MinDate = ToAndroidMilliseconds(minimumDate);
+
+        if (VirtualView?.MaximumDate is DateTime maximumDate)
+            dialog.DatePicker.MaxDate = ToAndroidMilliseconds(maximumDate);
+    }
+
+    private static long ToAndroidMilliseconds(DateTime date)
+    {
+        var calendar = Java.Util.Calendar.Instance;
+
+        calendar.Set(date.Year, date.Month - 1, date.Day, 0, 0, 0);
+        calendar.Set(Java.Util.CalendarField.Millisecond, 0);
+
+        return calendar.TimeInMillis;
     }
 
     private static void UpdateLocalizedHeader(DatePickerDialog dialog, int year, int month, int day)
@@ -107,6 +128,7 @@ public class AppDatePickerHandler : DatePickerHandler
         headerText.Post(() =>
         {
             headerText.Text = localizedText;
+
             System.Diagnostics.Debug.WriteLine($"[AppDatePickerHandler] Header applied: {headerText.Text}");
         });
     }
@@ -147,15 +169,12 @@ public class AppDatePickerHandler : DatePickerHandler
         resources.UpdateConfiguration(configuration, resources.DisplayMetrics);
 #pragma warning restore CA1422
 
-        System.Diagnostics.Debug.WriteLine(
-            $"[AppDatePickerHandler] Android locale: {languageTag}");
+        System.Diagnostics.Debug.WriteLine($"[AppDatePickerHandler] Android locale: {languageTag}");
     }
 
     private static global::Android.Graphics.Color GetDialogButtonColor()
     {
-        if (Microsoft.Maui.Controls.Application.Current?.Resources.TryGetValue(
-                "PrimaryColor",
-                out var resource) == true &&
+        if (Microsoft.Maui.Controls.Application.Current?.Resources.TryGetValue("PrimaryColor", out var resource) == true &&
             resource is Microsoft.Maui.Graphics.Color color)
         {
             return color.ToPlatform();

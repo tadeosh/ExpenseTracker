@@ -8,8 +8,10 @@
              xmlns:resources="clr-namespace:ExpenseTracker.Resources.Strings"
              xmlns:converters="clr-namespace:ExpenseTracker.Converters"
              xmlns:controls="clr-namespace:ExpenseTracker.Views.Controls"
+             xmlns:reports="clr-namespace:ExpenseTracker.Models.Reports"
              x:DataType="viewmodels:ReportsViewModel"
              x:Class="ExpenseTracker.Views.ReportsPage"
+             x:Name="PageRoot"
              Title="{Binding PageTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}">
 
@@ -53,10 +55,8 @@
                     <Label Text="{x:Static resources:AppResources.Reports_SelectTimeframe}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" />
 
                     <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="10" VerticalOptions="Center">
-                        <!--<DatePicker Grid.Column="0" Date="{Binding StartDate}" Format="d" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />-->
                         <controls:AppDatePicker Grid.Column="0" Date="{Binding StartDate}" Format="d" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />
                         <Label Grid.Column="1" Text="-" VerticalOptions="Center" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
-                        <!--<DatePicker Grid.Column="2" Date="{Binding EndDate}" Format="d" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />-->
                         <controls:AppDatePicker Grid.Column="2" Date="{Binding EndDate}" Format="d" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Fill" />
                     </Grid>
 
@@ -126,54 +126,281 @@
         <Grid Grid.Row="4">
             <!-- Kategorie -->
             <Border Margin="10,0" Padding="10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsCategoriesTabVisible}">
-                <Grid RowDefinitions="Auto,*" RowSpacing="6">
+                <Grid>
 
-                    <!-- Nagłówek drill-downu -->
-                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="10" IsVisible="{Binding IsCategoryDrillDownActive}">
-                        <Button Grid.Column="0" Text="←" Command="{Binding CloseCategoryDrillDownCommand}" WidthRequest="44" HeightRequest="40" Padding="0" FontSize="20" BackgroundColor="Transparent" BorderColor="{DynamicResource PrimaryColor}" BorderWidth="1" TextColor="{DynamicResource PrimaryColor}" />
+                    <!-- Dane -->
+                    <Grid x:Name="CategoryDataLayout" RowDefinitions="Auto,Auto" ColumnDefinitions="2*,*" ColumnSpacing="12" RowSpacing="8" IsVisible="{Binding HasCategoryData}">
 
-                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="0">
-                            <Label Text="{Binding CategoryDrillDownTitle}" FontSize="17" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
-                            <Label Text="{x:Static resources:AppResources.Reports_BackToMainCategories}" FontSize="11" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" LineBreakMode="TailTruncation" />
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CategoryLayoutStates">
+
+                                <VisualState x:Name="CategoryNarrow">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="0" />
+                                    </VisualState.StateTriggers>
+
+                                    <VisualState.Setters>
+                                        <Setter TargetName="CategoryChartContainer" Property="Grid.Row" Value="0" />
+                                        <Setter TargetName="CategoryChartContainer" Property="Grid.Column" Value="0" />
+                                        <Setter TargetName="CategoryChartContainer" Property="Grid.ColumnSpan" Value="2" />
+                                        <Setter TargetName="CategoryChartContainer" Property="HeightRequest" Value="260" />
+
+                                        <Setter TargetName="CategoryLegendContainer" Property="Grid.Row" Value="1" />
+                                        <Setter TargetName="CategoryLegendContainer" Property="Grid.Column" Value="0" />
+                                        <Setter TargetName="CategoryLegendContainer" Property="Grid.ColumnSpan" Value="2" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="CategoryMedium">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="700" />
+                                    </VisualState.StateTriggers>
+
+                                    <VisualState.Setters>
+                                        <Setter TargetName="CategoryChartContainer" Property="Grid.Row" Value="0" />
+                                        <Setter TargetName="CategoryChartContainer" Property="Grid.Column" Value="0" />
+                                        <Setter TargetName="CategoryChartContainer" Property="Grid.ColumnSpan" Value="1" />
+                                        <Setter TargetName="CategoryChartContainer" Property="HeightRequest" Value="360" />
+
+                                        <Setter TargetName="CategoryLegendContainer" Property="Grid.Row" Value="0" />
+                                        <Setter TargetName="CategoryLegendContainer" Property="Grid.Column" Value="1" />
+                                        <Setter TargetName="CategoryLegendContainer" Property="Grid.ColumnSpan" Value="1" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="CategoryWide">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="1200" />
+                                    </VisualState.StateTriggers>
+
+                                    <VisualState.Setters>
+                                        <Setter TargetName="CategoryChartContainer" Property="Grid.Row" Value="0" />
+                                        <Setter TargetName="CategoryChartContainer" Property="Grid.Column" Value="0" />
+                                        <Setter TargetName="CategoryChartContainer" Property="Grid.ColumnSpan" Value="1" />
+                                        <Setter TargetName="CategoryChartContainer" Property="HeightRequest" Value="480" />
+
+                                        <Setter TargetName="CategoryLegendContainer" Property="Grid.Row" Value="0" />
+                                        <Setter TargetName="CategoryLegendContainer" Property="Grid.Column" Value="1" />
+                                        <Setter TargetName="CategoryLegendContainer" Property="Grid.ColumnSpan" Value="1" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+                        <!-- Wykres -->
+                        <Grid x:Name="CategoryChartContainer" HorizontalOptions="Fill">
+                            <lvc:PieChart Series="{Binding CategorySeries}" BackgroundColor="{DynamicResource SectionBackgroundColor}" HorizontalOptions="Fill" VerticalOptions="Fill" />
+                        </Grid>
+
+                        <!-- Legenda -->
+                        <VerticalStackLayout x:Name="CategoryLegendContainer" Spacing="6" VerticalOptions="Center">
+
+                            <!-- Powrót w drill-downie -->
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Padding="4,4,4,8" IsVisible="{Binding IsCategoryDrillDownActive}">
+                                <Button Grid.Column="0" Text="←" Command="{Binding CloseCategoryDrillDownCommand}" WidthRequest="40" HeightRequest="36" Padding="0" FontSize="18" BackgroundColor="Transparent" BorderColor="{DynamicResource PrimaryColor}" BorderWidth="1" TextColor="{DynamicResource PrimaryColor}" />
+
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="0">
+                                    <Label Text="{Binding CategoryDrillDownTitle}" FontAttributes="Bold" FontSize="15" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
+                                    <Label Text="{x:Static resources:AppResources.Reports_BackToMainCategories}" FontSize="10" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" LineBreakMode="TailTruncation" />
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <CollectionView ItemsSource="{Binding CategoryLegendItems}" SelectionMode="None">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="reports:ReportPieLegendItem">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Padding="6">
+                                            <Grid.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.OpenCategoryLegendItemCommand}" CommandParameter="{Binding .}" />
+                                            </Grid.GestureRecognizers>
+
+                                            <BoxView Grid.Column="0" WidthRequest="12" HeightRequest="12" CornerRadius="2" Color="{Binding Color}" VerticalOptions="Center" />
+                                            <Label Grid.Column="1" Text="{Binding Name}" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" VerticalOptions="Center" />
+                                            <Label Grid.Column="2" Text="{Binding Percentage, StringFormat='{0:F1}%'}" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" VerticalOptions="Center" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+
                         </VerticalStackLayout>
+
                     </Grid>
 
-                    <!-- Wykres i empty state -->
-                    <Grid Grid.Row="1">
-                        <lvc:PieChart Series="{Binding CategorySeries}" LegendPosition="Right" IsVisible="{Binding HasCategoryData}" />
-
-                        <VerticalStackLayout IsVisible="{Binding HasCategoryData, Converter={StaticResource InvertedBoolConverter}}" VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
-                            <Label Text="{x:Static resources:AppResources.NoTransactionsLabel}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
-                            <Label Text="{x:Static resources:AppResources.NoTransactionsDescription}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
-                        </VerticalStackLayout>
-                    </Grid>
+                    <!-- Empty state -->
+                    <VerticalStackLayout IsVisible="{Binding HasCategoryData, Converter={StaticResource InvertedBoolConverter}}" VerticalOptions="Start" HorizontalOptions="Center" Spacing="10" Padding="20,30">
+                        <Label Text="{x:Static resources:AppResources.NoTransactionsLabel}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
+                        <Label Text="{x:Static resources:AppResources.NoTransactionsDescription}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
 
                 </Grid>
             </Border>
 
             <!-- Projekty -->
             <Border Margin="10,0" Padding="10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}" IsVisible="{Binding IsProjectsTabVisible}">
-                <Grid RowDefinitions="Auto,*" RowSpacing="6">
+                <Grid>
 
-                    <!-- Nagłówek drill-downu -->
-                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="10" IsVisible="{Binding IsProjectDrillDownActive}">
-                        <Button Grid.Column="0" Text="←" Command="{Binding CloseProjectDrillDownCommand}" WidthRequest="44" HeightRequest="40" Padding="0" FontSize="20" BackgroundColor="Transparent" BorderColor="{DynamicResource PrimaryColor}" BorderWidth="1" TextColor="{DynamicResource PrimaryColor}" />
+                    <!-- Dane -->
+                    <Grid x:Name="ProjectDataLayout" RowDefinitions="Auto,Auto" ColumnDefinitions="2*,*" ColumnSpacing="12" RowSpacing="8" IsVisible="{Binding IsProjectChartActuallyVisible}">
 
-                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="0">
-                            <Label Text="{Binding ProjectDrillDownTitle}" FontSize="17" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
-                            <Label Text="{x:Static resources:AppResources.Reports_BackToMainProjects}" FontSize="11" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" LineBreakMode="TailTruncation" />
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="ProjectLayoutStates">
+
+                                <!-- Android / wąskie okno Windows -->
+                                <VisualState x:Name="ProjectNarrow">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="0" />
+                                    </VisualState.StateTriggers>
+
+                                    <VisualState.Setters>
+                                        <Setter TargetName="ProjectChartContainer" Property="Grid.Row" Value="0" />
+                                        <Setter TargetName="ProjectChartContainer" Property="Grid.Column" Value="0" />
+                                        <Setter TargetName="ProjectChartContainer" Property="Grid.ColumnSpan" Value="2" />
+                                        <Setter TargetName="ProjectChartContainer" Property="HeightRequest" Value="260" />
+
+                                        <Setter TargetName="ProjectLegendContainer" Property="Grid.Row" Value="1" />
+                                        <Setter TargetName="ProjectLegendContainer" Property="Grid.Column" Value="0" />
+                                        <Setter TargetName="ProjectLegendContainer" Property="Grid.ColumnSpan" Value="2" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <!-- Standardowe okno Windows -->
+                                <VisualState x:Name="ProjectMedium">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="700" />
+                                    </VisualState.StateTriggers>
+
+                                    <VisualState.Setters>
+                                        <Setter TargetName="ProjectChartContainer" Property="Grid.Row" Value="0" />
+                                        <Setter TargetName="ProjectChartContainer" Property="Grid.Column" Value="0" />
+                                        <Setter TargetName="ProjectChartContainer" Property="Grid.ColumnSpan" Value="1" />
+                                        <Setter TargetName="ProjectChartContainer" Property="HeightRequest" Value="360" />
+
+                                        <Setter TargetName="ProjectLegendContainer" Property="Grid.Row" Value="0" />
+                                        <Setter TargetName="ProjectLegendContainer" Property="Grid.Column" Value="1" />
+                                        <Setter TargetName="ProjectLegendContainer" Property="Grid.ColumnSpan" Value="1" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <!-- Szerokie okno Windows -->
+                                <VisualState x:Name="ProjectWide">
+                                    <VisualState.StateTriggers>
+                                        <AdaptiveTrigger MinWindowWidth="1200" />
+                                    </VisualState.StateTriggers>
+
+                                    <VisualState.Setters>
+                                        <Setter TargetName="ProjectChartContainer" Property="Grid.Row" Value="0" />
+                                        <Setter TargetName="ProjectChartContainer" Property="Grid.Column" Value="0" />
+                                        <Setter TargetName="ProjectChartContainer" Property="Grid.ColumnSpan" Value="1" />
+                                        <Setter TargetName="ProjectChartContainer" Property="HeightRequest" Value="480" />
+
+                                        <Setter TargetName="ProjectLegendContainer" Property="Grid.Row" Value="0" />
+                                        <Setter TargetName="ProjectLegendContainer" Property="Grid.Column" Value="1" />
+                                        <Setter TargetName="ProjectLegendContainer" Property="Grid.ColumnSpan" Value="1" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+                        <!-- PieChart -->
+                        <Grid x:Name="ProjectChartContainer" HorizontalOptions="Fill">
+                            <lvc:PieChart Series="{Binding ProjectSeries}"
+                              BackgroundColor="{DynamicResource SectionBackgroundColor}"
+                              HorizontalOptions="Fill"
+                              VerticalOptions="Fill" />
+                        </Grid>
+
+                        <!-- Własna legenda -->
+                        <VerticalStackLayout x:Name="ProjectLegendContainer" Spacing="6" VerticalOptions="Center">
+
+                            <!-- Powrót z drill-downu -->
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Padding="4,4,4,8" IsVisible="{Binding IsProjectDrillDownActive}">
+                                <Button Grid.Column="0"
+                            Text="←"
+                            Command="{Binding CloseProjectDrillDownCommand}"
+                            WidthRequest="40"
+                            HeightRequest="36"
+                            Padding="0"
+                            FontSize="18"
+                            BackgroundColor="Transparent"
+                            BorderColor="{DynamicResource PrimaryColor}"
+                            BorderWidth="1"
+                            TextColor="{DynamicResource PrimaryColor}" />
+
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="0">
+                                    <Label Text="{Binding ProjectDrillDownTitle}"
+                               FontAttributes="Bold"
+                               FontSize="15"
+                               TextColor="{DynamicResource AppTextColor}"
+                               LineBreakMode="TailTruncation" />
+
+                                    <Label Text="{x:Static resources:AppResources.Reports_BackToMainProjects}"
+                               FontSize="10"
+                               TextColor="{DynamicResource AppTextColor}"
+                               Opacity="0.6"
+                               LineBreakMode="TailTruncation" />
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <!-- Pozycje legendy -->
+                            <CollectionView ItemsSource="{Binding ProjectLegendItems}" SelectionMode="None">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="reports:ReportPieLegendItem">
+
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Padding="6">
+                                            <Grid.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding Source={x:Reference PageRoot}, Path=BindingContext.OpenProjectLegendItemCommand}" CommandParameter="{Binding .}" />
+                                            </Grid.GestureRecognizers>
+
+                                            <BoxView Grid.Column="0"
+                                         WidthRequest="12"
+                                         HeightRequest="12"
+                                         CornerRadius="2"
+                                         Color="{Binding Color}"
+                                         VerticalOptions="Center" />
+
+                                            <Label Grid.Column="1"
+                                       Text="{Binding Name}"
+                                       TextColor="{DynamicResource AppTextColor}"
+                                       LineBreakMode="TailTruncation"
+                                       VerticalOptions="Center" />
+
+                                            <Label Grid.Column="2"
+                                       Text="{Binding Percentage, StringFormat='{0:F1}%'}"
+                                       TextColor="{DynamicResource AppTextColor}"
+                                       Opacity="0.7"
+                                       VerticalOptions="Center" />
+                                        </Grid>
+
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+
                         </VerticalStackLayout>
+
                     </Grid>
 
-                    <!-- Wykres / empty state -->
-                    <Grid Grid.Row="1">
-                        <lvc:PieChart Series="{Binding ProjectSeries}" LegendPosition="Right" IsVisible="{Binding IsProjectChartActuallyVisible}" />
+                    <!-- Brak danych -->
+                    <VerticalStackLayout IsVisible="{Binding IsProjectEmptyStateVisible}"
+                             VerticalOptions="Start"
+                             HorizontalOptions="Center"
+                             Spacing="10"
+                             Padding="20,30">
 
-                        <VerticalStackLayout IsVisible="{Binding IsProjectEmptyStateVisible}" VerticalOptions="Center" HorizontalOptions="Center" Spacing="10">
-                            <Label Text="{x:Static resources:AppResources.NoTransactionsLabel}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" HorizontalOptions="Center" />
-                            <Label Text="{x:Static resources:AppResources.NoTransactionsDescription}" FontSize="14" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
-                        </VerticalStackLayout>
-                    </Grid>
+                        <Label Text="{x:Static resources:AppResources.NoTransactionsLabel}"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="{DynamicResource AppTextColor}"
+                   HorizontalOptions="Center" />
+
+                        <Label Text="{x:Static resources:AppResources.NoTransactionsDescription}"
+                   FontSize="14"
+                   TextColor="{DynamicResource AppTextColor}"
+                   Opacity="0.6"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center" />
+
+                    </VerticalStackLayout>
 
                 </Grid>
             </Border>

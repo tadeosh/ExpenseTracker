@@ -72,6 +72,9 @@ namespace ExpenseTracker.ViewModels
         [ObservableProperty]
         public partial ObservableCollection<ISeries> CategorySeries { get; set; } = new();
 
+        [ObservableProperty]
+        public partial ObservableCollection<ReportPieLegendItem> CategoryLegendItems { get; set; } = new();
+
         // Opcje do Pickera
         [ObservableProperty]
         public partial bool IsCustomDateVisible { get; set; }
@@ -113,6 +116,9 @@ namespace ExpenseTracker.ViewModels
 
         [ObservableProperty]
         public partial ObservableCollection<ISeries> ProjectSeries { get; set; } = new();
+
+        [ObservableProperty]
+        public partial ObservableCollection<ReportPieLegendItem> ProjectLegendItems { get; set; } = new();
 
         [ObservableProperty]
         public partial ObservableCollection<TransactionDetailDto> TopExpenses { get; set; } = new();
@@ -408,34 +414,34 @@ namespace ExpenseTracker.ViewModels
         private void BuildCategorySeries(IReadOnlyList<CategorySummary> data, bool allowDrillDown)
         {
             CategorySeries.Clear();
+            CategoryLegendItems.Clear();
 
             double innerRadius = DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.iOS ? 30 : 60;
 
             var separatorColor = GetChartColor("ChartSegmentSeparatorColor", "#FFFFFF");
-
-            var separatorPaint = new SolidColorPaint(separatorColor)
-            {
-                StrokeThickness = 2,
-                IsAntialias = true
-            };
+            var separatorPaint = new SolidColorPaint(separatorColor) { StrokeThickness = 2 };
 
             foreach (var item in data)
             {
-                SKColor.TryParse(item.ColorHex, out var skColor);
+                SKColor.TryParse(item.ColorHex, out var seriesColor);
+
+                var canDrillDown = allowDrillDown && item.CategoryId != 0;
 
                 var series = new PieSeries<double>
                 {
                     Values = [(double)item.TotalAmount],
                     Name = item.CategoryName,
-                    Fill = new SolidColorPaint(skColor),
+                    Fill = new SolidColorPaint(seriesColor),
                     Stroke = separatorPaint,
                     InnerRadius = innerRadius,
                     MaxRadialColumnWidth = 70,
-                    HoverPushout = allowDrillDown && item.CategoryId != 0 ? 15 : 10,
+                    HoverPushout = canDrillDown ? 15 : 10,
                     ToolTipLabelFormatter = point => $"{point.Context.Series.Name}: {point.Model:N2} ({item.Percentage:F1}%)"
                 };
 
-                if (allowDrillDown && item.CategoryId != 0)
+                var allowChartDrillDown = canDrillDown && DeviceInfo.Platform == DevicePlatform.WinUI;
+
+                if (allowChartDrillDown)
                 {
                     series.ChartPointPointerDown += (_, _) =>
                     {
@@ -444,6 +450,14 @@ namespace ExpenseTracker.ViewModels
                 }
 
                 CategorySeries.Add(series);
+
+                CategoryLegendItems.Add(new ReportPieLegendItem(
+                    Id: item.CategoryId,
+                    Name: item.CategoryName,
+                    ColorHex: item.ColorHex,
+                    Amount: item.TotalAmount,
+                    Percentage: item.Percentage,
+                    CanDrillDown: canDrillDown));
             }
         }
 
@@ -458,6 +472,7 @@ namespace ExpenseTracker.ViewModels
         private void BuildProjectSeries(IReadOnlyList<ProjectSummary> data, bool allowDrillDown)
         {
             ProjectSeries.Clear();
+            ProjectLegendItems.Clear();
 
             double innerRadius = DeviceInfo.Platform == DevicePlatform.Android || DeviceInfo.Platform == DevicePlatform.iOS ? 30 : 60;
 
@@ -468,6 +483,8 @@ namespace ExpenseTracker.ViewModels
             {
                 SKColor.TryParse(item.ColorHex, out var seriesColor);
 
+                var canDrillDown = allowDrillDown && item.ProjectId != 0;
+
                 var series = new PieSeries<double>
                 {
                     Values = [(double)item.TotalAmount],
@@ -476,11 +493,13 @@ namespace ExpenseTracker.ViewModels
                     Stroke = separatorPaint,
                     InnerRadius = innerRadius,
                     MaxRadialColumnWidth = 70,
-                    HoverPushout = allowDrillDown && item.ProjectId != 0 ? 15 : 10,
+                    HoverPushout = canDrillDown ? 15 : 10,
                     ToolTipLabelFormatter = point => $"{point.Context.Series.Name}: {point.Model:N2} ({item.Percentage:F1}%)"
                 };
 
-                if (allowDrillDown && item.ProjectId != 0)
+                var allowChartDrillDown = canDrillDown && DeviceInfo.Platform == DevicePlatform.WinUI;
+
+                if (allowChartDrillDown)
                 {
                     series.ChartPointPointerDown += (_, _) =>
                     {
@@ -489,7 +508,43 @@ namespace ExpenseTracker.ViewModels
                 }
 
                 ProjectSeries.Add(series);
+
+                ProjectLegendItems.Add(new ReportPieLegendItem(
+                    Id: item.ProjectId,
+                    Name: item.ProjectName,
+                    ColorHex: item.ColorHex,
+                    Amount: item.TotalAmount,
+                    Percentage: item.Percentage,
+                    CanDrillDown: canDrillDown));
             }
+        }
+
+        [RelayCommand]
+        private async Task OpenCategoryLegendItemAsync(ReportPieLegendItem? legendItem)
+        {
+            if (legendItem is null || !legendItem.CanDrillDown)
+                return;
+
+            var category = _mainCategoryData.FirstOrDefault(item => item.CategoryId == legendItem.Id);
+
+            if (category is null)
+                return;
+
+            await OpenCategoryDrillDownCommand.ExecuteAsync(category);
+        }
+
+        [RelayCommand]
+        private async Task OpenProjectLegendItemAsync(ReportPieLegendItem? legendItem)
+        {
+            if (legendItem is null || !legendItem.CanDrillDown)
+                return;
+
+            var project = _mainProjectData.FirstOrDefault(item => item.ProjectId == legendItem.Id);
+
+            if (project is null)
+                return;
+
+            await OpenProjectDrillDownCommand.ExecuteAsync(project);
         }
 
         private async Task LoadProjectDrillDownAsync(ReportFilterContext context, int parentProjectId)

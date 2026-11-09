@@ -4,7 +4,7 @@
              xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
              xmlns:controls="clr-namespace:ExpenseTracker.Views.Controls"
              xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
-             
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              x:Class="ExpenseTracker.Views.ExchangeRatesPage"
              Title="{x:Static strings:AppResources.ManageExchangeRatesTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}"
@@ -31,30 +31,22 @@
                     <!-- Wybór walut (Picker) -->
                     <VerticalStackLayout Grid.Column="0" Spacing="2">
                         <Label Text="{x:Static strings:AppResources.SourceCurrencyLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
-                        <!--<Grid>
-                            <controls:CurrencyPicker SelectedItem="{Binding SelectedSourceCurrency}" />
-                            <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
-                        </Grid>-->
                         <controls:AppCurrencyPicker SelectedItem="{Binding SelectedSourceCurrency}" HorizontalOptions="Fill" />
                     </VerticalStackLayout>
                     <VerticalStackLayout Grid.Column="1" Spacing="2">
                         <Label Text="{x:Static strings:AppResources.TargetCurrencyLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
-                        <!--<Grid>
-                            <controls:CurrencyPicker SelectedItem="{Binding SelectedTargetCurrency}" />
-                            <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
-                        </Grid>-->
                         <controls:AppCurrencyPicker SelectedItem="{Binding SelectedTargetCurrency}" HorizontalOptions="Fill" />
                     </VerticalStackLayout>
                 </Grid>
 
                 <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
                     <Entry Grid.Column="0" Placeholder="{x:Static strings:AppResources.RateLabel}" Text="{Binding RateText}" Keyboard="Numeric" TextColor="{DynamicResource AppTextColor}" ReturnType="Done"/>
-                    <DatePicker Grid.Column="1" Date="{Binding SelectedDate}" TextColor="{DynamicResource AppTextColor}"/>
+                    <controls:AppDatePicker Grid.Column="1"  Date="{Binding Date, Mode=TwoWay}" Placeholder="{x:Static strings:AppResources.SelectDatePlaceholder}" MaximumDate="{x:Static sys:DateTime.Today}" Format="d" HorizontalOptions="Fill" />
                 </Grid>
             </VerticalStackLayout>
 
             <!-- ZBIORCZY KOMUNIKAT BŁĘDU (Pojawia się tylko gdy są błędy) -->
-            <Label Text="{Binding FormError}" TextColor="#D32F2F" FontSize="12" HorizontalTextAlignment="Center" Margin="0,5,0,5">
+            <Label Text="{Binding FormError}" TextColor="{DynamicResource ValidationErrorColor}" FontSize="12" HorizontalTextAlignment="Center" Margin="0,5,0,5">
                 <Label.Triggers>
                     <DataTrigger TargetType="Label" Binding="{Binding FormError}" Value="{x:Null}">
                         <Setter Property="IsVisible" Value="False" />
@@ -86,7 +78,7 @@
                             <!-- 1. Ikona Usuwania (Rotacja) -->
                             <Path Grid.Column="0" Data="M 12 22 c 5.523 0 10 -4.477 10 -10 S 17.523 2 12 2 S 2 6.477 2 12 s 4.477 10 10 10 z M 8 12 h 8" Fill="Transparent" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" VerticalOptions="Center" HorizontalOptions="Center" Rotation="{Binding MinusRotation}">
                                 <Path.Stroke>
-                                    <SolidColorBrush Color="#D32F2F" />
+                                    <SolidColorBrush Color="{DynamicResource DeleteActionColor}" />
                                 </Path.Stroke>
                                 <Path.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ExchangeRatesViewModel}}, Path=ToggleDeleteModeCommand}" CommandParameter="{Binding .}"/>
@@ -132,7 +124,7 @@
                                 </Border>
 
                                 <!-- Tryb Usuwania -->
-                                <Border StrokeShape="RoundRectangle 8" BackgroundColor="#D32F2F" StrokeThickness="0" IsVisible="{Binding IsDeleteMode}">
+                                <Border StrokeShape="RoundRectangle 8" BackgroundColor="{DynamicResource DeleteActioColor}" StrokeThickness="0" IsVisible="{Binding IsDeleteMode}">
                                     <Path Data="M 3 6 h 18 M 19 6 v 14 c 0 1 -1 2 -2 2 H 7 c -1 0 -2 -1 -2 -2 V 6 M 8 6 V 4 c 0 -1 1 -2 2 -2 h 4 c 1 0 2 1 2 2 v 2 M 10 11 v 6 M 14 11 v 6" Fill="Transparent" StrokeThickness="2" StrokeLineCap="Round" StrokeLineJoin="Round" HorizontalOptions="Center" VerticalOptions="Center">
                                         <Path.Stroke>
                                             <SolidColorBrush Color="#FFFFFF" />

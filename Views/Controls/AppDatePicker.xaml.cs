@@ -11,6 +11,8 @@ public partial class AppDatePicker : ContentView
 
         InitializeComponent();
 
+        InnerDatePicker.Closed += OnInnerDatePickerClosed;
+
         SetDynamicResource(TextColorProperty, "AppTextColor");
         SetDynamicResource(IconColorProperty, "AppTextColor");
     }
@@ -57,7 +59,7 @@ public partial class AppDatePicker : ContentView
         set => SetValue(PlaceholderProperty, value);
     }
 
-    public new static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(AppDatePicker));
+    public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(AppDatePicker));
 
     public Color? TextColor
     {
@@ -92,6 +94,11 @@ public partial class AppDatePicker : ContentView
             return;
 
         InnerDatePicker.IsOpen = true;
+    }
+
+    private void OnInnerDatePickerClosed(object? sender, EventArgs e)
+    {
+        InnerDatePicker.IsOpen = false;
     }
 
     private static void OnDisplayPropertyChanged(BindableObject bindable, object oldValue, object newValue)

@@ -15,6 +15,8 @@
     <Color x:Key="ActivateActionColor">#2E8B57</Color>
     <Color x:Key="DeactivateActionColor">#F9A825</Color>
 
+    <Color x:Key="ValidationErrorColor">#D32F2F</Color>
+
     <!-- Kolory wykresów raportowych -->
     <Color x:Key="IncomeChartColor">#2E8B57</Color>
     <Color x:Key="ExpenseChartColor">#D9534F</Color>

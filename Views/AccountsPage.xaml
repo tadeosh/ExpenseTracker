@@ -46,7 +46,7 @@
                 <VerticalStackLayout Spacing="4">
                     <Label Text="{x:Static strings:AppResources.InitialBalanceDateLabel}" FontSize="12" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" Margin="5,0,0,0" />
 
-                    <controls:AppDatePicker Date="{Binding InitialBalanceDate, Mode=TwoWay}" Placeholder="{x:Static strings:AppResources.SelectDatePlaceholder}" HorizontalOptions="Fill" />
+                    <controls:AppDatePicker Date="{Binding InitialBalanceDate, Mode=TwoWay}" MaximumDate="{x:Static sys:DateTime.Today}" Placeholder="{x:Static strings:AppResources.SelectDatePlaceholder}" HorizontalOptions="Fill" />
 
                     <Label Text="{Binding InitialBalanceDateError}" TextColor="{DynamicResource ErrorMsgColor}" FontSize="12" Margin="5,0,0,0" IsVisible="{Binding InitialBalanceDateError, Converter={StaticResource StringNotEmptyConverter}}" />
                 </VerticalStackLayout>
