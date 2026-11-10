@@ -1,4 +1,18 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width="456" height="456" viewBox="0 0 456 456" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <rect x="0" y="0" width="456" height="456" fill="#512BD4" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#25333D"/><stop offset="1" stop-color="#141B21"/></linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#19A6B5"/><stop offset="1" stop-color="#087F8C"/></linearGradient>
+  </defs>
+  <rect x="16" y="16" width="480" height="480" rx="106" fill="url(#bg)"/>
+  <path d="M142 183L177 111Q181 101 192 104L342 143L326 203Z" fill="#087F8C"/>
+  <path d="M167 181L220 119Q226 111 236 116L364 174L342 207Z" fill="#18B981"/>
+  <rect x="104" y="174" width="304" height="228" rx="48" fill="#F1F4F6"/>
+  <rect x="112" y="182" width="288" height="212" rx="42" fill="none" stroke="#C8D1D7" stroke-width="6" stroke-dasharray="12 12"/>
+  <rect x="146" y="306" width="48" height="58" rx="10" fill="url(#bar)"/>
+  <rect x="214" y="276" width="48" height="88" rx="10" fill="url(#bar)"/>
+  <rect x="282" y="236" width="48" height="128" rx="10" fill="url(#bar)"/>
+  <path d="M146 285C181 272 194 245 226 245C255 245 271 216 301 202L337 186" fill="none" stroke="#18B981" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M316 178L351 180L337 212Z" fill="#18B981"/>
+  <path d="M354 244H423Q438 244 438 259V323Q438 338 423 338H354Q333 338 333 317V265Q333 244 354 244Z" fill="#263A4A"/>
+  <circle cx="382" cy="291" r="22" fill="#F1F4F6" stroke="#AAB6BF" stroke-width="4"/>
 </svg>

@@ -2,27 +2,39 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     x:Class="ExpenseTracker.Resources.Themes.HighContrastTheme">
+
     <Color x:Key="AppBackgroundColor">#000000</Color>
-    <Color x:Key="SectionBackgroundColor">#000000</Color>
-    <Color x:Key="AppTextColor">#FFFF00</Color>
-    <Color x:Key="PrimaryColor">#00FFFF</Color>
-    <Color x:Key="HeaderTextColor">#000000</Color>
-    <Color x:Key="WarningMsgColor">#E89B43</Color>
-    <Color x:Key="ErrorMsgColor">#D9534F</Color>
+    <Color x:Key="SectionBackgroundColor">#101010</Color>
+    <Color x:Key="AppTextColor">#FFFFFF</Color>
+    <Color x:Key="PrimaryColor">#23D5E5</Color>
+    <Color x:Key="HeaderTextColor">#FFFFFF</Color>
+    <Color x:Key="WarningMsgColor">#FFD43B</Color>
+    <Color x:Key="ErrorMsgColor">#FF5C68</Color>
 
-    <Color x:Key="EditActionColor">#1E88E5</Color>
-    <Color x:Key="DeleteActionColor">#D9534F</Color>
-    <Color x:Key="ActivateActionColor">#2E8B57</Color>
-    <Color x:Key="DeactivateActionColor">#F9A825</Color>
+    <Color x:Key="EditActionColor">#43D9FF</Color>
+    <Color x:Key="DeleteActionColor">#FF5C68</Color>
+    <Color x:Key="ActivateActionColor">#38E890</Color>
+    <Color x:Key="DeactivateActionColor">#FFD43B</Color>
 
-    <Color x:Key="ValidationErrorColor">#D32F2F</Color>
+    <Color x:Key="ValidationErrorColor">#FF5C68</Color>
 
-    <Color x:Key="IncomeChartColor">#00C853</Color>
-    <Color x:Key="ExpenseChartColor">#FF5252</Color>
-    <Color x:Key="NetChartColor">#42A5F5</Color>
+    <!-- Kolory wykresów raportowych -->
+    <Color x:Key="IncomeChartColor">#38E890</Color>
+    <Color x:Key="ExpenseChartColor">#FF5C68</Color>
+    <Color x:Key="NetChartColor">#43D9FF</Color>
 
-    <Color x:Key="WealthChartColor">#29B6F6</Color>
-    <Color x:Key="WealthChangeChartColor">#E040FB</Color>
+    <Color x:Key="WealthChartColor">#43D9FF</Color>
+    <Color x:Key="WealthChangeChartColor">#D98CFF</Color>
 
-    <Color x:Key="ChartSegmentSeparatorColor">#202020</Color>
+    <Color x:Key="ChartSegmentSeparatorColor">#FFFFFF</Color>
+
+    <!-- Kolory semantyczne -->
+    <Color x:Key="PositiveColor">#38E890</Color>
+    <Color x:Key="NegativeColor">#FF5C68</Color>
+    <Color x:Key="NeutralColor">#43D9FF</Color>
+
+    <Color x:Key="SecondaryTextColor">#E0E0E0</Color>
+    <Color x:Key="BorderColor">#FFFFFF</Color>
+    <Color x:Key="DisabledColor">#BDBDBD</Color>
+
 </ResourceDictionary>

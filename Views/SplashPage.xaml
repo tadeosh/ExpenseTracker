@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ExpenseTracker.Views.SplashPage"
+             BackgroundColor="#1C252D"
+             Shell.NavBarIsVisible="False">
+
+    <Grid Padding="30" RowDefinitions="*,Auto,*,Auto">
+
+        <VerticalStackLayout Grid.Row="1" Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+
+            <Image Source="logo.png"
+                   WidthRequest="220"
+                   HeightRequest="190"
+                   Aspect="AspectFit"
+                   HorizontalOptions="Center" />
+
+            <Label Text="EXPENSE"
+                   Margin="0,14,0,0"
+                   FontSize="38"
+                   FontAttributes="Bold"
+                   CharacterSpacing="6"
+                   TextColor="#F1F4F6"
+                   HorizontalTextAlignment="Center" />
+
+            <Label Text="TRACKER"
+                   FontSize="29"
+                   FontAttributes="Bold"
+                   CharacterSpacing="7"
+                   TextColor="#19A6B5"
+                   HorizontalTextAlignment="Center" />
+
+            <Label Text="TRACK  •  PLAN  •  GROW"
+                   Margin="0,18,0,0"
+                   FontSize="12"
+                   CharacterSpacing="3"
+                   TextColor="#AAB6BF"
+                   HorizontalTextAlignment="Center" />
+
+        </VerticalStackLayout>
+
+        <Label Grid.Row="3"
+               x:Name="VersionLabel"
+               Margin="0,0,0,20"
+               FontSize="12"
+               TextColor="#AAB6BF"
+               HorizontalTextAlignment="Center"
+               HorizontalOptions="Center" />
+
+    </Grid>
+
+</ContentPage>

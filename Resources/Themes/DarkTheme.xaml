@@ -2,28 +2,39 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     x:Class="ExpenseTracker.Resources.Themes.DarkTheme">
-    <Color x:Key="AppBackgroundColor">#121212</Color>
-    <Color x:Key="SectionBackgroundColor">#1E1E1E</Color>
-    <Color x:Key="AppTextColor">#FDFDFD</Color>
-    <Color x:Key="PrimaryColor">#9A83EE</Color>
-    <Color x:Key="HeaderTextColor">#FFFFFF</Color>
-    <Color x:Key="WarningMsgColor">#E89B43</Color>
-    <Color x:Key="ErrorMsgColor">#D9534F</Color>
 
-    <Color x:Key="EditActionColor">#1E88E5</Color>
+    <Color x:Key="AppBackgroundColor">#161D23</Color>
+    <Color x:Key="SectionBackgroundColor">#202A32</Color>
+    <Color x:Key="AppTextColor">#E8EDF1</Color>
+    <Color x:Key="PrimaryColor">#19A6B5</Color>
+    <Color x:Key="HeaderTextColor">#F7F9FA</Color>
+    <Color x:Key="WarningMsgColor">#E6A23C</Color>
+    <Color x:Key="ErrorMsgColor">#E35D6A</Color>
+
+    <Color x:Key="EditActionColor">#2596BE</Color>
     <Color x:Key="DeleteActionColor">#D9534F</Color>
-    <Color x:Key="ActivateActionColor">#2E8B57</Color>
-    <Color x:Key="DeactivateActionColor">#F9A825</Color>
+    <Color x:Key="ActivateActionColor">#18A66B</Color>
+    <Color x:Key="DeactivateActionColor">#D89B32</Color>
 
-    <Color x:Key="ValidationErrorColor">#D32F2F</Color>
+    <Color x:Key="ValidationErrorColor">#E35D6A</Color>
 
     <!-- Kolory wykresów raportowych -->
-    <Color x:Key="IncomeChartColor">#2E8B57</Color>
-    <Color x:Key="ExpenseChartColor">#D9534F</Color>
-    <Color x:Key="NetChartColor">#1E88E5</Color>
+    <Color x:Key="IncomeChartColor">#18B47B</Color>
+    <Color x:Key="ExpenseChartColor">#E35D6A</Color>
+    <Color x:Key="NetChartColor">#19A6B5</Color>
 
-    <Color x:Key="WealthChartColor">#1E88E5</Color>
-    <Color x:Key="WealthChangeChartColor">#8E44AD</Color>
+    <Color x:Key="WealthChartColor">#168FA6</Color>
+    <Color x:Key="WealthChangeChartColor">#9678C6</Color>
 
-    <Color x:Key="ChartSegmentSeparatorColor">#202020</Color>
+    <Color x:Key="ChartSegmentSeparatorColor">#2B3740</Color>
+
+    <!-- Kolory semantyczne -->
+    <Color x:Key="PositiveColor">#18B47B</Color>
+    <Color x:Key="NegativeColor">#E35D6A</Color>
+    <Color x:Key="NeutralColor">#19A6B5</Color>
+
+    <Color x:Key="SecondaryTextColor">#AAB6BF</Color>
+    <Color x:Key="BorderColor">#40505C</Color>
+    <Color x:Key="DisabledColor">#66737C</Color>
+
 </ResourceDictionary>

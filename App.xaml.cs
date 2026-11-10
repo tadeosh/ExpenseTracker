@@ -31,33 +31,67 @@ namespace ExpenseTracker
             
         }
 
+        //protected override Microsoft.Maui.Controls.Window CreateWindow(IActivationState? activationState)
+        //{
+        //    // Jawne wskazanie przestrzeni nazw rozwiązuje konflikt kompilatora
+        //    var window = new Microsoft.Maui.Controls.Window(new SetupPage());
+
+        //    window.Created += (s, e) =>
+        //    {
+        //        Task.Run(async () =>
+        //        {
+        //            try
+        //            {
+        //                if (activationState?.Context?.Services != null)
+        //                {
+        //                    var engine = activationState.Context.Services.GetRequiredService<IRecurringTransactionEngine>();
+        //                    await engine.ProcessPendingTransactionsAsync();
+        //                }
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                System.Diagnostics.Debug.WriteLine($"[RecurringEngine Error]: {ex.Message}");
+        //                // Wypchnięcie błędu na główny wątek, aby Developer go zobaczył na urządzeniu!
+        //                MainThread.BeginInvokeOnMainThread(() =>
+        //                {
+        //                    Shell.Current?.DisplayAlertAsync("Błąd Silnika", ex.Message, "OK");
+        //                });
+        //            }
+        //        });
+        //    };
+
+        //    return window;
+        //}
+
         protected override Microsoft.Maui.Controls.Window CreateWindow(IActivationState? activationState)
         {
-            // Jawne wskazanie przestrzeni nazw rozwiązuje konflikt kompilatora
-            var window = new Microsoft.Maui.Controls.Window(new SetupPage());
+            var splashPage = new SplashPage();
+            var window = new Microsoft.Maui.Controls.Window(splashPage);
 
-            window.Created += (s, e) =>
+            window.Created += async (s, e) =>
             {
-                Task.Run(async () =>
+#if ANDROID
+                var minimumSplashTime = Task.Delay(700);
+#else
+    var minimumSplashTime = Task.CompletedTask;
+#endif
+
+                try
                 {
-                    try
+                    if (activationState?.Context?.Services != null)
                     {
-                        if (activationState?.Context?.Services != null)
-                        {
-                            var engine = activationState.Context.Services.GetRequiredService<IRecurringTransactionEngine>();
-                            await engine.ProcessPendingTransactionsAsync();
-                        }
+                        var engine = activationState.Context.Services.GetRequiredService<IRecurringTransactionEngine>();
+                        await engine.ProcessPendingTransactionsAsync();
                     }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[RecurringEngine Error]: {ex.Message}");
-                        // Wypchnięcie błędu na główny wątek, aby Developer go zobaczył na urządzeniu!
-                        MainThread.BeginInvokeOnMainThread(() =>
-                        {
-                            Shell.Current?.DisplayAlertAsync("Błąd Silnika", ex.Message, "OK");
-                        });
-                    }
-                });
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[RecurringEngine Error]: {ex.Message}");
+                }
+
+                await minimumSplashTime;
+
+                window.Page = new SetupPage();
             };
 
             return window;
