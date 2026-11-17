@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui.Storage;
 using ExpenseTracker.Models.Backup;
+using ExpenseTracker.Resources.Strings;
 using ExpenseTracker.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Storage;
@@ -25,13 +26,22 @@ public sealed class BackupFileService : IBackupFileService
     public async Task<BackupFileSaveResult> SaveBackupAsync(PortableBackupCreationResult backup, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(backup);
+
         cancellationToken.ThrowIfCancellationRequested();
 
         if (string.IsNullOrWhiteSpace(backup.TemporaryFilePath) || !File.Exists(backup.TemporaryFilePath))
-            return BackupFileSaveResult.Failure("Tymczasowy plik kopii zapasowej nie istnieje.");
+        {
+            _logger.LogError("Nie znaleziono tymczasowego pliku kopii zapasowej {BackupPath}.", backup.TemporaryFilePath);
+
+            return BackupFileSaveResult.NotCompleted();
+        }
 
         if (string.IsNullOrWhiteSpace(backup.SuggestedFileName))
-            return BackupFileSaveResult.Failure("Nie udało się określić nazwy pliku kopii zapasowej.");
+        {
+            _logger.LogError("Nie udało się określić nazwy pliku kopii zapasowej.");
+
+            return BackupFileSaveResult.NotCompleted();
+        }
 
         try
         {
@@ -46,24 +56,21 @@ public sealed class BackupFileService : IBackupFileService
                 return BackupFileSaveResult.Success(result.FilePath);
             }
 
-            if (result.Exception is OperationCanceledException || cancellationToken.IsCancellationRequested)
-                return BackupFileSaveResult.Cancelled();
+            _logger.LogInformation(result.Exception, "Zapisywanie kopii zapasowej nie zostało zakończone.");
 
-            var errorMessage = result.Exception?.Message ?? "Nie udało się zapisać kopii zapasowej.";
-
-            _logger.LogWarning(result.Exception, "Zapisywanie kopii zapasowej nie powiodło się.");
-
-            return BackupFileSaveResult.Failure(errorMessage);
+            return BackupFileSaveResult.NotCompleted();
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
-            return BackupFileSaveResult.Cancelled();
+            _logger.LogInformation(ex, "Zapisywanie kopii zapasowej zostało anulowane.");
+
+            return BackupFileSaveResult.NotCompleted();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Wystąpił błąd podczas zapisywania kopii zapasowej.");
 
-            return BackupFileSaveResult.Failure("Nie udało się zapisać kopii zapasowej.");
+            return BackupFileSaveResult.NotCompleted();
         }
     }
 
@@ -75,7 +82,7 @@ public sealed class BackupFileService : IBackupFileService
         {
             var options = new PickOptions
             {
-                PickerTitle = "Wybierz kopię zapasową ExpenseTrackera",
+                PickerTitle = AppResources.Backup_PickerTitle,
                 FileTypes = CreateBackupFileType()
             };
 
@@ -85,7 +92,7 @@ public sealed class BackupFileService : IBackupFileService
                 return BackupFilePickResult.Cancelled();
 
             if (!selectedFile.FileName.EndsWith(BackupExtension, StringComparison.OrdinalIgnoreCase))
-                return BackupFilePickResult.Failure("Wybrany plik nie ma rozszerzenia .etbackup.");
+                return BackupFilePickResult.Failure(AppResources.Backup_PickFailedIncorrectFiletype);
 
             var importDirectory = CreateImportDirectory();
             var temporaryFilePath = Path.Combine(importDirectory, $"{Guid.NewGuid():N}{BackupExtension}");

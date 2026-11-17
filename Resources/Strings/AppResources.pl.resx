@@ -853,4 +853,97 @@
   <data name="Reports_WealthErrorMessage" xml:space="preserve">
     <value>Nie można wygenerować historii majątku. Następujące konta nie mają określonej daty salda początkowego: </value>
   </data>
+  <data name="SettingsGeneralSection" xml:space="preserve">
+    <value>Ustawienia ogólne</value>
+  </data>
+  <data name="Backup_SectionTitle" xml:space="preserve">
+    <value>Kopia zapasowa</value>
+  </data>
+  <data name="Backup_SectionDescription" xml:space="preserve">
+    <value>Utwórz zaszyfrowaną kopię danych i zapisz ją w wybranej lokalizacji.</value>
+  </data>
+  <data name="Backup_PasswordPlaceholder" xml:space="preserve">
+    <value>Hasło kopii zapasowej</value>
+  </data>
+  <data name="Backup_ConfirmPasswordPlaceholder" xml:space="preserve">
+    <value>Powtórz hasło</value>
+  </data>
+  <data name="Backup_PasswordHint" xml:space="preserve">
+    <value>Hasło musi zawierać co najmniej 10 znaków. Hasło będzie potrzebne do przywrócenia kopii.</value>
+  </data>
+  <data name="Backup_CreateButton" xml:space="preserve">
+    <value>Utwórz kopię zapasową</value>
+  </data>
+  <data name="Backup_SaveNotCompleted" xml:space="preserve">
+    <value>Zapisywanie kopii zostało anulowane lub nie udało się wybrać lokalizacji.</value>
+  </data>
+  <data name="Backup_SaveFailed" xml:space="preserve">
+    <value>Nie udało się zapisać kopii zapasowej.</value>
+  </data>
+  <data name="Backup_CreateFailed" xml:space="preserve">
+    <value>Nie udało się utworzyć kopii zapasowej.</value>
+  </data>
+  <data name="Backup_SaveSuccess" xml:space="preserve">
+    <value>Kopia zapasowa została zapisana.</value>
+  </data>
+  <data name="Backup_SaveSuccessWithPath" xml:space="preserve">
+    <value>Kopia zapasowa została zapisana: {0}</value>
+  </data>
+  <data name="Backup_PasswordRequired" xml:space="preserve">
+    <value>Wprowadź hasło kopii zapasowej.</value>
+  </data>
+  <data name="Backup_PasswordMinimumLength" xml:space="preserve">
+    <value>Hasło musi zawierać co najmniej {0} znaków.</value>
+  </data>
+  <data name="Backup_PasswordsDoNotMatch" xml:space="preserve">
+    <value>Podane hasła nie są identyczne.</value>
+  </data>
+  <data name="Backup_ValidateSectionTitle" xml:space="preserve">
+    <value>Sprawdź kopię zapasową</value>
+  </data>
+  <data name="Backup_ValidateSectionDescription" xml:space="preserve">
+    <value>Wybierz plik .etbackup i sprawdź jego integralność oraz hasło.</value>
+  </data>
+  <data name="Backup_RestorePasswordPlaceholder" xml:space="preserve">
+    <value>Hasło wybranej kopii</value>
+  </data>
+  <data name="Backup_PickAndValidateButton" xml:space="preserve">
+    <value>Wybierz i sprawdź kopię</value>
+  </data>
+  <data name="Backup_PickCancelled" xml:space="preserve">
+    <value>Wybieranie kopii zostało anulowane.</value>
+  </data>
+  <data name="Backup_PickFailed" xml:space="preserve">
+    <value>Nie udało się odczytać wybranej kopii.</value>
+  </data>
+  <data name="Backup_ValidationFailed" xml:space="preserve">
+    <value>Kopia zapasowa jest nieprawidłowa albo hasło jest błędne.</value>
+  </data>
+  <data name="Backup_ValidationSuccess" xml:space="preserve">
+    <value>Kopia zapasowa jest prawidłowa.</value>
+  </data>
+  <data name="Backup_FileNameLabel" xml:space="preserve">
+    <value>Plik:</value>
+  </data>
+  <data name="Backup_CreatedAtLabel" xml:space="preserve">
+    <value>Utworzono:</value>
+  </data>
+  <data name="Backup_AppVersionLabel" xml:space="preserve">
+    <value>Wersja aplikacji:</value>
+  </data>
+  <data name="Backup_SchemaVersionLabel" xml:space="preserve">
+    <value>Wersja bazy:</value>
+  </data>
+  <data name="Backup_RestoreNotEnabledYet" xml:space="preserve">
+    <value>Przywracanie danych zostanie włączone w następnym etapie.</value>
+  </data>
+  <data name="WipeDataFailedMessage" xml:space="preserve">
+    <value>Nie udało się usunąć danych aplikacji.</value>
+  </data>
+  <data name="Backup_PickerTitle" xml:space="preserve">
+    <value>Wybierz kopię zapasową ExpenseTrackera</value>
+  </data>
+  <data name="Backup_PickFailedIncorrectFiletype" xml:space="preserve">
+    <value>Wybrany plik nie ma rozszerzenia .etbackup.</value>
+  </data>
 </root>

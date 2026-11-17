@@ -853,4 +853,97 @@
   <data name="Reports_WealthErrorMessage" xml:space="preserve">
     <value>Die Vermögenshistorie kann nicht generiert werden. Für die folgenden Konten ist kein Datum für den Anfangssaldo festgelegt: </value>
   </data>
+  <data name="SettingsGeneralSection" xml:space="preserve">
+    <value>Allgemeine Einstellungen</value>
+  </data>
+  <data name="Backup_SectionTitle" xml:space="preserve">
+    <value>Datensicherung</value>
+  </data>
+  <data name="Backup_SectionDescription" xml:space="preserve">
+    <value>Erstellen Sie eine verschlüsselte Kopie Ihrer Daten und speichern Sie sie am ausgewählten Speicherort.</value>
+  </data>
+  <data name="Backup_PasswordPlaceholder" xml:space="preserve">
+    <value>Passwort der Sicherung</value>
+  </data>
+  <data name="Backup_ConfirmPasswordPlaceholder" xml:space="preserve">
+    <value>Passwort wiederholen</value>
+  </data>
+  <data name="Backup_PasswordHint" xml:space="preserve">
+    <value>Das Passwort muss mindestens 10 Zeichen enthalten. Es wird zum Wiederherstellen der Sicherung benötigt.</value>
+  </data>
+  <data name="Backup_CreateButton" xml:space="preserve">
+    <value>Sicherung erstellen</value>
+  </data>
+  <data name="Backup_SaveNotCompleted" xml:space="preserve">
+    <value>Die Sicherung wurde nicht gespeichert. Der Vorgang wurde abgebrochen oder der ausgewählte Speicherort ist nicht verfügbar.</value>
+  </data>
+  <data name="Backup_SaveFailed" xml:space="preserve">
+    <value>Die Sicherung konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="Backup_CreateFailed" xml:space="preserve">
+    <value>Die Sicherung konnte nicht erstellt werden.</value>
+  </data>
+  <data name="Backup_SaveSuccess" xml:space="preserve">
+    <value>Die Sicherung wurde gespeichert.</value>
+  </data>
+  <data name="Backup_SaveSuccessWithPath" xml:space="preserve">
+    <value>Die Sicherung wurde gespeichert: {0}</value>
+  </data>
+  <data name="Backup_PasswordRequired" xml:space="preserve">
+    <value>Geben Sie das Passwort der Sicherung ein.</value>
+  </data>
+  <data name="Backup_PasswordMinimumLength" xml:space="preserve">
+    <value>Das Passwort muss mindestens {0} Zeichen enthalten.</value>
+  </data>
+  <data name="Backup_PasswordsDoNotMatch" xml:space="preserve">
+    <value>Die Passwörter stimmen nicht überein.</value>
+  </data>
+  <data name="Backup_ValidateSectionTitle" xml:space="preserve">
+    <value>Sicherung prüfen</value>
+  </data>
+  <data name="Backup_ValidateSectionDescription" xml:space="preserve">
+    <value>Wählen Sie eine .etbackup-Datei aus und prüfen Sie Integrität und Passwort.</value>
+  </data>
+  <data name="Backup_RestorePasswordPlaceholder" xml:space="preserve">
+    <value>Passwort der ausgewählten Sicherung</value>
+  </data>
+  <data name="Backup_PickAndValidateButton" xml:space="preserve">
+    <value>Sicherung auswählen und prüfen</value>
+  </data>
+  <data name="Backup_PickCancelled" xml:space="preserve">
+    <value>Die Auswahl der Sicherung wurde abgebrochen.</value>
+  </data>
+  <data name="Backup_PickFailed" xml:space="preserve">
+    <value>Die ausgewählte Sicherung konnte nicht gelesen werden.</value>
+  </data>
+  <data name="Backup_ValidationFailed" xml:space="preserve">
+    <value>Die Sicherung ist ungültig oder das Passwort ist falsch.</value>
+  </data>
+  <data name="Backup_ValidationSuccess" xml:space="preserve">
+    <value>Die Sicherung ist gültig.</value>
+  </data>
+  <data name="Backup_FileNameLabel" xml:space="preserve">
+    <value>Datei:</value>
+  </data>
+  <data name="Backup_CreatedAtLabel" xml:space="preserve">
+    <value>Erstellt:</value>
+  </data>
+  <data name="Backup_AppVersionLabel" xml:space="preserve">
+    <value>App-Version:</value>
+  </data>
+  <data name="Backup_SchemaVersionLabel" xml:space="preserve">
+    <value>Datenbankversion:</value>
+  </data>
+  <data name="Backup_RestoreNotEnabledYet" xml:space="preserve">
+    <value>Die Wiederherstellung wird im nächsten Schritt aktiviert.</value>
+  </data>
+  <data name="WipeDataFailedMessage" xml:space="preserve">
+    <value>Die Anwendungsdaten konnten nicht gelöscht werden.</value>
+  </data>
+  <data name="Backup_PickerTitle" xml:space="preserve">
+    <value>ExpenseTracker-Sicherung auswählen</value>
+  </data>
+  <data name="Backup_PickFailedIncorrectFiletype" xml:space="preserve">
+    <value>Die ausgewählte Datei besitzt nicht die Endung .etbackup.</value>
+  </data>
 </root>

@@ -394,6 +394,267 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Application version:.
+        /// </summary>
+        internal static string Backup_AppVersionLabel {
+            get {
+                return ResourceManager.GetString("Backup_AppVersionLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Repeat password.
+        /// </summary>
+        internal static string Backup_ConfirmPasswordPlaceholder {
+            get {
+                return ResourceManager.GetString("Backup_ConfirmPasswordPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Create backup.
+        /// </summary>
+        internal static string Backup_CreateButton {
+            get {
+                return ResourceManager.GetString("Backup_CreateButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Created:.
+        /// </summary>
+        internal static string Backup_CreatedAtLabel {
+            get {
+                return ResourceManager.GetString("Backup_CreatedAtLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The backup could not be created..
+        /// </summary>
+        internal static string Backup_CreateFailed {
+            get {
+                return ResourceManager.GetString("Backup_CreateFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu File:.
+        /// </summary>
+        internal static string Backup_FileNameLabel {
+            get {
+                return ResourceManager.GetString("Backup_FileNameLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The password must contain at least 10 characters. You will need it to restore the backup..
+        /// </summary>
+        internal static string Backup_PasswordHint {
+            get {
+                return ResourceManager.GetString("Backup_PasswordHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The password must contain at least {0} characters..
+        /// </summary>
+        internal static string Backup_PasswordMinimumLength {
+            get {
+                return ResourceManager.GetString("Backup_PasswordMinimumLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Backup password.
+        /// </summary>
+        internal static string Backup_PasswordPlaceholder {
+            get {
+                return ResourceManager.GetString("Backup_PasswordPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Enter the backup password..
+        /// </summary>
+        internal static string Backup_PasswordRequired {
+            get {
+                return ResourceManager.GetString("Backup_PasswordRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The passwords do not match..
+        /// </summary>
+        internal static string Backup_PasswordsDoNotMatch {
+            get {
+                return ResourceManager.GetString("Backup_PasswordsDoNotMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Select and validate backup.
+        /// </summary>
+        internal static string Backup_PickAndValidateButton {
+            get {
+                return ResourceManager.GetString("Backup_PickAndValidateButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Selecting a backup was cancelled..
+        /// </summary>
+        internal static string Backup_PickCancelled {
+            get {
+                return ResourceManager.GetString("Backup_PickCancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Select an ExpenseTracker backup.
+        /// </summary>
+        internal static string Backup_PickerTitle {
+            get {
+                return ResourceManager.GetString("Backup_PickerTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The selected backup could not be read..
+        /// </summary>
+        internal static string Backup_PickFailed {
+            get {
+                return ResourceManager.GetString("Backup_PickFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Selected file doesn not have the .etbackup extension..
+        /// </summary>
+        internal static string Backup_PickFailedIncorrectFiletype {
+            get {
+                return ResourceManager.GetString("Backup_PickFailedIncorrectFiletype", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Data restore will be enabled in the next stage..
+        /// </summary>
+        internal static string Backup_RestoreNotEnabledYet {
+            get {
+                return ResourceManager.GetString("Backup_RestoreNotEnabledYet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Selected backup password.
+        /// </summary>
+        internal static string Backup_RestorePasswordPlaceholder {
+            get {
+                return ResourceManager.GetString("Backup_RestorePasswordPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The backup could not be saved..
+        /// </summary>
+        internal static string Backup_SaveFailed {
+            get {
+                return ResourceManager.GetString("Backup_SaveFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The backup was not saved. The operation was cancelled or the selected location is unavailable..
+        /// </summary>
+        internal static string Backup_SaveNotCompleted {
+            get {
+                return ResourceManager.GetString("Backup_SaveNotCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The backup was saved..
+        /// </summary>
+        internal static string Backup_SaveSuccess {
+            get {
+                return ResourceManager.GetString("Backup_SaveSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The backup was saved: {0}.
+        /// </summary>
+        internal static string Backup_SaveSuccessWithPath {
+            get {
+                return ResourceManager.GetString("Backup_SaveSuccessWithPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Database version:.
+        /// </summary>
+        internal static string Backup_SchemaVersionLabel {
+            get {
+                return ResourceManager.GetString("Backup_SchemaVersionLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Create an encrypted copy of your data and save it in a selected location..
+        /// </summary>
+        internal static string Backup_SectionDescription {
+            get {
+                return ResourceManager.GetString("Backup_SectionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Backup.
+        /// </summary>
+        internal static string Backup_SectionTitle {
+            get {
+                return ResourceManager.GetString("Backup_SectionTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Select an .etbackup file and verify its integrity and password..
+        /// </summary>
+        internal static string Backup_ValidateSectionDescription {
+            get {
+                return ResourceManager.GetString("Backup_ValidateSectionDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Validate backup.
+        /// </summary>
+        internal static string Backup_ValidateSectionTitle {
+            get {
+                return ResourceManager.GetString("Backup_ValidateSectionTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The backup is invalid or the password is incorrect..
+        /// </summary>
+        internal static string Backup_ValidationFailed {
+            get {
+                return ResourceManager.GetString("Backup_ValidationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The backup is valid..
+        /// </summary>
+        internal static string Backup_ValidationSuccess {
+            get {
+                return ResourceManager.GetString("Backup_ValidationSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Initial Balance.
         /// </summary>
         internal static string BalanceLabel {
@@ -1699,6 +1960,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu General settings.
+        /// </summary>
+        internal static string SettingsGeneralSection {
+            get {
+                return ResourceManager.GetString("SettingsGeneralSection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Settings.
         /// </summary>
         internal static string SettingsTitle {
@@ -2082,6 +2352,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string WipeDataBtn {
             get {
                 return ResourceManager.GetString("WipeDataBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Application data could not be deleted..
+        /// </summary>
+        internal static string WipeDataFailedMessage {
+            get {
+                return ResourceManager.GetString("WipeDataFailedMessage", resourceCulture);
             }
         }
         

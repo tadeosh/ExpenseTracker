@@ -1,83 +1,150 @@
 <?xml version="1.0" encoding="utf-8" ?>
+
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:strings="clr-namespace:ExpenseTracker.Resources.Strings"
              xmlns:viewmodels="clr-namespace:ExpenseTracker.ViewModels"
              xmlns:controls="clr-namespace:ExpenseTracker.Views.Controls"
+             xmlns:converters="clr-namespace:ExpenseTracker.Converters"
              x:Class="ExpenseTracker.Views.SettingsPage"
              x:DataType="viewmodels:SettingsViewModel"
              Title="{x:Static strings:AppResources.SettingsTitle}"
              BackgroundColor="{DynamicResource AppBackgroundColor}">
 
+    <ContentPage.Resources>
+        <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter" />
+    </ContentPage.Resources>
+
     <ScrollView>
-        <VerticalStackLayout Padding="30" Spacing="25" VerticalOptions="Center" HorizontalOptions="Center">
+        <VerticalStackLayout Padding="20" Spacing="10" MaximumWidthRequest="720" HorizontalOptions="Center">
 
-            <!-- JĘZYK -->
-            <VerticalStackLayout Spacing="5">
-                <Label Text="{x:Static strings:AppResources.LanguageLabel}" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{DynamicResource AppTextColor}"/>
-                <!--<Grid WidthRequest="250">
-                    <Picker x:Name="LanguagePicker"
-                            ItemsSource="{Binding Languages}"
-                            SelectedItem="{Binding SelectedLanguage}"
-                            BackgroundColor="Transparent" TextColor="{DynamicResource AppTextColor}" TitleColor="{DynamicResource AppTextColor}"/>
-                    <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
-                </Grid>-->
-                    <controls:AppPicker ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}" WidthRequest="250" />
-            </VerticalStackLayout>
+            <!-- USTAWIENIA OGÓLNE -->
+            <Border Padding="20,10,20,10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                <VerticalStackLayout Spacing="12">
 
-            <!-- WALUTA DOMYŚLNA -->
-            <VerticalStackLayout Spacing="5">
-                <Label Text="{x:Static strings:AppResources.DefaultCurrencyLabel}" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{DynamicResource AppTextColor}"/>
-                <!--<Grid WidthRequest="250">
-                    <Picker x:Name="CurrencyPicker" 
-                            ItemsSource="{Binding Currencies}"
-                            SelectedItem="{Binding SelectedCurrency}"
-                            BackgroundColor="Transparent" TextColor="{DynamicResource AppTextColor}" TitleColor="{DynamicResource AppTextColor}"/>
-                    <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
-                </Grid>-->
-                <controls:AppCurrencyPicker SelectedItem="{Binding SelectedCurrency}" WidthRequest="250" />  
-            </VerticalStackLayout>
+                    <Label Text="{x:Static strings:AppResources.SettingsGeneralSection}" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
 
-            <!-- MOTYW -->
-            <VerticalStackLayout Spacing="5">
-                <Label Text="{x:Static strings:AppResources.ThemeLabel}" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" TextColor="{DynamicResource AppTextColor}"/>
-                <!--<Grid WidthRequest="250">
-                    <Picker x:Name="ThemePicker"
-                            ItemsSource="{Binding Themes}"
-                            SelectedItem="{Binding SelectedTheme}"
-                            BackgroundColor="Transparent" TextColor="{DynamicResource AppTextColor}" TitleColor="{DynamicResource AppTextColor}"/>
-                    <Label Text="▼" TextColor="{DynamicResource AppTextColor}" FontSize="12" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,15,0" InputTransparent="True" />
-                </Grid>-->
-                <controls:AppPicker ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" WidthRequest="250" />
-            </VerticalStackLayout>
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="{x:Static strings:AppResources.LanguageLabel}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
+                        <controls:AppPicker ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}" HorizontalOptions="Fill" />
+                    </VerticalStackLayout>
 
-            <Label Text="{x:Static strings:AppResources.DataSettingsLabel}" FontSize="20" FontAttributes="Bold" HorizontalOptions="Center" Margin="0,15,0,5" TextColor="{DynamicResource AppTextColor}"/>
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="{x:Static strings:AppResources.DefaultCurrencyLabel}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
+                        <controls:AppCurrencyPicker SelectedItem="{Binding SelectedCurrency}" HorizontalOptions="Fill" />
+                    </VerticalStackLayout>
 
-            <!-- PRZYCISKI - ZAMIENIONE CLICKED NA COMMAND -->
-            <Button Text="{x:Static strings:AppResources.ManageCategoriesBtn}"
-                    Command="{Binding ManageCategoriesCommand}"
-                    WidthRequest="250" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource HeaderTextColor}"/>
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="{x:Static strings:AppResources.ThemeLabel}" FontSize="14" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
+                        <controls:AppPicker ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" HorizontalOptions="Fill" />
+                    </VerticalStackLayout>
 
-            <Button Text="{x:Static strings:AppResources.ManageProjectsBtn}"
-                    Command="{Binding ManageProjectsCommand}"
-                    WidthRequest="250" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource HeaderTextColor}"/>
+                </VerticalStackLayout>
+            </Border>
 
-            <Button Text="{x:Static strings:AppResources.ManageExchangeRatesTitle}"
-                    Command="{Binding ManageExchangeRatesCommand}"
-                    WidthRequest="250" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource HeaderTextColor}"/>
+            <!-- ZARZĄDZANIE DANYMI -->
+            <Border Padding="20,10,20,10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                <VerticalStackLayout Spacing="10">
 
-            <Button Text="{x:Static strings:AppResources.ManageFavoriteCurrenciesBtn}"
-                    Command="{Binding ManageFavoriteCurrenciesCommand}"
-                    WidthRequest="250" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource HeaderTextColor}"/>
+                    <Label Text="{x:Static strings:AppResources.DataSettingsLabel}" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
 
-            <BoxView HeightRequest="1" Color="{DynamicResource AppTextColor}" Opacity="0.2" Margin="0,20,0,10" />
+                    <Button Text="{x:Static strings:AppResources.ManageCategoriesBtn}" Command="{Binding ManageCategoriesCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource HeaderTextColor}" />
 
-            <Label Text="{x:Static strings:AppResources.DangerZone}" FontSize="14" FontAttributes="Bold" HorizontalOptions="Center" TextColor="#D32F2F"/>
+                    <Button Text="{x:Static strings:AppResources.ManageProjectsBtn}" Command="{Binding ManageProjectsCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource HeaderTextColor}" />
 
-            <!-- PRZYCISK WIPE DATA -->
-            <Button Text="{x:Static strings:AppResources.WipeDataBtn}"
-                    Command="{Binding WipeDataCommand}"
-                    WidthRequest="250" BackgroundColor="#D32F2F" TextColor="White" FontAttributes="Bold" Margin="0,10,0,20"/>
+                    <Button Text="{x:Static strings:AppResources.ManageExchangeRatesTitle}" Command="{Binding ManageExchangeRatesCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource HeaderTextColor}" />
+
+                    <Button Text="{x:Static strings:AppResources.ManageFavoriteCurrenciesBtn}" Command="{Binding ManageFavoriteCurrenciesCommand}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource HeaderTextColor}" />
+
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- BACKUP -->
+            <Border Padding="20,10,20,10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                <VerticalStackLayout Spacing="10">
+
+                    <Label Text="{x:Static strings:AppResources.Backup_SectionTitle}" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
+
+                    <Label Text="{x:Static strings:AppResources.Backup_SectionDescription}" FontSize="13" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" />
+
+                    <Entry Text="{Binding BackupPassword}" Placeholder="{x:Static strings:AppResources.Backup_PasswordPlaceholder}" IsPassword="True" IsEnabled="{Binding IsBackupInteractionEnabled}" TextColor="{DynamicResource AppTextColor}" ClearButtonVisibility="WhileEditing" />
+
+                    <Entry Text="{Binding BackupPasswordConfirmation}" Placeholder="{x:Static strings:AppResources.Backup_ConfirmPasswordPlaceholder}" IsPassword="True" IsEnabled="{Binding IsBackupInteractionEnabled}" TextColor="{DynamicResource AppTextColor}" ClearButtonVisibility="WhileEditing" />
+
+                    <Label Text="{x:Static strings:AppResources.Backup_PasswordHint}" FontSize="11" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" />
+
+                    <Button Text="{x:Static strings:AppResources.Backup_CreateButton}" Command="{Binding CreateBackupCommand}" IsEnabled="{Binding IsBackupInteractionEnabled}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource HeaderTextColor}" FontAttributes="Bold" />
+
+                    <Label Text="{Binding BackupStatusMessage}" IsVisible="{Binding BackupStatusMessage, Converter={StaticResource StringNotEmptyConverter}}" FontSize="13" TextColor="{DynamicResource AppTextColor}" Opacity="0.85" HorizontalTextAlignment="Center">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding IsBackupSuccess}" Value="True">
+                                <Setter Property="TextColor" Value="{DynamicResource ActivateActionColor}" />
+                                <Setter Property="Opacity" Value="1" />
+                            </DataTrigger>
+
+                            <DataTrigger TargetType="Label" Binding="{Binding IsBackupWarning}" Value="True">
+                                <Setter Property="TextColor" Value="{DynamicResource WarningMsgColor}" />
+                                <Setter Property="Opacity" Value="1" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+
+                    <Label Text="{Binding BackupErrorMessage}" IsVisible="{Binding BackupErrorMessage, Converter={StaticResource StringNotEmptyConverter}}" FontSize="13" TextColor="{DynamicResource DeleteActionColor}" HorizontalTextAlignment="Center" />
+
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- WALIDACJA KOPII DO PRZYSZŁEGO RESTORE -->
+            <Border Padding="20,10,20,10" StrokeThickness="0" BackgroundColor="{DynamicResource SectionBackgroundColor}">
+                <VerticalStackLayout Spacing="10">
+
+                    <Label Text="{x:Static strings:AppResources.Backup_ValidateSectionTitle}" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
+
+                    <Label Text="{x:Static strings:AppResources.Backup_ValidateSectionDescription}" FontSize="13" TextColor="{DynamicResource AppTextColor}" Opacity="0.7" />
+
+                    <Entry Text="{Binding RestorePassword}" Placeholder="{x:Static strings:AppResources.Backup_RestorePasswordPlaceholder}" IsPassword="True" IsEnabled="{Binding IsBackupInteractionEnabled}" TextColor="{DynamicResource AppTextColor}" ClearButtonVisibility="WhileEditing" />
+
+                    <Button Text="{x:Static strings:AppResources.Backup_PickAndValidateButton}" Command="{Binding PickAndValidateBackupCommand}" IsEnabled="{Binding IsBackupInteractionEnabled}" BackgroundColor="{DynamicResource PrimaryColor}" TextColor="{DynamicResource HeaderTextColor}" FontAttributes="Bold" />
+
+                    <ActivityIndicator IsRunning="{Binding IsBackupOperationRunning}" IsVisible="{Binding IsBackupOperationRunning}" Color="{DynamicResource PrimaryColor}" HorizontalOptions="Center" />
+
+                    <Label Text="{Binding RestoreStatusMessage}" IsVisible="{Binding RestoreStatusMessage, Converter={StaticResource StringNotEmptyConverter}}" FontSize="13" TextColor="{DynamicResource ActivateActionColor}" HorizontalTextAlignment="Center" />
+
+                    <Label Text="{Binding RestoreErrorMessage}" IsVisible="{Binding RestoreErrorMessage, Converter={StaticResource StringNotEmptyConverter}}" FontSize="13" TextColor="{DynamicResource DeleteActionColor}" HorizontalTextAlignment="Center" />
+
+                    <Border Padding="12" Stroke="{DynamicResource PrimaryColor}" StrokeThickness="1" IsVisible="{Binding HasValidatedBackup}" BackgroundColor="Transparent">
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" RowSpacing="6" ColumnSpacing="12">
+
+                            <Label Grid.Row="0" Grid.Column="0" Text="{x:Static strings:AppResources.Backup_FileNameLabel}" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
+                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding ValidatedBackupFileName}" TextColor="{DynamicResource AppTextColor}" LineBreakMode="TailTruncation" />
+
+                            <Label Grid.Row="1" Grid.Column="0" Text="{x:Static strings:AppResources.Backup_CreatedAtLabel}" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding ValidatedBackupCreatedAt}" TextColor="{DynamicResource AppTextColor}" />
+
+                            <Label Grid.Row="2" Grid.Column="0" Text="{x:Static strings:AppResources.Backup_AppVersionLabel}" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding ValidatedBackupAppVersion}" TextColor="{DynamicResource AppTextColor}" />
+
+                            <Label Grid.Row="3" Grid.Column="0" Text="{x:Static strings:AppResources.Backup_SchemaVersionLabel}" FontAttributes="Bold" TextColor="{DynamicResource AppTextColor}" />
+                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding ValidatedBackupSchemaVersion}" TextColor="{DynamicResource AppTextColor}" />
+
+                        </Grid>
+                    </Border>
+
+                    <Label Text="{x:Static strings:AppResources.Backup_RestoreNotEnabledYet}" FontSize="11" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalTextAlignment="Center" />
+
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- STREFA NIEBEZPIECZNA -->
+            <Border Padding="20" Stroke="{DynamicResource DeleteActionColor}" StrokeThickness="1" BackgroundColor="{DynamicResource SectionBackgroundColor}" Margin="0,5,0,20">
+                <VerticalStackLayout Spacing="12">
+
+                    <Label Text="{x:Static strings:AppResources.DangerZone}" FontSize="16" FontAttributes="Bold" TextColor="{DynamicResource DeleteActionColor}" HorizontalOptions="Center" />
+
+                    <Button Text="{x:Static strings:AppResources.WipeDataBtn}" Command="{Binding WipeDataCommand}" IsEnabled="{Binding IsBackupInteractionEnabled}" BackgroundColor="{DynamicResource DeleteActionColor}" TextColor="White" FontAttributes="Bold" />
+
+                </VerticalStackLayout>
+            </Border>
 
         </VerticalStackLayout>
     </ScrollView>

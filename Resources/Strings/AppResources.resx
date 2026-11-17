@@ -942,4 +942,97 @@
     <value>It is not possible to generate the asset history. The following accounts do not have a specified opening balance date: </value>
     <comment>ReportsPage</comment>
   </data>
+  <data name="SettingsGeneralSection" xml:space="preserve">
+    <value>General settings</value>
+  </data>
+  <data name="Backup_SectionTitle" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="Backup_SectionDescription" xml:space="preserve">
+    <value>Create an encrypted copy of your data and save it in a selected location.</value>
+  </data>
+  <data name="Backup_PasswordPlaceholder" xml:space="preserve">
+    <value>Backup password</value>
+  </data>
+  <data name="Backup_ConfirmPasswordPlaceholder" xml:space="preserve">
+    <value>Repeat password</value>
+  </data>
+  <data name="Backup_PasswordHint" xml:space="preserve">
+    <value>The password must contain at least 10 characters. You will need it to restore the backup.</value>
+  </data>
+  <data name="Backup_CreateButton" xml:space="preserve">
+    <value>Create backup</value>
+  </data>
+  <data name="Backup_SaveNotCompleted" xml:space="preserve">
+    <value>The backup was not saved. The operation was cancelled or the selected location is unavailable.</value>
+  </data>
+  <data name="Backup_SaveFailed" xml:space="preserve">
+    <value>The backup could not be saved.</value>
+  </data>
+  <data name="Backup_CreateFailed" xml:space="preserve">
+    <value>The backup could not be created.</value>
+  </data>
+  <data name="Backup_SaveSuccess" xml:space="preserve">
+    <value>The backup was saved.</value>
+  </data>
+  <data name="Backup_SaveSuccessWithPath" xml:space="preserve">
+    <value>The backup was saved: {0}</value>
+  </data>
+  <data name="Backup_PasswordRequired" xml:space="preserve">
+    <value>Enter the backup password.</value>
+  </data>
+  <data name="Backup_PasswordMinimumLength" xml:space="preserve">
+    <value>The password must contain at least {0} characters.</value>
+  </data>
+  <data name="Backup_PasswordsDoNotMatch" xml:space="preserve">
+    <value>The passwords do not match.</value>
+  </data>
+  <data name="Backup_ValidateSectionTitle" xml:space="preserve">
+    <value>Validate backup</value>
+  </data>
+  <data name="Backup_ValidateSectionDescription" xml:space="preserve">
+    <value>Select an .etbackup file and verify its integrity and password.</value>
+  </data>
+  <data name="Backup_RestorePasswordPlaceholder" xml:space="preserve">
+    <value>Selected backup password</value>
+  </data>
+  <data name="Backup_PickAndValidateButton" xml:space="preserve">
+    <value>Select and validate backup</value>
+  </data>
+  <data name="Backup_PickCancelled" xml:space="preserve">
+    <value>Selecting a backup was cancelled.</value>
+  </data>
+  <data name="Backup_PickFailed" xml:space="preserve">
+    <value>The selected backup could not be read.</value>
+  </data>
+  <data name="Backup_ValidationFailed" xml:space="preserve">
+    <value>The backup is invalid or the password is incorrect.</value>
+  </data>
+  <data name="Backup_ValidationSuccess" xml:space="preserve">
+    <value>The backup is valid.</value>
+  </data>
+  <data name="Backup_FileNameLabel" xml:space="preserve">
+    <value>File:</value>
+  </data>
+  <data name="Backup_CreatedAtLabel" xml:space="preserve">
+    <value>Created:</value>
+  </data>
+  <data name="Backup_AppVersionLabel" xml:space="preserve">
+    <value>Application version:</value>
+  </data>
+  <data name="Backup_SchemaVersionLabel" xml:space="preserve">
+    <value>Database version:</value>
+  </data>
+  <data name="Backup_RestoreNotEnabledYet" xml:space="preserve">
+    <value>Data restore will be enabled in the next stage.</value>
+  </data>
+  <data name="WipeDataFailedMessage" xml:space="preserve">
+    <value>Application data could not be deleted.</value>
+  </data>
+  <data name="Backup_PickerTitle" xml:space="preserve">
+    <value>Select an ExpenseTracker backup</value>
+  </data>
+  <data name="Backup_PickFailedIncorrectFiletype" xml:space="preserve">
+    <value>Selected file doesn not have the .etbackup extension.</value>
+  </data>
 </root>

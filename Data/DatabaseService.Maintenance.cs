@@ -25,10 +25,18 @@ public partial class DatabaseService : IDatabaseMaintenanceService
     {
         get
         {
-            if (_database is not null)
-                return _database.DatabasePath;
+            if (!string.IsNullOrWhiteSpace(_databasePath))
+                return _databasePath;
 
-            return Path.Combine(FileSystem.AppDataDirectory, DatabaseFileName);
+            if (_database is not null)
+            {
+                _databasePath = _database.DatabasePath;
+                return _databasePath;
+            }
+
+            _databasePath = Path.Combine(FileSystem.AppDataDirectory, DatabaseFileName);
+
+            return _databasePath;
         }
     }
 

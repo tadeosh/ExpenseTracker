@@ -8,8 +8,9 @@ namespace ExpenseTracker.Data
 {
     public partial class DatabaseService : IDatabaseService
     {
-        // Obiekt reprezentujący połączenie z bazą
         private SQLiteAsyncConnection _database = null!;
+        private readonly string? _databasePasswordOverride;
+        private string? _databasePath;
 
         public DatabaseService()
         {
@@ -18,6 +19,17 @@ namespace ExpenseTracker.Data
         internal DatabaseService(SQLiteAsyncConnection database)
         {
             _database = database ?? throw new ArgumentNullException(nameof(database));
+            _databasePath = database.DatabasePath;
+        }
+
+        internal DatabaseService(SQLiteAsyncConnection database, string databasePassword)
+        {
+            _database = database ?? throw new ArgumentNullException(nameof(database));
+
+            ArgumentException.ThrowIfNullOrWhiteSpace(databasePassword);
+
+            _databasePasswordOverride = databasePassword;
+            _databasePath = database.DatabasePath;
         }
 
         //do backupu
@@ -45,7 +57,7 @@ namespace ExpenseTracker.Data
                 if (_database is not null)
                     return;
 
-                var dbPassword = await SecureStorage.Default.GetAsync("DbPassword");
+                var dbPassword = await GetActiveDatabasePasswordAsync();
 
                 if (string.IsNullOrWhiteSpace(dbPassword))
                     throw new InvalidOperationException("Brak głównego hasła do bazy danych.");

@@ -14,5 +14,7 @@ public interface IDatabaseMaintenanceService
 
     Task<DatabaseValidationResult> ValidateDatabaseAsync(string databasePath, string password, CancellationToken cancellationToken = default);
 
+    Task<DatabaseRestoreResult> RestoreEncryptedDatabaseAsync(string sourceDatabasePath, string sourcePassword, CancellationToken cancellationToken = default);
+
     Task CloseConnectionAsync(CancellationToken cancellationToken = default);
 }
