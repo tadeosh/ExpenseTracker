@@ -946,4 +946,37 @@
   <data name="Backup_PickFailedIncorrectFiletype" xml:space="preserve">
     <value>Die ausgewählte Datei besitzt nicht die Endung .etbackup.</value>
   </data>
+  <data name="Backup_RestoreButton" xml:space="preserve">
+  <value>Diese Sicherung wiederherstellen</value>
+</data>
+<data name="Backup_CancelValidatedBackupButton" xml:space="preserve">
+  <value>Andere auswählen</value>
+</data>
+<data name="Backup_RestoreConfirmationTitle" xml:space="preserve">
+  <value>Sicherung wiederherstellen?</value>
+</data>
+<data name="Backup_RestoreConfirmationMessage" xml:space="preserve">
+  <value>Alle aktuellen Daten werden durch den Inhalt der ausgewählten Sicherung ersetzt. ExpenseTracker erstellt vor dem Vorgang automatisch eine interne Sicherheitskopie.</value>
+</data>
+<data name="Backup_RestoreConfirmButton" xml:space="preserve">
+  <value>Wiederherstellen</value>
+</data>
+<data name="Backup_RestoreCancelled" xml:space="preserve">
+  <value>Die Wiederherstellung wurde abgebrochen.</value>
+</data>
+<data name="Backup_RestoreSuccess" xml:space="preserve">
+  <value>Die Daten wurden erfolgreich wiederhergestellt.</value>
+</data>
+<data name="Backup_RestoreFailed" xml:space="preserve">
+  <value>Die Sicherung konnte nicht wiederhergestellt werden.</value>
+</data>
+<data name="Backup_RestoreFailedRollbackSucceeded" xml:space="preserve">
+  <value>Die ausgewählte Sicherung konnte nicht wiederhergestellt werden. Die vorherigen Daten wurden automatisch wiederhergestellt.</value>
+</data>
+<data name="Backup_NoValidatedBackup" xml:space="preserve">
+  <value>Es ist keine geprüfte Sicherung zur Wiederherstellung vorhanden.</value>
+</data>
+<data name="Backup_ValidatedBackupCleared" xml:space="preserve">
+  <value>Die ausgewählte Sicherung wurde aus der Wiederherstellungsliste entfernt.</value>
+</data>	
 </root>

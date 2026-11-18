@@ -1035,4 +1035,38 @@
   <data name="Backup_PickFailedIncorrectFiletype" xml:space="preserve">
     <value>Selected file doesn not have the .etbackup extension.</value>
   </data>
+	<data name="Backup_RestoreButton" xml:space="preserve">
+  <value>Restore this backup</value>
+</data>
+	<data name="Backup_CancelValidatedBackupButton" xml:space="preserve">
+  <value>Select another</value>
+</data>
+	<data name="Backup_RestoreConfirmationTitle" xml:space="preserve">
+  <value>Restore the backup?</value>
+</data>
+	<data name="Backup_RestoreConfirmationMessage" xml:space="preserve">
+  <value>All current data will be replaced with the contents of the selected backup. ExpenseTracker will automatically create an internal safety copy before the operation.</value>
+</data>
+	<data name="Backup_RestoreConfirmButton" xml:space="preserve">
+  <value>Restore</value>
+</data>
+	<data name="Backup_RestoreCancelled" xml:space="preserve">
+  <value>Backup restore was cancelled.</value>
+</data>
+	<data name="Backup_RestoreSuccess" xml:space="preserve">
+  <value>The data was restored successfully.</value>
+</data>
+	<data name="Backup_RestoreFailed" xml:space="preserve">
+  <value>The backup could not be restored.</value>
+</data>
+	<data name="Backup_RestoreFailedRollbackSucceeded" xml:space="preserve">
+  <value>The selected backup could not be restored. The previous data was recovered automatically.</value>
+</data>
+	<data name="Backup_NoValidatedBackup" xml:space="preserve">
+  <value>There is no validated backup to restore.</value>
+</data>
+	<data name="Backup_ValidatedBackupCleared" xml:space="preserve">
+  <value>The selected backup was removed from the restore list.</value>
+</data>
+	
 </root>

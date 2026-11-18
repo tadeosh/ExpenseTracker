@@ -108,7 +108,24 @@
 
                     <ActivityIndicator IsRunning="{Binding IsBackupOperationRunning}" IsVisible="{Binding IsBackupOperationRunning}" Color="{DynamicResource PrimaryColor}" HorizontalOptions="Center" />
 
-                    <Label Text="{Binding RestoreStatusMessage}" IsVisible="{Binding RestoreStatusMessage, Converter={StaticResource StringNotEmptyConverter}}" FontSize="13" TextColor="{DynamicResource ActivateActionColor}" HorizontalTextAlignment="Center" />
+                    <Label Text="{Binding RestoreStatusMessage}" IsVisible="{Binding RestoreStatusMessage, Converter={StaticResource StringNotEmptyConverter}}" FontSize="13"
+                            TextColor="{DynamicResource AppTextColor}"  Opacity="0.85" HorizontalTextAlignment="Center">
+
+                        <Label.Triggers>
+
+                            <DataTrigger TargetType="Label" Binding="{Binding IsRestoreSuccess}" Value="True">
+                                <Setter Property="TextColor" Value="{DynamicResource ActivateActionColor}" />
+                                <Setter Property="Opacity" Value="1" />
+                            </DataTrigger>
+
+                            <DataTrigger TargetType="Label" Binding="{Binding IsRestoreWarning}" Value="True">
+                                <Setter Property="TextColor" Value="{DynamicResource WarningMsgColor}" />
+                                <Setter Property="Opacity" Value="1" />
+                            </DataTrigger>
+
+                        </Label.Triggers>
+
+                    </Label>
 
                     <Label Text="{Binding RestoreErrorMessage}" IsVisible="{Binding RestoreErrorMessage, Converter={StaticResource StringNotEmptyConverter}}" FontSize="13" TextColor="{DynamicResource DeleteActionColor}" HorizontalTextAlignment="Center" />
 
@@ -130,7 +147,14 @@
                         </Grid>
                     </Border>
 
-                    <Label Text="{x:Static strings:AppResources.Backup_RestoreNotEnabledYet}" FontSize="11" TextColor="{DynamicResource AppTextColor}" Opacity="0.6" HorizontalTextAlignment="Center" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" IsVisible="{Binding HasValidatedBackup}">
+                        <Button Grid.Column="0" Text="{x:Static strings:AppResources.Backup_CancelValidatedBackupButton}"  Command="{Binding CancelValidatedBackupCommand}" IsEnabled="{Binding IsBackupInteractionEnabled}"
+                            BackgroundColor="Transparent"   TextColor="{DynamicResource AppTextColor}"  BorderColor="{DynamicResource AppTextColor}" BorderWidth="1" />      
+
+                        <Button Grid.Column="1" Text="{x:Static strings:AppResources.Backup_RestoreButton}" Command="{Binding RestoreValidatedBackupCommand}" IsEnabled="{Binding IsBackupInteractionEnabled}"
+                            BackgroundColor="{DynamicResource WarningMsgColor}" TextColor="White" FontAttributes="Bold" />
+
+                    </Grid>
 
                 </VerticalStackLayout>
             </Border>

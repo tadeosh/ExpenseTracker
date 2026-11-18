@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ExpenseTracker.Services;
 
-public sealed class PortableBackupService : IPortableBackupService
+public sealed partial class PortableBackupService : IPortableBackupService
 {
     private const string ManifestEntryName = "manifest.json";
     private const string DatabaseEntryName = "database.db3";

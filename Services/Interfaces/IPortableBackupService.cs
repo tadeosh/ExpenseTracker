@@ -8,5 +8,7 @@ public interface IPortableBackupService
 
     Task<PortableBackupValidationResult> ValidateBackupAsync(string backupFilePath, string backupPassword, CancellationToken cancellationToken = default);
 
+    Task<PortableBackupRestoreResult> RestoreBackupAsync(string backupFilePath, string backupPassword, CancellationToken cancellationToken = default);
+
     void DeleteTemporaryBackup(PortableBackupCreationResult backup);
 }

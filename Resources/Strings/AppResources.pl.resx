@@ -946,4 +946,37 @@
   <data name="Backup_PickFailedIncorrectFiletype" xml:space="preserve">
     <value>Wybrany plik nie ma rozszerzenia .etbackup.</value>
   </data>
+	<data name="Backup_RestoreButton" xml:space="preserve">
+  <value>Przywróć tę kopię</value>
+</data>
+	<data name="Backup_CancelValidatedBackupButton" xml:space="preserve">
+  <value>Wybierz inną</value>
+</data>
+	<data name="Backup_RestoreConfirmationTitle" xml:space="preserve">
+  <value>Przywrócić kopię zapasową?</value>
+</data>
+	<data name="Backup_RestoreConfirmationMessage" xml:space="preserve">
+  <value>Wszystkie aktualne dane zostaną zastąpione zawartością wybranej kopii. Przed operacją ExpenseTracker automatycznie utworzy wewnętrzną kopię bezpieczeństwa.</value>
+</data>
+	<data name="Backup_RestoreConfirmButton" xml:space="preserve">
+  <value>Przywróć</value>
+</data>
+	<data name="Backup_RestoreCancelled" xml:space="preserve">
+  <value>Przywracanie kopii zostało anulowane.</value>
+</data>
+	<data name="Backup_RestoreSuccess" xml:space="preserve">
+  <value>Dane zostały pomyślnie przywrócone.</value>
+</data>
+	<data name="Backup_RestoreFailed" xml:space="preserve">
+  <value>Nie udało się przywrócić kopii zapasowej.</value>
+</data>
+	<data name="Backup_RestoreFailedRollbackSucceeded" xml:space="preserve">
+  <value>Nie udało się przywrócić wybranej kopii. Poprzednie dane zostały automatycznie odzyskane.</value>
+</data>
+	<data name="Backup_NoValidatedBackup" xml:space="preserve">
+  <value>Brak zwalidowanej kopii zapasowej do przywrócenia.</value>
+</data>
+	<data name="Backup_ValidatedBackupCleared" xml:space="preserve">
+  <value>Wybrana kopia została usunięta z listy przywracania.</value>
+</data>	
 </root>

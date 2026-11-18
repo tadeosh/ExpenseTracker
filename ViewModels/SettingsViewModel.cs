@@ -90,8 +90,25 @@ public partial class SettingsViewModel : ObservableObject
     public bool IsBackupError => BackupMessageType == UiMessageType.Error;
 
     public bool IsBackupInteractionEnabled => !IsBackupOperationRunning;
+    private BackupFilePickResult? _validatedBackup;
+    private string? _validatedBackupPassword;
 
-   
+    [ObservableProperty]
+    public partial UiMessageType RestoreMessageType { get; set; }
+
+    public bool IsRestoreSuccess => RestoreMessageType == UiMessageType.Success;
+
+    public bool IsRestoreWarning => RestoreMessageType == UiMessageType.Warning;
+
+    public bool IsRestoreError => RestoreMessageType == UiMessageType.Error;
+
+    partial void OnRestoreMessageTypeChanged(UiMessageType value)
+    {
+        OnPropertyChanged(nameof(IsRestoreSuccess));
+        OnPropertyChanged(nameof(IsRestoreWarning));
+        OnPropertyChanged(nameof(IsRestoreError));
+    }
+
     public SettingsViewModel(
         IDatabaseService databaseService,
         ISettingsService settingsService,
@@ -257,9 +274,11 @@ public partial class SettingsViewModel : ObservableObject
     private async Task PickAndValidateBackupAsync()
     {
         ClearRestoreMessages();
+        ClearValidatedBackup();
 
         if (string.IsNullOrWhiteSpace(RestorePassword))
         {
+            RestoreMessageType = UiMessageType.Error;
             RestoreErrorMessage = AppResources.Backup_PasswordRequired;
             return;
         }
@@ -274,16 +293,15 @@ public partial class SettingsViewModel : ObservableObject
 
             if (pickedBackup.IsCancelled)
             {
+                RestoreMessageType = UiMessageType.Warning;
                 RestoreStatusMessage = AppResources.Backup_PickCancelled;
                 return;
             }
 
             if (!pickedBackup.IsSuccessful || string.IsNullOrWhiteSpace(pickedBackup.TemporaryFilePath))
             {
-                RestoreErrorMessage = string.IsNullOrWhiteSpace(pickedBackup.ErrorMessage)
-                    ? AppResources.Backup_PickFailed
-                    : pickedBackup.ErrorMessage;
-
+                RestoreMessageType = UiMessageType.Error;
+                RestoreErrorMessage = AppResources.Backup_PickFailed;
                 return;
             }
 
@@ -291,6 +309,7 @@ public partial class SettingsViewModel : ObservableObject
 
             if (!validationResult.IsValid || validationResult.Manifest is null)
             {
+                RestoreMessageType = UiMessageType.Error;
                 RestoreErrorMessage = string.IsNullOrWhiteSpace(validationResult.ErrorMessage)
                     ? AppResources.Backup_ValidationFailed
                     : validationResult.ErrorMessage;
@@ -298,19 +317,27 @@ public partial class SettingsViewModel : ObservableObject
                 return;
             }
 
+            _validatedBackup = pickedBackup;
+            _validatedBackupPassword = RestorePassword;
+
             ApplyValidatedBackupMetadata(pickedBackup, validationResult.Manifest);
 
+            RestoreMessageType = UiMessageType.Success;
             RestoreStatusMessage = AppResources.Backup_ValidationSuccess;
+
+            pickedBackup = null;
             RestorePassword = string.Empty;
         }
         catch (OperationCanceledException)
         {
+            RestoreMessageType = UiMessageType.Warning;
             RestoreStatusMessage = AppResources.Backup_PickCancelled;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Nie udało się wybrać lub zweryfikować kopii zapasowej.");
 
+            RestoreMessageType = UiMessageType.Error;
             RestoreErrorMessage = AppResources.Backup_ValidationFailed;
         }
         finally
@@ -320,6 +347,99 @@ public partial class SettingsViewModel : ObservableObject
 
             IsBackupOperationRunning = false;
         }
+    }
+
+    [RelayCommand]
+    private async Task RestoreValidatedBackupAsync()
+    {
+        ClearRestoreMessages();
+
+        if (_validatedBackup is null ||
+            string.IsNullOrWhiteSpace(_validatedBackup.TemporaryFilePath) ||
+            !File.Exists(_validatedBackup.TemporaryFilePath) ||
+            string.IsNullOrWhiteSpace(_validatedBackupPassword))
+        {
+            ClearValidatedBackup();
+
+            RestoreMessageType = UiMessageType.Error;
+            RestoreErrorMessage = AppResources.Backup_NoValidatedBackup;
+            return;
+        }
+
+        var confirmed = await Shell.Current.DisplayAlertAsync(
+            AppResources.Backup_RestoreConfirmationTitle,
+            AppResources.Backup_RestoreConfirmationMessage,
+            AppResources.Backup_RestoreConfirmButton,
+            AppResources.CancelBtn);
+
+        if (!confirmed)
+        {
+            RestoreMessageType = UiMessageType.Warning;
+            RestoreStatusMessage = AppResources.Backup_RestoreCancelled;
+            return;
+        }
+
+        IsBackupOperationRunning = true;
+
+        try
+        {
+            var result = await _portableBackupService.RestoreBackupAsync(
+                _validatedBackup.TemporaryFilePath,
+                _validatedBackupPassword);
+
+            if (!result.IsSuccessful)
+                throw new InvalidOperationException("Restore nie zwrócił wyniku sukcesu.");
+
+            RestoreMessageType = UiMessageType.Success;
+            RestoreStatusMessage = AppResources.Backup_RestoreSuccess;
+
+            await Shell.Current.DisplayAlertAsync(
+                AppResources.SuccessTitle,
+                AppResources.Backup_RestoreSuccess,
+                AppResources.OkBtn);
+
+            ClearValidatedBackup();
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (Application.Current?.Windows.Count > 0)
+                    Application.Current.Windows[0].Page = new AppShell();
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            RestoreMessageType = UiMessageType.Warning;
+            RestoreStatusMessage = AppResources.Backup_RestoreCancelled;
+
+            ClearValidatedBackup();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Nie udało się przywrócić kopii zapasowej.");
+
+            RestoreMessageType = UiMessageType.Error;
+            RestoreErrorMessage = ex.Message.Contains(
+                "Poprzednia baza została automatycznie przywrócona",
+                StringComparison.OrdinalIgnoreCase)
+                ? AppResources.Backup_RestoreFailedRollbackSucceeded
+                : AppResources.Backup_RestoreFailed;
+
+            ClearValidatedBackup();
+        }
+        finally
+        {
+            IsBackupOperationRunning = false;
+        }
+    }
+
+    [RelayCommand]
+    private void CancelValidatedBackup()
+    {
+        ClearValidatedBackup();
+        ClearRestoreMessages();
+
+        RestoreMessageType = UiMessageType.Warning;
+        RestoreStatusMessage = AppResources.Backup_ValidatedBackupCleared;
     }
 
     private bool ValidateBackupPassword()
@@ -357,6 +477,21 @@ public partial class SettingsViewModel : ObservableObject
         ValidatedBackupSchemaVersion = manifest.DatabaseSchemaVersion.ToString(CultureInfo.CurrentCulture);
     }
 
+    private void ClearValidatedBackup()
+    {
+        if (_validatedBackup is not null)
+            _backupFileService.DeletePickedTemporaryFile(_validatedBackup);
+
+        _validatedBackup = null;
+        _validatedBackupPassword = null;
+
+        HasValidatedBackup = false;
+        ValidatedBackupFileName = string.Empty;
+        ValidatedBackupCreatedAt = string.Empty;
+        ValidatedBackupAppVersion = string.Empty;
+        ValidatedBackupSchemaVersion = string.Empty;
+    }
+
     private void ClearBackupMessages()
     {
         BackupStatusMessage = string.Empty;
@@ -368,11 +503,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         RestoreStatusMessage = string.Empty;
         RestoreErrorMessage = string.Empty;
-        HasValidatedBackup = false;
-        ValidatedBackupFileName = string.Empty;
-        ValidatedBackupCreatedAt = string.Empty;
-        ValidatedBackupAppVersion = string.Empty;
-        ValidatedBackupSchemaVersion = string.Empty;
+        RestoreMessageType = UiMessageType.None;
     }
 
     [RelayCommand]

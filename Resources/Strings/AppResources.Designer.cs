@@ -403,6 +403,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Select another.
+        /// </summary>
+        internal static string Backup_CancelValidatedBackupButton {
+            get {
+                return ResourceManager.GetString("Backup_CancelValidatedBackupButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Repeat password.
         /// </summary>
         internal static string Backup_ConfirmPasswordPlaceholder {
@@ -444,6 +453,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string Backup_FileNameLabel {
             get {
                 return ResourceManager.GetString("Backup_FileNameLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu There is no validated backup to restore..
+        /// </summary>
+        internal static string Backup_NoValidatedBackup {
+            get {
+                return ResourceManager.GetString("Backup_NoValidatedBackup", resourceCulture);
             }
         }
         
@@ -538,6 +556,69 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Restore this backup.
+        /// </summary>
+        internal static string Backup_RestoreButton {
+            get {
+                return ResourceManager.GetString("Backup_RestoreButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Backup restore was cancelled..
+        /// </summary>
+        internal static string Backup_RestoreCancelled {
+            get {
+                return ResourceManager.GetString("Backup_RestoreCancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu All current data will be replaced with the contents of the selected backup. ExpenseTracker will automatically create an internal safety copy before the operation..
+        /// </summary>
+        internal static string Backup_RestoreConfirmationMessage {
+            get {
+                return ResourceManager.GetString("Backup_RestoreConfirmationMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Restore the backup?.
+        /// </summary>
+        internal static string Backup_RestoreConfirmationTitle {
+            get {
+                return ResourceManager.GetString("Backup_RestoreConfirmationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu Restore.
+        /// </summary>
+        internal static string Backup_RestoreConfirmButton {
+            get {
+                return ResourceManager.GetString("Backup_RestoreConfirmButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The backup could not be restored..
+        /// </summary>
+        internal static string Backup_RestoreFailed {
+            get {
+                return ResourceManager.GetString("Backup_RestoreFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The selected backup could not be restored. The previous data was recovered automatically..
+        /// </summary>
+        internal static string Backup_RestoreFailedRollbackSucceeded {
+            get {
+                return ResourceManager.GetString("Backup_RestoreFailedRollbackSucceeded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu Data restore will be enabled in the next stage..
         /// </summary>
         internal static string Backup_RestoreNotEnabledYet {
@@ -552,6 +633,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string Backup_RestorePasswordPlaceholder {
             get {
                 return ResourceManager.GetString("Backup_RestorePasswordPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The data was restored successfully..
+        /// </summary>
+        internal static string Backup_RestoreSuccess {
+            get {
+                return ResourceManager.GetString("Backup_RestoreSuccess", resourceCulture);
             }
         }
         
@@ -615,6 +705,15 @@ namespace ExpenseTracker.Resources.Strings {
         internal static string Backup_SectionTitle {
             get {
                 return ResourceManager.GetString("Backup_SectionTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The selected backup was removed from the restore list..
+        /// </summary>
+        internal static string Backup_ValidatedBackupCleared {
+            get {
+                return ResourceManager.GetString("Backup_ValidatedBackupCleared", resourceCulture);
             }
         }
         

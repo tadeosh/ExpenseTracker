@@ -6,9 +6,10 @@ namespace ExpenseTracker.Data;
 
 public partial class DatabaseService
 {
-    private const string RestoreSourceSchemaName = "restore_source";
     private const string RestoreTargetSchemaName = "restore_target";
     private const string SafetyBackupSchemaName = "restore_safety";
+
+    internal Func<Task>? RestoreAfterReplacementHook { get; set; }
 
     public async Task<DatabaseRestoreResult> RestoreEncryptedDatabaseAsync(string sourceDatabasePath, string sourcePassword, CancellationToken cancellationToken = default)
     {
@@ -69,7 +70,13 @@ public partial class DatabaseService
             if (!safetyValidation.IsValid)
                 throw new InvalidOperationException($"Nie udało się utworzyć poprawnej kopii bezpieczeństwa: {safetyValidation.ErrorMessage}");
 
-            await ConvertRestoreSourceToLocalDatabaseAsync(normalizedSourcePath, sourcePassword, stagedDatabasePath, localDatabasePassword, sourceValidation.SchemaVersion, cancellationToken);
+            await ConvertRestoreSourceToLocalDatabaseAsync(
+                normalizedSourcePath,
+                sourcePassword,
+                stagedDatabasePath,
+                localDatabasePassword,
+                sourceValidation.SchemaVersion,
+                cancellationToken);
 
             var stagedValidation = await ValidateDatabaseCoreAsync(stagedDatabasePath, localDatabasePassword, cancellationToken);
 
@@ -90,6 +97,11 @@ public partial class DatabaseService
 
             File.Move(stagedDatabasePath, normalizedActivePath);
             activeDatabaseWasReplaced = true;
+
+            if (RestoreAfterReplacementHook is not null)
+                await RestoreAfterReplacementHook();
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             await InitAsync();
 
@@ -113,7 +125,9 @@ public partial class DatabaseService
         }
         catch (Exception restoreException) when (activeDatabaseWasReplaced)
         {
-            _logger.LogError(restoreException, "Restore bazy nie powiódł się po podmianie aktywnego pliku. Rozpoczynanie rollbacku.");
+            _logger.LogError(
+                restoreException,
+                "Restore bazy nie powiódł się po podmianie aktywnego pliku. Rozpoczynanie rollbacku.");
 
             try
             {
@@ -130,7 +144,11 @@ public partial class DatabaseService
                 await InitAsync();
 
                 var localDatabasePassword = await GetActiveDatabasePasswordAsync();
-                var rollbackValidation = await ValidateDatabaseCoreAsync(normalizedActivePath, localDatabasePassword, CancellationToken.None);
+
+                var rollbackValidation = await ValidateDatabaseCoreAsync(
+                    normalizedActivePath,
+                    localDatabasePassword,
+                    CancellationToken.None);
 
                 if (!rollbackValidation.IsValid)
                     throw new InvalidOperationException($"Rollback przywrócił bazę, która nie przeszła walidacji: {rollbackValidation.ErrorMessage}");
@@ -156,12 +174,10 @@ public partial class DatabaseService
                 "Nie udało się przywrócić kopii zapasowej. Poprzednia baza została automatycznie przywrócona.",
                 restoreException);
         }
-        catch
-        {
-            throw;
-        }
         finally
         {
+            RestoreAfterReplacementHook = null;
+
             DeleteDatabaseFiles(stagedDatabasePath);
 
             if (!activeDatabaseWasReplaced || rollbackCompleted)
