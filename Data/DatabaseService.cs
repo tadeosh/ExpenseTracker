@@ -169,22 +169,89 @@ namespace ExpenseTracker.Data
         {
             await InitAsync();
 
-            var account = await _database
-                .Table<Account>()
-                .FirstOrDefaultAsync(x => x.Id == accountId);
+            var account = await _database.Table<Account>().FirstOrDefaultAsync(x => x.Id == accountId);
 
             if (account is null)
                 throw new InvalidOperationException($"Nie znaleziono konta o Id {accountId}.");
 
-            var balances = await GetAllAccountBalancesAsync();
+            var asOfDate = DateTime.Today;
+            var rawBalance = await GetAccountBalanceAsOfAsync(account, asOfDate);
 
-            if (!balances.TryGetValue(accountId, out var currentBalance))
-                throw new InvalidOperationException($"Nie udało się obliczyć salda konta o Id {accountId}.");
+            // Saldo konta jest wartością pieniężną. Decyzję biznesową o możliwości
+            // zamknięcia podejmujemy z dokładnością wyświetlaną użytkownikowi,
+            // a nie na podstawie resztek po przeliczeniach kursowych.
+            var currentBalance = decimal.Round(rawBalance, 2, MidpointRounding.AwayFromZero);
+
+            var hasFutureTransactions = await HasAccountTransactionsAfterAsync(account.Id, asOfDate);
 
             return new AccountCloseCheckResult(
-                CanClose: currentBalance == 0m,
+                CanClose: currentBalance == 0m && !hasFutureTransactions,
                 CurrentBalance: currentBalance,
-                Currency: account.Currency);
+                Currency: account.Currency,
+                HasFutureTransactions: hasFutureTransactions);
+        }
+
+        private async Task<decimal> GetAccountBalanceAsOfAsync(Account account, DateTime asOfDate)
+        {
+            ArgumentNullException.ThrowIfNull(account);
+
+            var normalizedDate = asOfDate.Date;
+            var endExclusive = normalizedDate.AddDays(1);
+            var balance = account.InitialBalance;
+
+            var transactions = await _database.Table<Transaction>()
+                .Where(transaction =>
+                    transaction.Date < endExclusive &&
+                    (transaction.AccountId == account.Id || transaction.DestinationAccountId == account.Id))
+                .ToListAsync();
+
+            foreach (var transaction in transactions)
+            {
+                if (account.InitialBalanceDate.HasValue && transaction.Date < account.InitialBalanceDate.Value.Date)
+                    continue;
+
+                if (transaction.Type == TransactionType.Income && transaction.AccountId == account.Id)
+                {
+                    balance += transaction.Amount;
+                    continue;
+                }
+
+                if (transaction.Type == TransactionType.Expense && transaction.AccountId == account.Id)
+                {
+                    balance -= transaction.Amount;
+                    continue;
+                }
+
+                if (transaction.Type == TransactionType.Transfer && transaction.AccountId == account.Id)
+                {
+                    balance -= transaction.Amount;
+                    continue;
+                }
+
+                if (transaction.Type == TransactionType.Transfer && transaction.DestinationAccountId == account.Id)
+                {
+                    var receivedAmount = transaction.ExchangeRate.HasValue && transaction.ExchangeRate.Value > 0m
+                        ? transaction.Amount * (1m / transaction.ExchangeRate.Value)
+                        : transaction.Amount;
+
+                    balance += receivedAmount;
+                }
+            }
+
+            return balance;
+        }
+
+        private async Task<bool> HasAccountTransactionsAfterAsync(int accountId, DateTime asOfDate)
+        {
+            var nextDay = asOfDate.Date.AddDays(1);
+
+            var futureTransaction = await _database.Table<Transaction>()
+                .Where(transaction =>
+                    transaction.Date >= nextDay &&
+                    (transaction.AccountId == accountId || transaction.DestinationAccountId == accountId))
+                .FirstOrDefaultAsync();
+
+            return futureTransaction is not null;
         }
 
         public async Task<int> CloseAccountAsync(Account account, DateTime closedDate)
@@ -194,54 +261,39 @@ namespace ExpenseTracker.Data
             await InitAsync();
 
             if (account.Id <= 0)
-                throw new ArgumentException(
-                    "Nie można zamknąć konta, które nie zostało zapisane.",
-                    nameof(account));
+                throw new ArgumentException("Nie można zamknąć konta, które nie zostało zapisane.", nameof(account));
 
-            var storedAccount = await _database
-                .Table<Account>()
-                .FirstOrDefaultAsync(x => x.Id == account.Id);
+            var storedAccount = await _database.Table<Account>().FirstOrDefaultAsync(x => x.Id == account.Id);
 
             if (storedAccount is null)
-                throw new InvalidOperationException(
-                    $"Nie znaleziono konta o Id {account.Id}.");
+                throw new InvalidOperationException($"Nie znaleziono konta o Id {account.Id}.");
 
             if (storedAccount.ClosedDate.HasValue)
-                throw new InvalidOperationException(
-                    "Konto jest już zamknięte.");
+                throw new InvalidOperationException("Konto jest już zamknięte.");
 
             if (!storedAccount.InitialBalanceDate.HasValue)
-                throw new InvalidOperationException(
-                    "Nie można zamknąć konta bez określonej daty salda początkowego.");
+                throw new InvalidOperationException("Nie można zamknąć konta bez określonej daty salda początkowego.");
 
             var normalizedClosedDate = closedDate.Date;
 
             if (normalizedClosedDate < storedAccount.InitialBalanceDate.Value.Date)
-            {
-                throw new InvalidOperationException(
-                    "Data zamknięcia konta nie może być wcześniejsza niż data salda początkowego.");
-            }
+                throw new InvalidOperationException("Data zamknięcia konta nie może być wcześniejsza niż data salda początkowego.");
 
             if (normalizedClosedDate > DateTime.Today)
-            {
-                throw new InvalidOperationException(
-                    "Data zamknięcia konta nie może być późniejsza niż dzisiaj.");
-            }
+                throw new InvalidOperationException("Data zamknięcia konta nie może być późniejsza niż dzisiaj.");
 
             var closeCheck = await CanCloseAccountAsync(storedAccount.Id);
 
-            if (!closeCheck.CanClose)
-            {
-                throw new InvalidOperationException(
-                    $"Nie można zamknąć konta z niezerowym saldem: " +
-                    $"{closeCheck.CurrentBalance:N2} {closeCheck.Currency}.");
-            }
+            if (closeCheck.CurrentBalance != 0m)
+                throw new InvalidOperationException($"Nie można zamknąć konta z niezerowym saldem: {closeCheck.CurrentBalance:N2} {closeCheck.Currency}.");
+
+            if (closeCheck.HasFutureTransactions)
+                throw new InvalidOperationException("Nie można zamknąć konta posiadającego transakcje zaplanowane po dacie zamknięcia.");
 
             storedAccount.ClosedDate = normalizedClosedDate;
 
             var result = await _database.UpdateAsync(storedAccount);
 
-            // Synchronizujemy również obiekt przekazany przez wywołującego.
             account.ClosedDate = storedAccount.ClosedDate;
 
             return result;

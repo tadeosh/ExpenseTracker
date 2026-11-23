@@ -1,6 +1,7 @@
 ﻿namespace ExpenseTracker.Models;
 
 public sealed record AccountCloseCheckResult(
-    bool CanClose,
+    bool CanClose, 
     decimal CurrentBalance,
-    string Currency);
+    string Currency,
+    bool HasFutureTransactions);

@@ -142,6 +142,15 @@ namespace ExpenseTracker.Resources.Strings {
         }
         
         /// <summary>
+        /// Wyszukuje zlokalizowany ciąg podobny do ciągu The account “{0}” cannot be closed because it has transactions scheduled after the closing date..
+        /// </summary>
+        internal static string Accounts_CloseFutureTransactions {
+            get {
+                return ResourceManager.GetString("Accounts_CloseFutureTransactions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         /// Wyszukuje zlokalizowany ciąg podobny do ciągu The account “{0}” cannot be closed. Its current balance is {1:N2} {2}. Transfer or settle the remaining funds before closing the account..
         /// </summary>
         internal static string Accounts_CloseNonZeroBalance {

@@ -301,41 +301,38 @@ namespace ExpenseTracker.ViewModels
 
             try
             {
-                var closeCheck =
-                    await _databaseService.CanCloseAccountAsync(
-                        account.Id);
+                var closeCheck = await _databaseService.CanCloseAccountAsync(account.Id);
 
-                if (!closeCheck.CanClose)
+                if (closeCheck.CurrentBalance != 0m)
                 {
                     await _dialogService.ShowAlertAsync(
                         AppResources.Accounts_CloseTitle,
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            AppResources.Accounts_CloseNonZeroBalance,
-                            account.Name,
-                            closeCheck.CurrentBalance,
-                            closeCheck.Currency),
+                        string.Format(CultureInfo.CurrentCulture, AppResources.Accounts_CloseNonZeroBalance, account.Name, closeCheck.CurrentBalance, closeCheck.Currency),
                         AppResources.Common_OK);
 
                     return;
                 }
 
-                var confirmed =
-                    await _dialogService.ConfirmAsync(
+                if (closeCheck.HasFutureTransactions)
+                {
+                    await _dialogService.ShowAlertAsync(
                         AppResources.Accounts_CloseTitle,
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            AppResources.Accounts_CloseConfirmation,
-                            account.Name),
-                        AppResources.Accounts_Close,
-                        AppResources.Common_Cancel);
+                        string.Format(CultureInfo.CurrentCulture, AppResources.Accounts_CloseFutureTransactions, account.Name),
+                        AppResources.Common_OK);
+
+                    return;
+                }
+
+                var confirmed = await _dialogService.ConfirmAsync(
+                    AppResources.Accounts_CloseTitle,
+                    string.Format(CultureInfo.CurrentCulture, AppResources.Accounts_CloseConfirmation, account.Name),
+                    AppResources.Accounts_Close,
+                    AppResources.Common_Cancel);
 
                 if (!confirmed)
                     return;
 
-                await _databaseService.CloseAccountAsync(
-                    account,
-                    DateTime.Today);
+                await _databaseService.CloseAccountAsync(account, DateTime.Today);
 
                 await LoadAccountsAsync();
 
@@ -344,10 +341,7 @@ namespace ExpenseTracker.ViewModels
             }
             catch (Exception ex)
             {
-                await _dialogService.ShowAlertAsync(
-                    AppResources.Accounts_CloseTitle,
-                    ex.Message,
-                    AppResources.Common_OK);
+                await _dialogService.ShowAlertAsync(AppResources.Accounts_CloseTitle, ex.Message, AppResources.Common_OK);
             }
         }
 
