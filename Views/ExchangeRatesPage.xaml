@@ -41,7 +41,7 @@
 
                 <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
                     <Entry Grid.Column="0" Placeholder="{x:Static strings:AppResources.RateLabel}" Text="{Binding RateText}" Keyboard="Numeric" TextColor="{DynamicResource AppTextColor}" ReturnType="Done"/>
-                    <controls:AppDatePicker Grid.Column="1"  Date="{Binding Date, Mode=TwoWay}" Placeholder="{x:Static strings:AppResources.SelectDatePlaceholder}" MaximumDate="{x:Static sys:DateTime.Today}" Format="d" HorizontalOptions="Fill" />
+                    <controls:AppDatePicker Grid.Column="1"  Date="{Binding SelectedDate, Mode=TwoWay}" Placeholder="{x:Static strings:AppResources.SelectDatePlaceholder}" MaximumDate="{x:Static sys:DateTime.Today}" Format="d" HorizontalOptions="Fill" />
                 </Grid>
             </VerticalStackLayout>
 

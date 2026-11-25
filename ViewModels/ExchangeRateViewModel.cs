@@ -78,7 +78,7 @@ namespace ExpenseTracker.ViewModels
             IsEditing = true;
             _rateBeingEdited = itemToEdit;
 
-            RateText = itemToEdit.ExchangeRate.Rate.ToString("0.####", CultureInfo.InvariantCulture);
+            RateText = itemToEdit.ExchangeRate.Rate.ToString("0.########", CultureInfo.InvariantCulture);
             SelectedDate = itemToEdit.ExchangeRate.Date;
 
             // Dopasowanie Pickera do istniejących wartości (Wymaga dopasowania kodu waluty do wyświetlanej nazwy)

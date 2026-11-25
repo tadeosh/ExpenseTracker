@@ -1,4 +1,5 @@
-﻿using ExpenseTracker.Models;
+﻿using ExpenseTracker.Helpers;
+using ExpenseTracker.Models;
 using ExpenseTracker.Models.Backup;
 using ExpenseTracker.Services.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -197,7 +198,7 @@ namespace ExpenseTracker.Data
 
             var normalizedDate = asOfDate.Date;
             var endExclusive = normalizedDate.AddDays(1);
-            var balance = account.InitialBalance;
+            var balance = MoneyMath.RoundAmount(account.InitialBalance);
 
             var transactions = await _database.Table<Transaction>()
                 .Where(transaction =>
@@ -212,33 +213,33 @@ namespace ExpenseTracker.Data
 
                 if (transaction.Type == TransactionType.Income && transaction.AccountId == account.Id)
                 {
-                    balance += transaction.Amount;
+                    balance += MoneyMath.RoundAmount(transaction.Amount);
                     continue;
                 }
 
                 if (transaction.Type == TransactionType.Expense && transaction.AccountId == account.Id)
                 {
-                    balance -= transaction.Amount;
+                    balance -= MoneyMath.RoundAmount(transaction.Amount);
                     continue;
                 }
 
                 if (transaction.Type == TransactionType.Transfer && transaction.AccountId == account.Id)
                 {
-                    balance -= transaction.Amount;
+                    balance -= MoneyMath.RoundAmount(transaction.Amount);
                     continue;
                 }
 
                 if (transaction.Type == TransactionType.Transfer && transaction.DestinationAccountId == account.Id)
                 {
                     var receivedAmount = transaction.ExchangeRate.HasValue && transaction.ExchangeRate.Value > 0m
-                        ? transaction.Amount * (1m / transaction.ExchangeRate.Value)
-                        : transaction.Amount;
+                        ? MoneyMath.ConvertTransferAmount(transaction.Amount, transaction.ExchangeRate.Value)
+                        : MoneyMath.RoundAmount(transaction.Amount);
 
                     balance += receivedAmount;
                 }
             }
 
-            return balance;
+            return MoneyMath.RoundAmount(balance);
         }
 
         private async Task<bool> HasAccountTransactionsAfterAsync(int accountId, DateTime asOfDate)
@@ -393,19 +394,28 @@ namespace ExpenseTracker.Data
 
                 UNION ALL
 
-                -- 3. Transfery PRZYCHODZĄCE (Perspektywa Konta Docelowego + Kurs)
-                SELECT 
-                    t.Id, 
-                    CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
-                         THEN (t.Amount * (1.0 / t.ExchangeRate)) 
-                         ELSE t.Amount END AS Amount,
-                    t.Date, t.Description, t.Type, t.DestinationAccountId AS AccountId,
-                    c.Name AS CategoryName, p.Name AS ProjectName, aDest.Name AS AccountName,
-                    CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
-                         THEN (t.Amount * (1.0 / t.ExchangeRate)) 
-                         ELSE t.Amount END AS SignedAmount,
+               -- 3. Transfery PRZYCHODZĄCE (Perspektywa Konta Docelowego + Kurs)
+                SELECT
+                    t.Id,
+                    CASE
+                        WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0
+                            THEN ROUND(t.Amount * (1.0 / t.ExchangeRate), 2)
+                        ELSE ROUND(t.Amount, 2)
+                    END AS Amount,
+                    t.Date,
+                    t.Description,
+                    t.Type,
+                    t.DestinationAccountId AS AccountId,
+                    c.Name AS CategoryName,
+                    p.Name AS ProjectName,
+                    aDest.Name AS AccountName,
+                    CASE
+                        WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0
+                            THEN ROUND(t.Amount * (1.0 / t.ExchangeRate), 2)
+                        ELSE ROUND(t.Amount, 2)
+                    END AS SignedAmount,
                     1 AS IsTransferIn,
-                    aDest.Currency AS AccountCurrency -- NOWOŚĆ
+                    aDest.Currency AS AccountCurrency
                 FROM ""Transaction"" t
                 LEFT JOIN Category c ON t.CategoryId = c.Id
                 LEFT JOIN Project p ON t.ProjectId = p.Id
@@ -435,95 +445,79 @@ namespace ExpenseTracker.Data
             {
                 var accounts = await _database.Table<Account>().ToListAsync();
 
-                var result = accounts.ToDictionary(
-                    account => account.Id,
-                    account => account.InitialBalance);
+                var result = accounts.ToDictionary(account => account.Id, account => MoneyMath.RoundAmount(account.InitialBalance));
 
-                // 1. Przychody.
-                // Jeśli InitialBalanceDate jest null, zachowujemy dotychczasowe
-                // zachowanie i uwzględniamy całą historię.
                 var incomesQuery = @"
-                                SELECT
-                                    t.AccountId,
-                                    SUM(t.Amount) AS Total
-                                FROM ""Transaction"" t
-                                INNER JOIN Account a ON a.Id = t.AccountId
-                                WHERE t.Type = ?
-                                  AND (
-                                        a.InitialBalanceDate IS NULL
-                                        OR t.Date >= a.InitialBalanceDate
-                                      )
-                                GROUP BY t.AccountId";
+            SELECT
+                t.AccountId,
+                SUM(ROUND(t.Amount, 2)) AS Total
+            FROM ""Transaction"" t
+            INNER JOIN Account a ON a.Id = t.AccountId
+            WHERE t.Type = ?
+              AND (
+                    a.InitialBalanceDate IS NULL
+                    OR t.Date >= a.InitialBalanceDate
+                  )
+            GROUP BY t.AccountId";
 
-                var incomes = await _database.QueryAsync<BalanceResult>(
-                    incomesQuery,
-                    (int)TransactionType.Income);
+                var incomes = await _database.QueryAsync<BalanceResult>(incomesQuery, (int)TransactionType.Income);
 
                 foreach (var income in incomes)
                 {
                     if (result.ContainsKey(income.AccountId))
-                        result[income.AccountId] += income.Total;
+                        result[income.AccountId] += MoneyMath.RoundAmount(income.Total);
                 }
 
-                // 2. Wydatki.
                 var expensesQuery = @"
-                                SELECT
-                                    t.AccountId,
-                                    SUM(t.Amount) AS Total
-                                FROM ""Transaction"" t
-                                INNER JOIN Account a ON a.Id = t.AccountId
-                                WHERE t.Type = ?
-                                  AND (
-                                        a.InitialBalanceDate IS NULL
-                                        OR t.Date >= a.InitialBalanceDate
-                                      )
-                                GROUP BY t.AccountId";
+            SELECT
+                t.AccountId,
+                SUM(ROUND(t.Amount, 2)) AS Total
+            FROM ""Transaction"" t
+            INNER JOIN Account a ON a.Id = t.AccountId
+            WHERE t.Type = ?
+              AND (
+                    a.InitialBalanceDate IS NULL
+                    OR t.Date >= a.InitialBalanceDate
+                  )
+            GROUP BY t.AccountId";
 
-                var expenses = await _database.QueryAsync<BalanceResult>(
-                    expensesQuery,
-                    (int)TransactionType.Expense);
+                var expenses = await _database.QueryAsync<BalanceResult>(expensesQuery, (int)TransactionType.Expense);
 
                 foreach (var expense in expenses)
                 {
                     if (result.ContainsKey(expense.AccountId))
-                        result[expense.AccountId] -= expense.Total;
+                        result[expense.AccountId] -= MoneyMath.RoundAmount(expense.Total);
                 }
 
-                // 3. Transfery wychodzące.
-                // Datę porównujemy względem konta źródłowego.
                 var transfersOutQuery = @"
-                                SELECT
-                                    t.AccountId,
-                                    SUM(t.Amount) AS Total
-                                FROM ""Transaction"" t
-                                INNER JOIN Account a ON a.Id = t.AccountId
-                                WHERE t.Type = ?
-                                  AND (
-                                        a.InitialBalanceDate IS NULL
-                                        OR t.Date >= a.InitialBalanceDate
-                                      )
-                                GROUP BY t.AccountId";
+            SELECT
+                t.AccountId,
+                SUM(ROUND(t.Amount, 2)) AS Total
+            FROM ""Transaction"" t
+            INNER JOIN Account a ON a.Id = t.AccountId
+            WHERE t.Type = ?
+              AND (
+                    a.InitialBalanceDate IS NULL
+                    OR t.Date >= a.InitialBalanceDate
+                  )
+            GROUP BY t.AccountId";
 
-                var transfersOut = await _database.QueryAsync<BalanceResult>(
-                    transfersOutQuery,
-                    (int)TransactionType.Transfer);
+                var transfersOut = await _database.QueryAsync<BalanceResult>(transfersOutQuery, (int)TransactionType.Transfer);
 
                 foreach (var transferOut in transfersOut)
                 {
                     if (result.ContainsKey(transferOut.AccountId))
-                        result[transferOut.AccountId] -= transferOut.Total;
+                        result[transferOut.AccountId] -= MoneyMath.RoundAmount(transferOut.Total);
                 }
 
-                // 4. Transfery przychodzące.
-                // Datę porównujemy OSOBNO względem konta docelowego.
                 var transfersInQuery = @"
             SELECT
                 t.DestinationAccountId AS AccountId,
                 SUM(
                     CASE
                         WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0
-                            THEN t.Amount * (1.0 / t.ExchangeRate)
-                        ELSE t.Amount
+                            THEN ROUND(t.Amount * (1.0 / t.ExchangeRate), 2)
+                        ELSE ROUND(t.Amount, 2)
                     END
                 ) AS Total
             FROM ""Transaction"" t
@@ -536,23 +530,22 @@ namespace ExpenseTracker.Data
                   )
             GROUP BY t.DestinationAccountId";
 
-                var transfersIn = await _database.QueryAsync<BalanceResult>(
-                    transfersInQuery,
-                    (int)TransactionType.Transfer);
+                var transfersIn = await _database.QueryAsync<BalanceResult>(transfersInQuery, (int)TransactionType.Transfer);
 
                 foreach (var transferIn in transfersIn)
                 {
                     if (result.ContainsKey(transferIn.AccountId))
-                        result[transferIn.AccountId] += transferIn.Total;
+                        result[transferIn.AccountId] += MoneyMath.RoundAmount(transferIn.Total);
                 }
+
+                foreach (var accountId in result.Keys.ToList())
+                    result[accountId] = MoneyMath.RoundAmount(result[accountId]);
 
                 return result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(
-                    $"[CRITICAL] Błąd podczas obliczania sald: {ex.Message}");
-
+                _logger.LogError(ex, "Błąd podczas obliczania sald kont.");
                 throw;
             }
         }
@@ -628,25 +621,29 @@ namespace ExpenseTracker.Data
 
             UNION ALL
 
-            -- 3. Transfery PRZYCHODZĄCE (Perspektywa Konta Docelowego + Kurs)
-            SELECT 
-                t.Id, 
-                CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
-                     THEN (t.Amount * (1.0 / t.ExchangeRate)) 
-                     ELSE t.Amount END AS Amount,
-                t.Date, t.Description, t.Type, t.DestinationAccountId AS AccountId, 
-                t.CategoryId, t.ProjectId, t.DestinationAccountId AS FilterAccountId,
-                c.Name AS CategoryName, p.Name AS ProjectName, aDest.Name AS AccountName,
-                CASE WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0 
-                     THEN (t.Amount * (1.0 / t.ExchangeRate)) 
-                     ELSE t.Amount END AS SignedAmount,
-                1 AS IsTransferIn,
-                aDest.Currency AS AccountCurrency
-            FROM ""Transaction"" t
-            LEFT JOIN Category c ON t.CategoryId = c.Id
-            LEFT JOIN Project p ON t.ProjectId = p.Id
-            LEFT JOIN Account aDest ON t.DestinationAccountId = aDest.Id
-            WHERE t.Type = 2 AND t.DestinationAccountId IS NOT NULL
+                     -- 3. Transfery PRZYCHODZĄCE (Perspektywa Konta Docelowego + Kurs)
+                SELECT
+                    t.Id,
+                    CASE
+                        WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0
+                            THEN ROUND(t.Amount * (1.0 / t.ExchangeRate), 2)
+                        ELSE ROUND(t.Amount, 2)
+                    END AS Amount,
+                    t.Date, t.Description, t.Type, t.DestinationAccountId AS AccountId,
+                    t.CategoryId, t.ProjectId, t.DestinationAccountId AS FilterAccountId,
+                    c.Name AS CategoryName, p.Name AS ProjectName, aDest.Name AS AccountName,
+                    CASE
+                        WHEN t.ExchangeRate IS NOT NULL AND t.ExchangeRate > 0
+                            THEN ROUND(t.Amount * (1.0 / t.ExchangeRate), 2)
+                        ELSE ROUND(t.Amount, 2)
+                    END AS SignedAmount,
+                    1 AS IsTransferIn,
+                    aDest.Currency AS AccountCurrency
+                FROM ""Transaction"" t
+                LEFT JOIN Category c ON t.CategoryId = c.Id
+                LEFT JOIN Project p ON t.ProjectId = p.Id
+                LEFT JOIN Account aDest ON t.DestinationAccountId = aDest.Id
+                WHERE t.Type = 2 AND t.DestinationAccountId IS NOT NULL
         )
         SELECT 
             Id, Amount, Date, Description, Type, AccountId,CategoryId, ProjectId,
@@ -887,27 +884,48 @@ namespace ExpenseTracker.Data
         // MAGIA: Inteligentne pobieranie kursu na konkretny dzień (lub ostatniego znanego)
         public async Task<decimal?> GetApplicableExchangeRateAsync(string sourceCurrency, string targetCurrency, DateTime transactionDate)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(sourceCurrency);
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetCurrency);
+
             await InitAsync();
 
-            // Szukamy najnowszego kursu, który został dodany przed datą transakcji lub dokładnie w tym samym dniu
-            var rate = await _database.Table<ExchangeRate>()
-                .Where(e => e.SourceCurrency == sourceCurrency && e.TargetCurrency == targetCurrency && e.Date <= transactionDate)
-                .OrderByDescending(e => e.Date)
+            sourceCurrency = sourceCurrency.Trim().ToUpperInvariant();
+            targetCurrency = targetCurrency.Trim().ToUpperInvariant();
+
+            if (sourceCurrency == targetCurrency)
+                return 1m;
+
+            var dayEndExclusive = transactionDate.Date.AddDays(1);
+
+            var directRate = await _database.Table<ExchangeRate>()
+                .Where(rate =>
+                    rate.SourceCurrency == sourceCurrency &&
+                    rate.TargetCurrency == targetCurrency &&
+                    rate.Date < dayEndExclusive)
+                .OrderByDescending(rate => rate.Date)
+                .ThenByDescending(rate => rate.Id)
                 .FirstOrDefaultAsync();
 
-            if (rate != null)
-                return rate.Rate;
-
-            // Jeśli użytkownik wpisał kurs w odwrotną stronę (np. mamy PLN->EUR, a szukamy EUR->PLN)
             var reverseRate = await _database.Table<ExchangeRate>()
-                .Where(e => e.SourceCurrency == targetCurrency && e.TargetCurrency == sourceCurrency && e.Date <= transactionDate)
-                .OrderByDescending(e => e.Date)
+                .Where(rate =>
+                    rate.SourceCurrency == targetCurrency &&
+                    rate.TargetCurrency == sourceCurrency &&
+                    rate.Date < dayEndExclusive &&
+                    rate.Rate > 0m)
+                .OrderByDescending(rate => rate.Date)
+                .ThenByDescending(rate => rate.Id)
                 .FirstOrDefaultAsync();
 
-            if (reverseRate != null && reverseRate.Rate > 0)
-                return 1m / reverseRate.Rate; // Zwracamy matematyczną odwrotność
+            if (directRate is null && reverseRate is null)
+                return null;
 
-            return null; // Brak kursu w bazie
+            if (directRate is not null &&
+                (reverseRate is null || directRate.Date >= reverseRate.Date))
+            {
+                return directRate.Rate;
+            }
+
+            return 1m / reverseRate!.Rate;
         }
 
         public async Task<bool> ExchangeRateExistsAsync(string sourceCurrency, string targetCurrency, DateTime date, int excludeId = 0)

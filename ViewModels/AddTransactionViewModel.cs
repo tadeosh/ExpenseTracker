@@ -294,7 +294,7 @@ namespace ExpenseTracker.ViewModels
 
                 if (rate.HasValue)
                 {
-                    ExchangeRateText = rate.Value.ToString("0.####", CultureInfo.InvariantCulture);
+                    ExchangeRateText = rate.Value.ToString("0.########", CultureInfo.InvariantCulture);
                     _lastFetchedRate = rate.Value;
                 }
                 else
@@ -346,7 +346,7 @@ namespace ExpenseTracker.ViewModels
 
                     if (existingTx.ExchangeRate.HasValue)
                     {
-                        ExchangeRateText = existingTx.ExchangeRate.Value.ToString("0.####", CultureInfo.InvariantCulture);
+                        ExchangeRateText = existingTx.ExchangeRate.Value.ToString("0.########", CultureInfo.InvariantCulture);
                         _lastFetchedRate = existingTx.ExchangeRate.Value;
                     }
                 }
